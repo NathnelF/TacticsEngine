@@ -2,6 +2,18 @@
 #include <raymath.h>
 #include <iostream>
 
+ struct entity {
+	Vector3 position;
+	Vector3 targetPosition;
+	Color color;
+	float size;
+	Mesh mesh;
+	Model model;
+	BoundingBox collider;
+	bool selected;
+	bool isMoving;
+};
+
 int main() {
 	InitWindow(800, 600, "Window");
 	Camera camera = { 0 };
@@ -16,16 +28,24 @@ int main() {
 	float cameraDistance = 25.0f;
 	Vector3 cameraTarget = { 0.0f, 0.0f, 0.0f };
 
-	bool cubeSelected = false;
-	float cubeSize = 2.0f;
-	Mesh cubeMesh = GenMeshCube(cubeSize, cubeSize, cubeSize);
-	Model cubeModel = LoadModelFromMesh(cubeMesh);
-	Vector3 cubePosition = { 0.0f, 1.0f, 0.0f, }; 
-	Vector3 targetPosition;
-	Color cubeColor = MAGENTA;
-	BoundingBox cubeCollider = GetMeshBoundingBox(cubeMesh);
-	cubeCollider.min = Vector3Add(cubeCollider.min, cubePosition);
-	cubeCollider.max = Vector3Add(cubeCollider.max, cubePosition);
+	// bool cubeSelected = false;
+	// float cubeSize = 2.0f;
+	// Mesh cubeMesh = GenMeshCube(cubeSize, cubeSize, cubeSize);
+	// Model cubeModel = LoadModelFromMesh(cubeMesh);
+	// Vector3 Player1.position = { 0.0f, 1.0f, 0.0f, }; 
+	// Vector3 targetPosition;
+	// Color cubeColor = MAGENTA;
+	// BoundingBox cubeCollider = GetMeshBoundingBox(cubeMesh);
+	// cubeCollider.min = Vector3Add(cubeCollider.min, Player1.position);
+	// cubeCollider.max = Vector3Add(cubeCollider.max, Player1.position);
+	
+	
+
+
+
+	
+
+
 
 
 	Vector3 planePosition = {0.0f, 0.0f, 0.0f};
@@ -46,11 +66,48 @@ int main() {
 	float rotationSpeed = 0.2f;
 	float moveSpeed = .05f;
 	float t = 0.0f;
-	bool is_moving = false;
 	float panSpeed = 3.0f;
 	float zoomSpeed = 2.0f;
 	float snapRotation = 4.0f;
 	SetTargetFPS(60);
+
+	entity Player1;
+	Player1.position = (Vector3){ 0.0f, 1.0f, 0.0f };
+	Player1.size = 2.0f;
+	Player1.selected = false;
+	Player1.color = MAGENTA;
+	Player1.mesh = GenMeshCube(Player1.size, Player1.size, Player1.size);
+	Player1.model = LoadModelFromMesh(Player1.mesh);
+	Player1.collider = GetMeshBoundingBox(Player1.mesh);
+	Player1.collider.min = (Vector3){ Player1.position.x - Player1.size / 2.0f,
+                                      Player1.position.y - Player1.size / 2.0f,
+                                      Player1.position.z - Player1.size / 2.0f };
+	Player1.collider.max = (Vector3){ Player1.position.x + Player1.size / 2.0f,
+                                      Player1.position.y + Player1.size / 2.0f,
+                                      Player1.position.z + Player1.size / 2.0f };
+	Player1.isMoving = false;
+
+	
+	entity Player2;
+	Player2.position = (Vector3){ 20.0f, 1.0f, 10.0f };
+	Player2.size = 2.0f;
+	Player2.selected = false;
+	Player2.color = BLUE;
+	Player2.mesh = GenMeshCube(Player2.size, Player2.size, Player2.size);
+	Player2.model = LoadModelFromMesh(Player2.mesh);
+	Player2.collider = GetMeshBoundingBox(Player2.mesh);
+	Player2.collider.min = (Vector3){ Player2.position.x - Player2.size / 2.0f,
+                                      Player2.position.y - Player2.size / 2.0f,
+                                      Player2.position.z - Player2.size / 2.0f };
+	Player2.collider.max = (Vector3){ Player2.position.x + Player2.size / 2.0f,
+                                      Player2.position.y + Player2.size / 2.0f,
+                                      Player2.position.z + Player2.size / 2.0f };
+	Player2.isMoving = false;
+
+	entity* selectables[2] = {&Player1, &Player2};
+	int numSelectables = sizeof(selectables) / sizeof(selectables[0]);
+	std::cout << "LOOOK HEREEREER " << numSelectables << "\n";
+
 
 
 	while (!WindowShouldClose()){
@@ -58,27 +115,31 @@ int main() {
 		if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)){
 			Ray mouseRay = GetMouseRay(GetMousePosition(), camera);
 			RayCollision collision;
-			collision = GetRayCollisionBox(mouseRay, cubeCollider);
-			if (collision.hit){
-				cubeSelected = true;
-				cubeColor = BLACK;
+			for (int i = 0; i < numSelectables; i++){
+				selectables[i]->selected = false;
+				selectables[i]->color = MAGENTA;
+
 			}
-			else {
-				if (cubeSelected != false){
-					cubeSelected = false;
-					cubeColor = MAGENTA;
-				} 
+			for (int i = 0; i < numSelectables; i++){
+				//go through each selectable to check if there is a collision.
+				collision = GetRayCollisionBox(mouseRay, selectables[i]->collider);
+				if (collision.hit){
+					selectables[i]->selected = true;
+					selectables[i]->color = BLACK;
+					break;
+				}
 			}
+		
 		}
-		if (IsKeyDown(KEY_M) && cubeSelected == true){
+		if (IsKeyDown(KEY_M) && Player1.selected == true){
 			Ray mouseRay = GetMouseRay(GetMousePosition(), camera);
 			RayCollision collision;
 			collision = GetRayCollisionQuad(mouseRay, planePtOne, planePtTwo, planePtThree, planePtFour);
 			if (collision.hit){
-				//get plane coordinates and then move cubePosition to those coordinates
-				targetPosition = {collision.point.x, cubePosition.y, collision.point.z};
+				//get plane coordinates and then move Player1.position to those coordinates
+				Player1.targetPosition = {collision.point.x, Player1.position.y, collision.point.z};
 				t = 0.0f;
-				is_moving = true;
+				Player1.isMoving = true;
 								
 
 				
@@ -94,16 +155,16 @@ int main() {
 
 
 		}
-		if (is_moving){
+		if (Player1.isMoving){
 			t += GetFrameTime() * moveSpeed;
 			t = fmin(t, 1.0f);
-			cubePosition = Vector3Lerp(cubePosition, targetPosition, t);
-			cubeCollider.min = (Vector3){cubePosition.x - 1.0f, cubePosition.y - 1.0f, cubePosition.z - 1.0f};
-			cubeCollider.max = (Vector3){cubePosition.x + 1.0f, cubePosition.y + 1.0f, cubePosition.z + 1.0f};
+			Player1.position = Vector3Lerp(Player1.position, Player1.targetPosition, t);
+			Player1.collider.min = (Vector3){Player1.position.x - 1.0f, Player1.position.y - 1.0f, Player1.position.z - 1.0f};
+			Player1.collider.max = (Vector3){Player1.position.x + 1.0f, Player1.position.y + 1.0f, Player1.position.z + 1.0f};
 
 			if (t >= 1.0f){
-				is_moving = false;
-				cubePosition = targetPosition;
+				Player1.isMoving = false;
+				Player1.position = Player1.targetPosition;
 			}
 
 		}
@@ -153,13 +214,16 @@ int main() {
 				DrawPlane(planePosition, planeSize, planeColor);
 				DrawBoundingBox(planeCollider, PINK);
 				DrawGrid(50, 5.0f);
-				DrawModel(cubeModel, cubePosition, 1.0f, cubeColor);
-				DrawBoundingBox(cubeCollider, GREEN);
+				DrawModel(Player1.model, Player1.position, 1.0f, Player1.color);
+				DrawBoundingBox(Player1.collider, GREEN);
+				DrawModel(Player2.model, Player2.position, 1.0f, Player2.color);
+				DrawBoundingBox(Player2.collider, GREEN);
 		
 			EndMode3D();
 		EndDrawing();
 	}
-	UnloadModel(cubeModel);
+	UnloadModel(Player1.model);
+	UnloadModel(Player2.model);
 	UnloadModel(planeModel);
 	CloseWindow();
 	return 0;
