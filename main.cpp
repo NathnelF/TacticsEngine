@@ -107,6 +107,7 @@ int main() {
 	entity* selectables[2] = {&Player1, &Player2};
 	int numSelectables = sizeof(selectables) / sizeof(selectables[0]);
 	std::cout << "LOOOK HEREEREER " << numSelectables << "\n";
+	entity* currentlySelected = nullptr;
 
 
 
@@ -115,59 +116,56 @@ int main() {
 		if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)){
 			Ray mouseRay = GetMouseRay(GetMousePosition(), camera);
 			RayCollision collision;
-			for (int i = 0; i < numSelectables; i++){
-				selectables[i]->selected = false;
-				selectables[i]->color = MAGENTA;
-
+			// for (int i = 0; i < numSelectables; i++){
+			// 	// selectables[i]->selected = false;
+			// 	selectables[i]->color = MAGENTA;
+			//
+			// 
+			if (currentlySelected != nullptr){
+				currentlySelected->color = MAGENTA;
 			}
 			for (int i = 0; i < numSelectables; i++){
 				//go through each selectable to check if there is a collision.
 				collision = GetRayCollisionBox(mouseRay, selectables[i]->collider);
 				if (collision.hit){
-					selectables[i]->selected = true;
+					// selectables[i]->selected = true;
+					// selectables[i]->color = BLACK;
+					currentlySelected = selectables[i];
 					selectables[i]->color = BLACK;
 					break;
+				}
+				else {
+					currentlySelected = nullptr;
 				}
 			}
 		
 		}
-		if (IsKeyDown(KEY_M) && Player1.selected == true){
+		if (currentlySelected != nullptr){
+			if (IsKeyDown(KEY_M)){
 			Ray mouseRay = GetMouseRay(GetMousePosition(), camera);
 			RayCollision collision;
 			collision = GetRayCollisionQuad(mouseRay, planePtOne, planePtTwo, planePtThree, planePtFour);
 			if (collision.hit){
 				//get plane coordinates and then move Player1.position to those coordinates
-				Player1.targetPosition = {collision.point.x, Player1.position.y, collision.point.z};
+				currentlySelected->targetPosition = {collision.point.x, currentlySelected->position.y, collision.point.z};
 				t = 0.0f;
-				Player1.isMoving = true;
-								
-
-				
-
+				currentlySelected->isMoving = true;
+				}
 			}
-			else { 
- 				//outside of plane so nothing should happen
-			}
-			//functionality to get intersect between ray and ground plane;
-			//
-			//then we need to take the position at that intersection 
-			//and move the cub to there. Maybe interpolate it a bit for smoothness.
-
-
-		}
-		if (Player1.isMoving){
+		if (currentlySelected->isMoving){
 			t += GetFrameTime() * moveSpeed;
 			t = fmin(t, 1.0f);
-			Player1.position = Vector3Lerp(Player1.position, Player1.targetPosition, t);
-			Player1.collider.min = (Vector3){Player1.position.x - 1.0f, Player1.position.y - 1.0f, Player1.position.z - 1.0f};
-			Player1.collider.max = (Vector3){Player1.position.x + 1.0f, Player1.position.y + 1.0f, Player1.position.z + 1.0f};
+			currentlySelected->position = Vector3Lerp(currentlySelected->position, currentlySelected->targetPosition, t);
+			currentlySelected->collider.min = (Vector3){currentlySelected->position.x - 1.0f, currentlySelected->position.y - 1.0f, currentlySelected->position.z - 1.0f};
+			currentlySelected->collider.max = (Vector3){currentlySelected->position.x + 1.0f, currentlySelected->position.y + 1.0f, currentlySelected->position.z + 1.0f};
 
 			if (t >= 1.0f){
-				Player1.isMoving = false;
-				Player1.position = Player1.targetPosition;
+				currentlySelected->isMoving = false;
+				currentlySelected->position = currentlySelected->targetPosition;
+				}
 			}
-
 		}
+		//ADD TAB KEY TO CYCLE THROUGH PLAYER CHARACTERS
 		if (IsKeyDown(KEY_W)){
 			Vector3 flatForward = Vector3Normalize((Vector3){camera.target.x - camera.position.x, 0.0f, camera.target.z - camera.position.z});
 			cameraTarget = Vector3Add(cameraTarget, Vector3Scale(flatForward, panSpeed * 10.0f * GetFrameTime()));
