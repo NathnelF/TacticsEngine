@@ -1,35 +1,36 @@
+
 #include "Grid.hpp"
 #include <stdexcept>
+#include <queue>
+#include <set>
+#include <map>
+#include <iostream>
 
 Grid::Grid(int gridWidth, int gridHeight):
-	tiles(gridWidth, std::vector<Tile>(gridHeight))
+	tiles(gridHeight, std::vector<Tile>(gridWidth))
 {
-	for (int x = 0; x < gridWidth; x++){
-		for (int y = 0; y < gridHeight; y++){
-			tiles[x][y].height = 0.0f; //keep flat for now
-			tiles[x][y].gridPosition = (Vector2){(float)x, (float)y};
-			tiles[x][y].worldPosition = (Vector3){
-				(float)x * TILE_SIZE - TILE_SIZE / 2,
-				0.0f,
-				(float)y * TILE_SIZE - TILE_SIZE / 2
+	for (int row = 0; row < gridHeight; row++){
+		for (int col = 0; col < gridWidth; col++){
+			tiles[row][col].height = 0.0f; //keep flat for now
+			tiles[row][col].gridPosition = (Vector2){(float)col, (float)row};
+			tiles[row][col].worldPosition = (Vector3){
+				(float)col * TILE_SIZE - TILE_SIZE / 2,
+				1.2f,
+				(float)row * TILE_SIZE - TILE_SIZE / 2
 			};
-			tiles[x][y].traversable = true;
-			tiles[x][y].hasUnit = false;
-			tiles[x][y].color = tileDefaultColor;
-			tiles[x][y].bounds = {
-				(Vector3){(float)x * TILE_SIZE - TILE_SIZE, 0.0f, (float)y * TILE_SIZE - TILE_SIZE},
-				(Vector3){(float)x * TILE_SIZE, 0.0f, (float)y * TILE_SIZE},
+			tiles[row][col].traversable = true;
+			tiles[row][col].hasUnit = false;
+			tiles[row][col].color = tileDefaultColor;
+			tiles[row][col].bounds = {
+				(Vector3){(float)col * TILE_SIZE - TILE_SIZE, 0.0f, (float)row * TILE_SIZE - TILE_SIZE},
+				(Vector3){(float)col * TILE_SIZE, 0.0f, (float)row * TILE_SIZE},
 			};	
 		}
 	}
 }
 
 bool Grid::isValid(int x, int y){
-	if (x >= GRID_WIDTH || y >= GRID_HEIGHT){
-		return false;
-	} else {
-		return true;
-	}
+	return x >= 0 && x < GRID_WIDTH && y >= 0 && y < GRID_HEIGHT;
 }
 
 Tile& Grid::getTile(int x, int y){
@@ -39,7 +40,16 @@ Tile& Grid::getTile(int x, int y){
                                 std::to_string(x) + ", " + std::to_string(y) +
                                 ") are out of bounds.");
      	}
-	return tiles[x][y];
+	return tiles[y][x];
+}
+
+Tile* Grid::getTilePointer(int x, int y){
+	if (!isValid(x,y)){
+		throw std::out_of_range("Grid::getTile() coordinates (" +
+                                std::to_string(x) + ", " + std::to_string(y) +
+                                ") are out of bounds.");
+	}
+	return &tiles[y][x];
 }
 
 std::vector<Tile> Grid::getGridNeighbors(Tile t){
@@ -56,11 +66,61 @@ std::vector<Tile> Grid::getGridNeighbors(Tile t){
 
 }
 
+std::list<Tile> Grid::getPath(Tile start, Tile end){
+	std::queue<Tile> queue;
+	std::set<Tile> visited;
+	std::map<Tile, Tile> parentMap;
+	std::list<Tile> path;
+	bool pathFound = false;
+
+	if (end.hasUnit || !end.traversable){
+		std::cout << "Tile is not available!" << std::endl;
+		return path;
+	}
+
+	queue.push(start);
+	visited.insert(start);
+	while (!queue.empty()){
+		Tile current = queue.front();
+		queue.pop();
+
+		if (current.gridPosition == end.gridPosition){
+			pathFound = true;
+			break;
+		}
+
+		std::vector<Tile> neighbors = getGridNeighbors(current);
+		for (Tile neighbor : neighbors){
+			if (visited.find(neighbor) == visited.end()){
+				queue.push(neighbor);
+				visited.insert(neighbor);
+				parentMap[neighbor] = current;
+			}
+		}
+	}
+	if (pathFound == false){
+		std::cout << "No path to target\n";
+		return path;
+	}
+	else {
+		Tile current = end;
+		while (current.gridPosition != start.gridPosition){
+			path.push_front(current);
+			current = parentMap[current];
+		}
+		path.push_front(start);
+		std::cout << "Found path to target\n";
+		return path;
+	}
+	
+}  
+
 void Grid::RenderGrid(){
-	  for (int x = 0; x < GRID_WIDTH; x++ ){
-		for (int y = 0; y < GRID_HEIGHT; y++){
-			Tile& currentTile = getTile(x,y);
+	  for (int row = 0; row < GRID_HEIGHT; row++ ){
+		for (int col = 0; col < GRID_WIDTH; col++){
+			Tile& currentTile = getTile(row, col);
 			currentTile.DrawTile();
 		}
 	}
 }
+

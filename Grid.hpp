@@ -1,5 +1,10 @@
+
+#ifndef GRID_H
+#define GRID_H
+
 #include "Tile.hpp"
 #include <raylib.h>
+#include <list>
 
 
 class Grid{
@@ -14,8 +19,17 @@ public:
 
 	Tile& getTile(int x, int y);
 
+	Tile* getTilePointer(int x, int y);
+
+	Tile* getTileFromWorld(Vector3 worldPos);
+
 	std::vector<Tile> getGridNeighbors(Tile t);
+	std::list<Tile> getPath(Tile start, Tile end);
 
 	void RenderGrid();
 
 };
+
+#endif
+
+

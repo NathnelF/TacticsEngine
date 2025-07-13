@@ -19,6 +19,7 @@ public:
 
 	Tile(int x, int y);
 	Tile();
+	bool operator<(const Tile& other) const;
 	void DrawTile();
 };
 #endif

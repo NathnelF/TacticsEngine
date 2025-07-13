@@ -1,4 +1,8 @@
+
 #include "Entity.hpp"
+#include "Tile.hpp"
+#include "Grid.hpp"
+#include <cfloat>
 #include <raylib.h>
 #include <raymath.h>
 #include <iostream>
@@ -10,72 +14,94 @@ std::ostream& operator<<(std::ostream& os, const Vector3& v) {
 
 
 // constructor 
-	GameEntity::GameEntity(Vector3 initialPosition, Color initialColor){
-		size = 2.0f;
-		t = 0.0f;
-		mesh = GenMeshCube(size, size, size);
-		model = LoadModelFromMesh(mesh);
-		collider = GetMeshBoundingBox(mesh);
-		selected = false;
-		isMoving = false;
-		position = initialPosition;
-		currentColor = initialColor;
-		defaultColor = initialColor;
-		collider.min = (Vector3){ position.x - size / 2.0f,
-		     position.y - size / 2.0f,
-		     position.z - size / 2.0f };
-		collider.max = (Vector3){ position.x + size / 2.0f,
-		     position.y + size / 2.0f,
-		     position.z + size / 2.0f };
+GameEntity::GameEntity(Grid& grid, Vector3 initialPosition, Color initialColor, Tile* initialTile){
+	parentGrid = &grid;
+	size = 2.0f;
+	t = 0.0f;
+	mesh = GenMeshCube(size, size, size);
+	model = LoadModelFromMesh(mesh);
+	collider = GetMeshBoundingBox(mesh);
+	selected = false;
+	isMoving = false;
+	position = initialPosition;
+	currentColor = initialColor;
+	defaultColor = initialColor;
+	collider.min = (Vector3){ position.x - size / 2.0f,
+	     position.y - size / 2.0f,
+	     position.z - size / 2.0f };
+	collider.max = (Vector3){ position.x + size / 2.0f,
+	     position.y + size / 2.0f,
+	     position.z + size / 2.0f };
+	tile = initialTile;
+	tile->hasUnit = true;
 
 
+}
+// add destructor?
+GameEntity::~GameEntity() {
+	UnloadModel(model);
+}
+
+
+void GameEntity::SetPath(std::list<Tile> path){
+	if (!path.empty()){
+		currentPath = path;
+		pathIterator = currentPath.begin();
+		std::cout << "Found path, starting at (" << pathIterator->worldPosition.x << " , " << pathIterator->worldPosition.z << ")\n";
+		std::cout << "Path received. First tile gridPos: ("
+			  << pathIterator->gridPosition.x << ", "
+			  << pathIterator->gridPosition.y << ")\n";
+		isMoving = true;
 	}
-	// add destructor?
-	GameEntity::~GameEntity() {
-		UnloadModel(model);
-	}
-
-
-	void GameEntity::InitiateMove(Vector3 newTargetPosition){
-		if (!isMoving){
-			targetPosition = newTargetPosition;
-			std::cout << "aiming for: " << targetPosition << "from : " << position << std::endl;
-			t = 0.0f;
-			isMoving = true;
-		}
-	}
+}
 
 	//methods
-	void GameEntity::UpdateMove(float moveSpeed){
-		if (isMoving){
-			t += GetFrameTime() * moveSpeed;
-			t = fmin(t, 1.0f);
-			position = Vector3Lerp(position, targetPosition, t);
-			collider.min = (Vector3){position.x - 1.0f, position.y - 1.0f, position.z - 1.0f};
-			collider.max = (Vector3){position.x + 1.0f, position.y + 1.0f, position.z + 1.0f};
-			if (t >= 0.98f){
-				position = targetPosition;
-				isMoving = false;
-				collider.min = (Vector3){position.x - 1.0f, position.y - 1.0f, position.z - 1.0f};
-				collider.max = (Vector3){position.x + 1.0f, position.y + 1.0f, position.z + 1.0f};
-				std::cout << "Reached destination" << t << std::endl;
+void GameEntity::UpdateMove(float moveSpeed, float deltaTime){
+	if (currentPath.empty() || pathIterator == currentPath.end()){
+		return;
+	}
 
-			} else {
-				Vector3 diff = Vector3Subtract(targetPosition, position);
-				if (abs(diff.x) < 0.019 && abs(diff.y) < 0.019 && abs(diff.z) < 0.019){
-					position = targetPosition;
-					isMoving = false;
-					t = 0.0f;
-					collider.min = (Vector3){position.x - 1.0f, position.y - 1.0f, position.z - 1.0f};
-					collider.max = (Vector3){position.x + 1.0f, position.y + 1.0f, position.z + 1.0f};
-					std::cout << "Reached destination!: " << position << std::endl;
-				}
+	Tile destinationTile = *pathIterator;
+	std::cout << "Destination tile: (" << destinationTile.worldPosition.x << " , " << destinationTile.worldPosition.z << std::endl;
+	
+	Vector3 direction = Vector3Subtract(destinationTile.worldPosition, position);
+	// std::cout << "Current direction: " << direction << std::endl;
 
-			}
+	float travelDist = Vector3Length(direction); 
+	std::cout << "Current travel dist: " << travelDist << std::endl;
+
+	if (travelDist < 0.05f) {
+		//we are there
+		
+		position = destinationTile.worldPosition;
+		std::cout << "Attempting to update currentTile with gridPos: ("
+                  << destinationTile.gridPosition.x << " , "
+                  << destinationTile.gridPosition.y << ")\n";
+	
+		tile = parentGrid->getTilePointer(destinationTile.gridPosition.x, destinationTile.gridPosition.y);
+		pathIterator++;
+
+		if (pathIterator == currentPath.end()){
+			currentPath.clear();
+			std::cout << "Reached destination!\n";
+			isMoving = false;
 		}
-	}
 
-	void GameEntity::Draw(){
-		DrawModel(model, position, 1.0f, currentColor);
-		DrawBoundingBox(collider, GREEN);
 	}
+	else {
+		Vector3 normalizedDirection = Vector3Normalize(direction);
+		float moveRate = moveSpeed * deltaTime;
+		position = Vector3Add(position, Vector3Scale(normalizedDirection, moveRate));
+		// std::cout << "Position after moving: " << position << std::endl;
+
+	}
+	
+	collider.min = (Vector3){ position.x - size / 2.0f, position.y - size / 2.0f, position.z - size / 2.0f };
+	collider.max = (Vector3){ position.x + size / 2.0f, position.y + size / 2.0f, position.z + size / 2.0f };
+
+}
+void GameEntity::Draw(){
+	DrawModel(model, position, 1.0f, currentColor);
+	DrawBoundingBox(collider, GREEN);
+}
+

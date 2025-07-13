@@ -1,3 +1,4 @@
+
 #ifndef CONFIG_H
 #define CONFIG_H
 
@@ -10,3 +11,4 @@
 const Color tileDefaultColor = Fade(LIGHTGRAY, 0.50f);
 
 #endif
+

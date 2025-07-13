@@ -1,3 +1,4 @@
+
 #include "Entity.hpp"
 #include "Grid.hpp"
 #include "Tile.hpp"
@@ -27,9 +28,9 @@ int main() {
 
 	std::vector<std::unique_ptr<GameEntity>> AllEntities;
 	AllEntities.push_back(
-	std::make_unique<GameEntity>(Vector3{ grid.getTile(10,10).worldPosition.x, 1.0f, grid.getTile(10,10).worldPosition.z }, MAGENTA));
+	std::make_unique<GameEntity>(grid, Vector3{ grid.getTile(1,1).worldPosition.x, 1.2f, grid.getTile(1,1).worldPosition.z }, MAGENTA, grid.getTilePointer(1,1)));
 	AllEntities.push_back(
-	std::make_unique<GameEntity>(Vector3{ grid.getTile(10,11).worldPosition.x, 1.0f, grid.getTile(10,11).worldPosition.z }, BLUE));
+	std::make_unique<GameEntity>(grid, Vector3{ grid.getTile(1,0).worldPosition.x, 1.2f, grid.getTile(1,0).worldPosition.z }, BLUE, grid.getTilePointer(1,0)));
 	GameEntity *currentlySelected = nullptr;
 	std::unique_ptr<GameEntity>& firstEntityPtr = AllEntities.at(0);
 	Vector3 initialCameraPos = (Vector3){(float)firstEntityPtr->position.x, 1.0f, (float)firstEntityPtr->position.z};
@@ -49,15 +50,20 @@ int main() {
 	Vector3 cameraTarget = initialCameraPos;
 
 	float rotationSpeed = 0.2f;
-	float moveSpeed = .05f;
+	float moveSpeed = 10.0f;
 	float t = 0.0f;
 	float panSpeed = 3.0f;
 	float zoomSpeed = 2.0f;
 	float snapRotation = 4.0f;
 	SetTargetFPS(60);
 
+	float lastFrame = GetTime();
+
 	while (!WindowShouldClose()) {
 		// std::cout << camera.position.x << "\n";
+		float currentFrame = GetTime();
+		float deltaTime = currentFrame - lastFrame;
+		lastFrame = currentFrame;
 		
 		Ray mousePos = GetMouseRay(GetMousePosition(), camera);
 		Tile* hoveredTile = NULL;
@@ -106,18 +112,14 @@ int main() {
 			}
 		}
 		if (currentlySelected != nullptr) {
-			if (IsKeyDown(KEY_M) && hoveredTile != NULL) {
-				Vector3 newTarget = (Vector3){
-						hoveredTile->worldPosition.x,
-						1.0f,
-						hoveredTile->worldPosition.z
-					}; 
-				currentlySelected->InitiateMove(newTarget);
+			if (IsKeyPressed(KEY_M) && hoveredTile != NULL && currentlySelected != NULL) { 
+				std::list<Tile> path = grid.getPath(*currentlySelected->tile, *hoveredTile); 
+				currentlySelected->SetPath(path);
 			}
 		}
 		// Update position loop for each entity
 		for (const auto &entityPtr : AllEntities) {
-			entityPtr->UpdateMove(moveSpeed);
+			entityPtr->UpdateMove(moveSpeed, deltaTime);
 		}
 		// ADD TAB KEY TO CYCLE THROUGH PLAYER CHARACTERS
 
@@ -167,6 +169,9 @@ int main() {
 		if (IsKeyDown(KEY_E)) {
 			cameraYaw -= snapRotation;
 		}
+		if (IsKeyPressed(KEY_T) && currentlySelected != nullptr){
+			std::cout << "My current tile is (" << currentlySelected->tile->worldPosition.x << " , " << currentlySelected->tile->worldPosition.z << ")\n";
+		}
 
 		Vector3 newCameraOffset = {0};
 
@@ -194,3 +199,4 @@ int main() {
 	CloseWindow();
 	return 0;
 }
+
