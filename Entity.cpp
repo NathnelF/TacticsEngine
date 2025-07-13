@@ -19,7 +19,8 @@ std::ostream& operator<<(std::ostream& os, const Vector3& v) {
 		selected = false;
 		isMoving = false;
 		position = initialPosition;
-		color = initialColor;
+		currentColor = initialColor;
+		defaultColor = initialColor;
 		collider.min = (Vector3){ position.x - size / 2.0f,
 		     position.y - size / 2.0f,
 		     position.z - size / 2.0f };
@@ -75,6 +76,6 @@ std::ostream& operator<<(std::ostream& os, const Vector3& v) {
 	}
 
 	void GameEntity::Draw(){
-		DrawModel(model, position, 1.0f, color);
+		DrawModel(model, position, 1.0f, currentColor);
 		DrawBoundingBox(collider, GREEN);
 	}

@@ -9,7 +9,8 @@ public:
 	Vector3 position;
 	Vector3 targetPosition;
 	float t;
-	Color color;
+	Color currentColor;
+	Color defaultColor;
 	float size;
 	Mesh mesh;
 	Model model;
