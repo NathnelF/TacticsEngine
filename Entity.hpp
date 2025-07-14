@@ -14,7 +14,8 @@ public:
 	Vector3 position;
 	Vector3 targetPosition;
 	float t;
-	Tile* tile;
+	Tile* currentTile;
+	Tile* prevTile;
 	std::list<Tile> currentPath;
 	std::list<Tile>::iterator pathIterator;
 	Color currentColor;

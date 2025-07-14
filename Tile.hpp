@@ -4,8 +4,8 @@
 #include <raylib.h>
 #include <raymath.h>
 #include <vector>
-#include "config.hpp"
 
+class GameEntity;
 
 class Tile{
 public:
@@ -16,10 +16,13 @@ public:
 	bool traversable;
 	Color color;
 	BoundingBox bounds;
+	GameEntity* entity;
 
 	Tile(int x, int y);
 	Tile();
 	bool operator<(const Tile& other) const;
 	void DrawTile();
+	GameEntity* getEntity();
+	void addEntity(GameEntity* entity);
 };
 #endif

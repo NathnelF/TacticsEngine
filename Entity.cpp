@@ -32,8 +32,9 @@ GameEntity::GameEntity(Grid& grid, Vector3 initialPosition, Color initialColor, 
 	collider.max = (Vector3){ position.x + size / 2.0f,
 	     position.y + size / 2.0f,
 	     position.z + size / 2.0f };
-	tile = initialTile;
-	tile->hasUnit = true;
+	currentTile = initialTile;
+	currentTile->hasUnit = true;
+	prevTile = NULL;
 
 
 }
@@ -47,7 +48,6 @@ void GameEntity::SetPath(std::list<Tile> path){
 	if (!path.empty()){
 		currentPath = path;
 		pathIterator = currentPath.begin();
-		std::cout << "Found path, starting at (" << pathIterator->worldPosition.x << " , " << pathIterator->worldPosition.z << ")\n";
 		std::cout << "Path received. First tile gridPos: ("
 			  << pathIterator->gridPosition.x << ", "
 			  << pathIterator->gridPosition.y << ")\n";
@@ -62,13 +62,13 @@ void GameEntity::UpdateMove(float moveSpeed, float deltaTime){
 	}
 
 	Tile destinationTile = *pathIterator;
-	std::cout << "Destination tile: (" << destinationTile.worldPosition.x << " , " << destinationTile.worldPosition.z << std::endl;
+	// std::cout << "Destination tile: (" << destinationTile.worldPosition.x << " , " << destinationTile.worldPosition.z << std::endl;
 	
 	Vector3 direction = Vector3Subtract(destinationTile.worldPosition, position);
 	// std::cout << "Current direction: " << direction << std::endl;
 
 	float travelDist = Vector3Length(direction); 
-	std::cout << "Current travel dist: " << travelDist << std::endl;
+	// std::cout << "Current travel dist: " << travelDist << std::endl;
 
 	if (travelDist < 0.05f) {
 		//we are there
@@ -77,8 +77,11 @@ void GameEntity::UpdateMove(float moveSpeed, float deltaTime){
 		std::cout << "Attempting to update currentTile with gridPos: ("
                   << destinationTile.gridPosition.x << " , "
                   << destinationTile.gridPosition.y << ")\n";
-	
-		tile = parentGrid->getTilePointer(destinationTile.gridPosition.x, destinationTile.gridPosition.y);
+
+		prevTile = currentTile;
+		currentTile = parentGrid->getTilePointer(destinationTile.gridPosition.x, destinationTile.gridPosition.y);
+		prevTile->hasUnit = false;
+		currentTile->hasUnit = true;
 		pathIterator++;
 
 		if (pathIterator == currentPath.end()){

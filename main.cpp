@@ -32,6 +32,9 @@ int main() {
 	AllEntities.push_back(
 	std::make_unique<GameEntity>(grid, Vector3{ grid.getTile(1,0).worldPosition.x, 1.2f, grid.getTile(1,0).worldPosition.z }, BLUE, grid.getTilePointer(1,0)));
 	GameEntity *currentlySelected = nullptr;
+	for (const auto& ent : AllEntities){
+		ent->currentTile->addEntity(ent.get());
+	}
 	std::unique_ptr<GameEntity>& firstEntityPtr = AllEntities.at(0);
 	Vector3 initialCameraPos = (Vector3){(float)firstEntityPtr->position.x, 1.0f, (float)firstEntityPtr->position.z};
 
@@ -93,28 +96,46 @@ int main() {
 		}
 
 		previouslyHoveredTile = hoveredTile;
-		if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) {
-			Ray mouseRay = GetMouseRay(GetMousePosition(), camera);
-			RayCollision collision;
-			if (currentlySelected != nullptr) {
-				currentlySelected->currentColor = currentlySelected->defaultColor;
-			}
-			for (const auto &entityPtr : AllEntities) {
-				// go through each selectable to check if there is a collision.
-				collision = GetRayCollisionBox(mouseRay, entityPtr->collider);
-				if (collision.hit) {
-					currentlySelected = entityPtr.get();
-					entityPtr->currentColor = BLACK;
-					break;
-				} else {
-					currentlySelected = nullptr;
+		if (IsMouseButtonDown(MOUSE_LEFT_BUTTON && hoveredTile != NULL)) {
+			// Ray mouseRay = GetMouseRay(GetMousePosition(), camera);
+			// RayCollision collision;
+			// if (currentlySelected != nullptr) {
+			// 	currentlySelected->currentColor = currentlySelected->defaultColor;
+			// }
+			// for (const auto &entityPtr : AllEntities) {
+			// 	// go through each selectable to check if there is a collision.
+			// 	collision = GetRayCollisionBox(mouseRay, entityPtr->collider);
+			// 	if (collision.hit) {
+			// 		currentlySelected = entityPtr.get();
+			// 		entityPtr->currentColor = BLACK;
+			// 		break;
+			// 	} else {
+			// 		currentlySelected = nullptr;
+			// 	}
+			// }
+			if (hoveredTile->getEntity() != nullptr){
+				if (currentlySelected != nullptr){
+					currentlySelected->currentColor = currentlySelected->defaultColor;
 				}
+				currentlySelected = hoveredTile->getEntity();
+				currentlySelected -> currentColor = BLACK;
+			} else {
+				if (currentlySelected != nullptr){
+					currentlySelected->currentColor = currentlySelected->defaultColor;
+					currentlySelected = nullptr;
+				}	
+				currentlySelected = nullptr;
 			}
 		}
 		if (currentlySelected != nullptr) {
 			if (IsKeyPressed(KEY_M) && hoveredTile != NULL && currentlySelected != NULL) { 
-				std::list<Tile> path = grid.getPath(*currentlySelected->tile, *hoveredTile); 
+				std::list<Tile> path = grid.getPath(*currentlySelected->currentTile, *hoveredTile);
+				if (!path.empty()){
 				currentlySelected->SetPath(path);
+				currentlySelected->currentTile->entity = NULL;
+				hoveredTile->entity=currentlySelected;
+				}
+			
 			}
 		}
 		// Update position loop for each entity
@@ -170,7 +191,7 @@ int main() {
 			cameraYaw -= snapRotation;
 		}
 		if (IsKeyPressed(KEY_T) && currentlySelected != nullptr){
-			std::cout << "My current tile is (" << currentlySelected->tile->worldPosition.x << " , " << currentlySelected->tile->worldPosition.z << ")\n";
+			std::cout << "My current tile is (" << currentlySelected->currentTile->gridPosition.x << " , " << currentlySelected->currentTile->gridPosition.y << ")\n";
 		}
 
 		Vector3 newCameraOffset = {0};

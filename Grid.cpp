@@ -53,13 +53,16 @@ Tile* Grid::getTilePointer(int x, int y){
 }
 
 std::vector<Tile> Grid::getGridNeighbors(Tile t){
-	Vector2 operations[4] = { (Vector2){0, 1}, (Vector2){1, 0}, (Vector2){0, -1}, (Vector2){-1, 0}}; //for diags (Vector2){1,1} (Vector2){1, -1} (Vector2){-1, 1} (Vector2){-1,-1}
+	Vector2 operations[8] = { (Vector2){0, 1}, (Vector2){1, 0}, (Vector2){0, -1}, (Vector2){-1, 0}, (Vector2){1,1}, (Vector2){1, -1}, (Vector2){-1, 1}, (Vector2){-1,-1}}; //for diags 
 	Vector2 gridPos = t.gridPosition;
 	std::vector<Tile> neighbors;
-	for (int i = 0; i < 4; i++){
+	for (int i = 0; i < 8; i++){
 		Vector2 neighborPos = Vector2Add(gridPos, operations[i]);
       		if (isValid(neighborPos.x, neighborPos.y)){
-      			neighbors.push_back(getTile(neighborPos.x, neighborPos.y));	
+			if (getTile(neighborPos.x, neighborPos.y).traversable && !getTile(neighborPos.x, neighborPos.y).hasUnit){
+				neighbors.push_back(getTile(neighborPos.x, neighborPos.y));	
+			}
+      			
       		}
 	}
 	return neighbors;

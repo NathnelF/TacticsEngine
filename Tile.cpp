@@ -1,5 +1,6 @@
 #include "Tile.hpp"
 #include <raylib.h>
+#include "config.hpp"
 
 Tile::Tile(){
 		height = 0.0f; //keep flat for now
@@ -16,6 +17,7 @@ Tile::Tile(){
 			(Vector3){worldPosition.x - TILE_SIZE / 2.0f, worldPosition.y - 0.1f / 2.0f, worldPosition.z - TILE_SIZE / 2.0f},
 			(Vector3){worldPosition.x + TILE_SIZE / 2.0f, worldPosition.y + 0.1f / 2.0f, worldPosition.z + TILE_SIZE / 2.0f}
 		};
+		entity = NULL;
 }
 
 Tile::Tile(int x, int y){
@@ -40,6 +42,21 @@ bool Tile::operator<(const Tile& other) const {
 		return gridPosition.x < other.gridPosition.x;
 	}
 	return gridPosition.y < other.gridPosition.y; 
+}
+
+GameEntity* Tile::getEntity(){
+	if (entity != NULL){
+		return entity;
+	}
+	else {
+		return nullptr;
+	}
+}
+
+void Tile::addEntity(GameEntity* newEntity){
+	if (newEntity != NULL && newEntity != nullptr){ //should we check that there are no entities on this Tile?
+		entity = newEntity;
+	}
 }
 
 

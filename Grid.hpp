@@ -5,6 +5,7 @@
 #include "Tile.hpp"
 #include <raylib.h>
 #include <list>
+#include "config.hpp"
 
 
 class Grid{
