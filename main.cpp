@@ -18,12 +18,11 @@ bool operator<(const Vector2& a, const Vector2& b) {
     return a.y < b.y;
 }
 
-Tile* previouslyHoveredTile = NULL;
+
 
 int main() {
-	Grid grid(GRID_WIDTH, GRID_HEIGHT);
-
 	InitWindow(800, 600, "Window");
+	Grid grid(GRID_WIDTH, GRID_HEIGHT);
 
 	Vector2 unit1_start = (Vector2){10, 10};
 	Vector2 unit2_start = (Vector2){10, 11};
@@ -34,13 +33,18 @@ int main() {
 	std::make_unique<GameEntity>(grid, Vector3{ grid.getTile(unit1_start.x, unit1_start.y).worldPosition.x, 1.2f, grid.getTile(unit1_start.x, unit1_start.y).worldPosition.z }, MAGENTA, grid.getTilePointer(unit1_start.x,unit1_start.y)));
 	AllEntities.push_back(
 	std::make_unique<GameEntity>(grid, Vector3{ grid.getTile(unit2_start.x,unit2_start.y).worldPosition.x, 1.2f, grid.getTile(unit2_start.x,unit2_start.y).worldPosition.z }, BLUE, grid.getTilePointer(unit2_start.x, unit2_start.y)));
-	AllEntities.push_back(std::make_unique<GameEntity>(grid, Vector3{ grid.getTile(unit3_start.x,unit3_start.y).worldPosition.x, 1.2f, grid.getTile(unit3_start.x,unit3_start.y).worldPosition.z }, GOLD, grid.getTilePointer(unit3_start.x, unit3_start.y)));
+	AllEntities.push_back(std::make_unique<GameEntity>(grid, Vector3{ grid.getTile(unit3_start.x,unit3_start.y).worldPosition.x, 1.2f, grid.getTile(unit3_start.x,unit3_start.y).worldPosition.z }, PURPLE, grid.getTilePointer(unit3_start.x, unit3_start.y)));
 	GameEntity *currentlySelected = nullptr;
 	for (const auto& ent : AllEntities){
 		ent->currentTile->addEntity(ent.get());
 	}
 	std::unique_ptr<GameEntity>& firstEntityPtr = AllEntities.at(0);
 	Vector3 initialCameraPos = (Vector3){(float)firstEntityPtr->position.x, 1.0f, (float)firstEntityPtr->position.z};
+	Tile* previouslyHoveredTile = NULL;
+
+	std::list<Tile> pathPreview;
+	bool showPath;
+
 
 	int numPlayers = AllEntities.size();
 	int entityIndex = 0;
@@ -99,26 +103,18 @@ int main() {
 			}
 		if (hoveredTile != NULL){
 			hoveredTile->color = YELLOW;
+			if (currentlySelected != nullptr && !currentlySelected->isMoving){
+				pathPreview = grid.getPath(*currentlySelected->currentTile, *hoveredTile);
+				showPath = !pathPreview.empty();
+			} else {
+				showPath = false; 
+			}
+		} else {
+			showPath = false;
 		}
 
 		previouslyHoveredTile = hoveredTile;
 		if (IsMouseButtonDown(MOUSE_LEFT_BUTTON && hoveredTile != NULL)) {
-			// Ray mouseRay = GetMouseRay(GetMousePosition(), camera);
-			// RayCollision collision;
-			// if (currentlySelected != nullptr) {
-			// 	currentlySelected->currentColor = currentlySelected->defaultColor;
-			// }
-			// for (const auto &entityPtr : AllEntities) {
-			// 	// go through each selectable to check if there is a collision.
-			// 	collision = GetRayCollisionBox(mouseRay, entityPtr->collider);
-			// 	if (collision.hit) {
-			// 		currentlySelected = entityPtr.get();
-			// 		entityPtr->currentColor = BLACK;
-			// 		break;
-			// 	} else {
-			// 		currentlySelected = nullptr;
-			// 	}
-			// }
 			if (hoveredTile->getEntity() != nullptr){
 				if (currentlySelected != nullptr){
 					currentlySelected->currentColor = currentlySelected->defaultColor;
@@ -140,6 +136,7 @@ int main() {
 				currentlySelected->SetPath(path);
 				currentlySelected->currentTile->entity = NULL;
 				hoveredTile->entity=currentlySelected;
+				hoveredTile->hasUnit = true;
 				}
 			
 			}
@@ -165,7 +162,6 @@ int main() {
 				currentlySelected = AllEntities.at(entityIndex).get();
 				currentlySelected->currentColor = BLACK;
 			}
-
 		
 		}
 
@@ -237,6 +233,9 @@ int main() {
 				grid.RenderGrid();
 				for (const auto &entityPtr : AllEntities) {
 					entityPtr->Draw(); // Each entity draws itself
+				}
+				if (showPath){
+					grid.RenderPath(pathPreview, PINK);
 				}
 
 			EndMode3D();

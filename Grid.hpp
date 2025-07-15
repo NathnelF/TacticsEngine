@@ -29,6 +29,8 @@ public:
 
 	void RenderGrid();
 
+	void RenderPath(const std::list<Tile>&, Color color);
+
 };
 
 #endif

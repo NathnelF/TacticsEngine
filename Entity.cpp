@@ -2,7 +2,6 @@
 #include "Entity.hpp"
 #include "Tile.hpp"
 #include "Grid.hpp"
-#include <cfloat>
 #include <raylib.h>
 #include <raymath.h>
 #include <iostream>
@@ -48,9 +47,9 @@ void GameEntity::SetPath(std::list<Tile> path){
 	if (!path.empty()){
 		currentPath = path;
 		pathIterator = currentPath.begin();
-		std::cout << "Path received. First tile gridPos: ("
-			  << pathIterator->gridPosition.x << ", "
-			  << pathIterator->gridPosition.y << ")\n";
+		// std::cout << "Path received. First tile gridPos: ("
+			  // << pathIterator->gridPosition.x << ", "
+			  // << pathIterator->gridPosition.y << ")\n";
 		isMoving = true;
 	}
 }
@@ -74,9 +73,9 @@ void GameEntity::UpdateMove(float moveSpeed, float deltaTime){
 		//we are there
 		
 		position = destinationTile.worldPosition;
-		std::cout << "Attempting to update currentTile with gridPos: ("
-                  << destinationTile.gridPosition.x << " , "
-                  << destinationTile.gridPosition.y << ")\n";
+		// std::cout << "Attempting to update currentTile with gridPos: ("
+		//                 << destinationTile.gridPosition.x << " , "
+		//                 << destinationTile.gridPosition.y << ")\n";
 
 		prevTile = currentTile;
 		currentTile = parentGrid->getTilePointer(destinationTile.gridPosition.x, destinationTile.gridPosition.y);
@@ -86,7 +85,7 @@ void GameEntity::UpdateMove(float moveSpeed, float deltaTime){
 
 		if (pathIterator == currentPath.end()){
 			currentPath.clear();
-			std::cout << "Reached destination!\n";
+			// std::cout << "Reached destination!\n";
 			isMoving = false;
 		}
 

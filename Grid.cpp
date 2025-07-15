@@ -77,7 +77,7 @@ std::list<Tile> Grid::getPath(Tile start, Tile end){
 	bool pathFound = false;
 
 	if (end.hasUnit || !end.traversable){
-		std::cout << "Tile is not available!" << std::endl;
+		// std::cout << "Tile is not available!" << std::endl;
 		return path;
 	}
 
@@ -102,7 +102,7 @@ std::list<Tile> Grid::getPath(Tile start, Tile end){
 		}
 	}
 	if (pathFound == false){
-		std::cout << "No path to target\n";
+		// std::cout << "No path to target\n";
 		return path;
 	}
 	else {
@@ -112,12 +112,11 @@ std::list<Tile> Grid::getPath(Tile start, Tile end){
 			current = parentMap[current];
 		}
 		path.push_front(start);
-		std::cout << "Found path to target\n";
+		// std::cout << "Found path to target\n";
 		return path;
 	}
 	
 }  
-
 void Grid::RenderGrid(){
 	  for (int row = 0; row < GRID_HEIGHT; row++ ){
 		for (int col = 0; col < GRID_WIDTH; col++){
@@ -127,3 +126,36 @@ void Grid::RenderGrid(){
 	}
 }
 
+void Grid::RenderPath(const std::list<Tile>& path, Color color){
+	if (path.size() < 2){
+		return;
+	}
+
+	auto it = path.begin();
+	auto next = it;
+	++next;
+
+	while(next != path.end()){
+		Vector3 start = it->worldPosition;
+		start.y += 0.01f;
+		Vector3 end = next->worldPosition;
+		end.y += 0.01f;
+		
+		auto temp = next;
+		++temp;
+		if (temp == path.end()){
+			Vector3 direction = Vector3Normalize(Vector3Subtract(end, start));
+			end = Vector3Subtract(end, Vector3Scale(direction, TILE_SIZE / 2.0f));
+		}
+
+		DrawLine3D(start, end, color);
+		++it;
+		++next;
+		}
+
+	// for (; it != path.end(); it++){
+	// 	Vector3 pathPos = it->worldPosition;
+	// 	pathPos.y += 0.01f;
+	// 	DrawCube(pathPos, TILE_SIZE/2, TILE_SIZE/2, TILE_SIZE/2, color);
+	// }
+}
