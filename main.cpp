@@ -25,12 +25,16 @@ int main() {
 
 	InitWindow(800, 600, "Window");
 
+	Vector2 unit1_start = (Vector2){10, 10};
+	Vector2 unit2_start = (Vector2){10, 11};
+	Vector2 unit3_start = (Vector2){10, 12};
 
 	std::vector<std::unique_ptr<GameEntity>> AllEntities;
 	AllEntities.push_back(
-	std::make_unique<GameEntity>(grid, Vector3{ grid.getTile(1,1).worldPosition.x, 1.2f, grid.getTile(1,1).worldPosition.z }, MAGENTA, grid.getTilePointer(1,1)));
+	std::make_unique<GameEntity>(grid, Vector3{ grid.getTile(unit1_start.x, unit1_start.y).worldPosition.x, 1.2f, grid.getTile(unit1_start.x, unit1_start.y).worldPosition.z }, MAGENTA, grid.getTilePointer(unit1_start.x,unit1_start.y)));
 	AllEntities.push_back(
-	std::make_unique<GameEntity>(grid, Vector3{ grid.getTile(1,0).worldPosition.x, 1.2f, grid.getTile(1,0).worldPosition.z }, BLUE, grid.getTilePointer(1,0)));
+	std::make_unique<GameEntity>(grid, Vector3{ grid.getTile(unit2_start.x,unit2_start.y).worldPosition.x, 1.2f, grid.getTile(unit2_start.x,unit2_start.y).worldPosition.z }, BLUE, grid.getTilePointer(unit2_start.x, unit2_start.y)));
+	AllEntities.push_back(std::make_unique<GameEntity>(grid, Vector3{ grid.getTile(unit3_start.x,unit3_start.y).worldPosition.x, 1.2f, grid.getTile(unit3_start.x,unit3_start.y).worldPosition.z }, GOLD, grid.getTilePointer(unit3_start.x, unit3_start.y)));
 	GameEntity *currentlySelected = nullptr;
 	for (const auto& ent : AllEntities){
 		ent->currentTile->addEntity(ent.get());
@@ -38,7 +42,9 @@ int main() {
 	std::unique_ptr<GameEntity>& firstEntityPtr = AllEntities.at(0);
 	Vector3 initialCameraPos = (Vector3){(float)firstEntityPtr->position.x, 1.0f, (float)firstEntityPtr->position.z};
 
-		
+	int numPlayers = AllEntities.size();
+	int entityIndex = 0;
+
 	Camera3D camera = {0};
 	camera.position = (Vector3){10.0f, 50.0f, 10.f};
 	camera.target = initialCameraPos; 
@@ -143,6 +149,25 @@ int main() {
 			entityPtr->UpdateMove(moveSpeed, deltaTime);
 		}
 		// ADD TAB KEY TO CYCLE THROUGH PLAYER CHARACTERS
+		if (IsKeyPressed(KEY_TAB)){
+			// std::cout << "Current entity index: " << entityIndex << " out of " << numPlayers << " entities.\n";
+			if (currentlySelected != nullptr){
+				currentlySelected->currentColor = currentlySelected->defaultColor;
+			}
+			if (entityIndex == numPlayers-1){
+				entityIndex = 0;
+				// std::cout << "Entity index after change " << entityIndex << std::endl;
+				currentlySelected = AllEntities.at(entityIndex).get();
+				currentlySelected->currentColor = BLACK;
+			} else {
+				entityIndex++;
+				// std::cout << "Entity index after change " << entityIndex << std::endl;
+				currentlySelected = AllEntities.at(entityIndex).get();
+				currentlySelected->currentColor = BLACK;
+			}
+
+		
+		}
 
 
 		if (IsKeyDown(KEY_W)) {
