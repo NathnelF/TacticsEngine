@@ -4,7 +4,8 @@ Grid:
 - Entity cannot pass each through each other when moving. #DONE
 
 - Draw movement line to final position #DONE
-- Allow for destination points to be added
+- Allow for destination points to be added #DONE
+- Add visual indicators for destination points.
 
 Tile:
 - Select enities from tile collider. #DONE

@@ -117,6 +117,30 @@ std::list<Tile> Grid::getPath(Tile start, Tile end){
 	}
 	
 }  
+
+std::list<Tile> Grid::getWaypointPath(Tile start, const std::vector<Tile>& waypoints){
+	std::list<Tile> path;
+	if (waypoints.empty()) return path;
+
+	for (const auto& point : waypoints){
+		std::list<Tile> curPath = getPath(start, point);
+		std::cout << "checking path\n";
+
+		if (curPath.empty()){
+			return path;
+		}
+
+		if (path.empty()){
+			path.insert(path.end(), curPath.begin(), curPath.end());
+		} else {
+			path.insert(path.end(), std::next(curPath.begin()), curPath.end());
+		}
+		start = point;
+	}
+	std::cout << "found path through waypoints\n";
+	return path;
+}
+
 void Grid::RenderGrid(){
 	  for (int row = 0; row < GRID_HEIGHT; row++ ){
 		for (int col = 0; col < GRID_WIDTH; col++){
@@ -137,9 +161,11 @@ void Grid::RenderPath(const std::list<Tile>& path, Color color){
 
 	while(next != path.end()){
 		Vector3 start = it->worldPosition;
-		start.y += 0.01f;
+		// std::cout << start << std::endl;
+		start.y -= 1.01f;
 		Vector3 end = next->worldPosition;
-		end.y += 0.01f;
+		// std::cout << end << std::endl;
+		end.y -= 1.01f;
 		
 		auto temp = next;
 		++temp;
@@ -152,10 +178,4 @@ void Grid::RenderPath(const std::list<Tile>& path, Color color){
 		++it;
 		++next;
 		}
-
-	// for (; it != path.end(); it++){
-	// 	Vector3 pathPos = it->worldPosition;
-	// 	pathPos.y += 0.01f;
-	// 	DrawCube(pathPos, TILE_SIZE/2, TILE_SIZE/2, TILE_SIZE/2, color);
-	// }
 }

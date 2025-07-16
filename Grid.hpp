@@ -6,6 +6,7 @@
 #include <raylib.h>
 #include <list>
 #include "config.hpp"
+#include "utils.hpp"
 
 
 class Grid{
@@ -26,11 +27,11 @@ public:
 
 	std::vector<Tile> getGridNeighbors(Tile t);
 	std::list<Tile> getPath(Tile start, Tile end);
+	std::list<Tile> getWaypointPath(Tile start, const std::vector<Tile>& waypoints);
 
 	void RenderGrid();
 
 	void RenderPath(const std::list<Tile>&, Color color);
-
 };
 
 #endif

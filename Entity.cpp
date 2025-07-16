@@ -5,12 +5,7 @@
 #include <raylib.h>
 #include <raymath.h>
 #include <iostream>
-
-std::ostream& operator<<(std::ostream& os, const Vector3& v) {
-    os << "(" << v.x << ", " << v.y << ", " << v.z << ")";
-    return os;
-}
-
+#include "utils.hpp"
 
 // constructor 
 GameEntity::GameEntity(Grid& grid, Vector3 initialPosition, Color initialColor, Tile* initialTile){

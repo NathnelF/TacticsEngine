@@ -45,6 +45,7 @@ int main() {
 	std::list<Tile> pathPreview;
 	bool showPath;
 
+	std::vector<Tile> waypoints;
 
 	int numPlayers = AllEntities.size();
 	int entityIndex = 0;
@@ -80,6 +81,8 @@ int main() {
 		
 		Ray mousePos = GetMouseRay(GetMousePosition(), camera);
 		Tile* hoveredTile = NULL;
+		Tile* currentWaypoint = NULL;
+	
 		
 		if (previouslyHoveredTile != NULL){
 				previouslyHoveredTile->color = tileDefaultColor;
@@ -130,7 +133,7 @@ int main() {
 			}
 		}
 		if (currentlySelected != nullptr) {
-			if (IsKeyPressed(KEY_M) && hoveredTile != NULL && currentlySelected != NULL) { 
+			if (IsKeyPressed(KEY_M) && hoveredTile != NULL && !IsKeyDown(KEY_LEFT_CONTROL)) { 
 				std::list<Tile> path = grid.getPath(*currentlySelected->currentTile, *hoveredTile);
 				if (!path.empty()){
 				currentlySelected->SetPath(path);
@@ -139,6 +142,29 @@ int main() {
 				hoveredTile->hasUnit = true;
 				}
 			
+			}
+			if (IsKeyPressed(KEY_M) && hoveredTile != NULL && IsKeyDown(KEY_LEFT_CONTROL)){
+				//this is for waypoint movement.
+				//We should store the path from each waypoint to the next, and then initate and complete movement for each?
+				//A path of paths perhaps?
+				//Oh yeah we should get each path and add them together and when you then press the move key it will initiate a move for that conjoined path.
+			}
+			if (IsKeyPressed(KEY_O) && hoveredTile != NULL){
+				if (!hoveredTile->hasUnit){
+					currentWaypoint = hoveredTile;
+					std::cout << "Set current waypoint!\n";
+					waypoints.push_back(*currentWaypoint);
+
+				}
+						}
+			if (IsKeyPressed(KEY_P) && !waypoints.empty()){
+				std::list<Tile> path = grid.getWaypointPath(*currentlySelected->currentTile, waypoints);
+				if (!path.empty()){
+					currentlySelected->SetPath(path);
+					currentlySelected->currentTile->entity = NULL;
+					//set final tile in path to has unit and assign it's entity.
+					waypoints.clear();
+				}
 			}
 		}
 		// Update position loop for each entity
