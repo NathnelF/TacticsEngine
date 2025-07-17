@@ -30,10 +30,10 @@ int main() {
 
 	std::vector<std::unique_ptr<GameEntity>> AllEntities;
 	AllEntities.push_back(
-	std::make_unique<GameEntity>(grid, Vector3{ grid.getTile(unit1_start.x, unit1_start.y).worldPosition.x, 1.2f, grid.getTile(unit1_start.x, unit1_start.y).worldPosition.z }, MAGENTA, grid.getTilePointer(unit1_start.x,unit1_start.y)));
+	std::make_unique<GameEntity>(grid, Vector3{ grid.getTile(unit1_start.x, unit1_start.y).worldPosition.x, 0.2f, grid.getTile(unit1_start.x, unit1_start.y).worldPosition.z }, MAGENTA, grid.getTilePointer(unit1_start.x,unit1_start.y), 7));
 	AllEntities.push_back(
-	std::make_unique<GameEntity>(grid, Vector3{ grid.getTile(unit2_start.x,unit2_start.y).worldPosition.x, 1.2f, grid.getTile(unit2_start.x,unit2_start.y).worldPosition.z }, BLUE, grid.getTilePointer(unit2_start.x, unit2_start.y)));
-	AllEntities.push_back(std::make_unique<GameEntity>(grid, Vector3{ grid.getTile(unit3_start.x,unit3_start.y).worldPosition.x, 1.2f, grid.getTile(unit3_start.x,unit3_start.y).worldPosition.z }, PURPLE, grid.getTilePointer(unit3_start.x, unit3_start.y)));
+	std::make_unique<GameEntity>(grid, Vector3{ grid.getTile(unit2_start.x,unit2_start.y).worldPosition.x, 0.2f, grid.getTile(unit2_start.x,unit2_start.y).worldPosition.z }, BLUE, grid.getTilePointer(unit2_start.x, unit2_start.y), 9));
+	AllEntities.push_back(std::make_unique<GameEntity>(grid, Vector3{ grid.getTile(unit3_start.x,unit3_start.y).worldPosition.x, 0.2f, grid.getTile(unit3_start.x,unit3_start.y).worldPosition.z }, PURPLE, grid.getTilePointer(unit3_start.x, unit3_start.y), 6));
 	GameEntity *currentlySelected = nullptr;
 	for (const auto& ent : AllEntities){
 		ent->currentTile->addEntity(ent.get());
@@ -46,6 +46,8 @@ int main() {
 	bool showPath;
 
 	std::vector<Tile> waypoints;
+	std::vector<Tile> movementRange;
+	bool showMovementRange = false;
 
 	int numPlayers = AllEntities.size();
 	int entityIndex = 0;
@@ -107,8 +109,22 @@ int main() {
 		if (hoveredTile != NULL){
 			hoveredTile->color = YELLOW;
 			if (currentlySelected != nullptr && !currentlySelected->isMoving){
-				pathPreview = grid.getPath(*currentlySelected->currentTile, *hoveredTile);
-				showPath = !pathPreview.empty();
+				if (!waypoints.empty()){
+					pathPreview = grid.getWaypointPath(*currentlySelected->currentTile, waypoints); //from entity to last waypoint
+					std::list<Tile> secondSegmentPreview = grid.getPath(waypoints.back(), *hoveredTile); // from last waypoint to hovered Tile.
+					pathPreview.splice(pathPreview.end(), secondSegmentPreview);
+
+
+					showPath = !pathPreview.empty();
+					//the problem is that this just shows the path from the entity to the last waypoint
+					//I need it to show the the path from the last waypoint to the hovered tile as well.
+
+
+				} else {
+					pathPreview = grid.getPath(*currentlySelected->currentTile, *hoveredTile);
+					showPath = !pathPreview.empty();
+
+				}
 			} else {
 				showPath = false; 
 			}
@@ -131,8 +147,23 @@ int main() {
 				}	
 				currentlySelected = nullptr;
 			}
+			if (!waypoints.empty()){
+				waypoints.clear(); //clear waypoints on entity change.
+			}
+			if (!movementRange.empty()){
+				movementRange.clear();
+			}
 		}
 		if (currentlySelected != nullptr) {
+			movementRange = currentlySelected->movementPreview();
+			if (!movementRange.empty() && currentlySelected->isMoving == false){
+				showMovementRange = true;
+			} else {
+				showMovementRange = false;
+			}
+			// for (const auto& tile : movementRange){
+			// 	std::cout << "(" << tile.gridPosition.x << " , " << tile.gridPosition.y << " )"  << std::endl;
+			// }
 			if (IsKeyPressed(KEY_M) && hoveredTile != NULL && !IsKeyDown(KEY_LEFT_CONTROL)) { 
 				std::list<Tile> path = grid.getPath(*currentlySelected->currentTile, *hoveredTile);
 				if (!path.empty()){
@@ -152,7 +183,7 @@ int main() {
 			if (IsKeyPressed(KEY_O) && hoveredTile != NULL){
 				if (!hoveredTile->hasUnit){
 					currentWaypoint = hoveredTile;
-					std::cout << "Set current waypoint!\n";
+					// std::cout << "Set current waypoint!\n";
 					waypoints.push_back(*currentWaypoint);
 
 				}
@@ -187,6 +218,12 @@ int main() {
 				// std::cout << "Entity index after change " << entityIndex << std::endl;
 				currentlySelected = AllEntities.at(entityIndex).get();
 				currentlySelected->currentColor = BLACK;
+			}
+			if (!waypoints.empty()){
+				waypoints.clear();
+			}
+			if (!movementRange.empty()){
+				movementRange.clear();
 			}
 		
 		}
@@ -262,6 +299,15 @@ int main() {
 				}
 				if (showPath){
 					grid.RenderPath(pathPreview, PINK);
+				}
+				if (showMovementRange){
+				std::vector<TileEdge> outline = grid.getMovementRangeOutline(movementRange);
+					grid.RenderOutline(outline);
+				}
+				if (!waypoints.empty()){
+					for (const auto& waypoint : waypoints){
+						grid.RenderWaypoints(waypoint, DARKGREEN);
+					}
 				}
 
 			EndMode3D();

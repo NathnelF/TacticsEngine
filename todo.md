@@ -5,7 +5,7 @@ Grid:
 
 - Draw movement line to final position #DONE
 - Allow for destination points to be added #DONE
-- Add visual indicators for destination points.
+- Add visual indicators for destination points. #DONE
 
 Tile:
 - Select enities from tile collider. #DONE

@@ -1,5 +1,7 @@
 
 #include "Grid.hpp"
+#include <raylib.h>
+#include <raymath.h>
 #include <stdexcept>
 #include <queue>
 #include <set>
@@ -15,7 +17,7 @@ Grid::Grid(int gridWidth, int gridHeight):
 			tiles[row][col].gridPosition = (Vector2){(float)col, (float)row};
 			tiles[row][col].worldPosition = (Vector3){
 				(float)col * TILE_SIZE - TILE_SIZE / 2,
-				1.2f,
+				0.2f,
 				(float)row * TILE_SIZE - TILE_SIZE / 2
 			};
 			tiles[row][col].traversable = true;
@@ -124,7 +126,7 @@ std::list<Tile> Grid::getWaypointPath(Tile start, const std::vector<Tile>& waypo
 
 	for (const auto& point : waypoints){
 		std::list<Tile> curPath = getPath(start, point);
-		std::cout << "checking path\n";
+		// std::cout << "checking path\n";
 
 		if (curPath.empty()){
 			return path;
@@ -137,7 +139,7 @@ std::list<Tile> Grid::getWaypointPath(Tile start, const std::vector<Tile>& waypo
 		}
 		start = point;
 	}
-	std::cout << "found path through waypoints\n";
+	// std::cout << "found path through waypoints\n";
 	return path;
 }
 
@@ -148,6 +150,12 @@ void Grid::RenderGrid(){
 			currentTile.DrawTile();
 		}
 	}
+}
+
+void Grid::RenderWaypoints(const Tile& waypoint, Color color){
+	Vector3 pos = waypoint.worldPosition;
+	Vector3 tilePos = (Vector3){0.0f, 0.5f, 0.0f};
+	DrawCube(Vector3Subtract(pos, tilePos), TILE_SIZE/4, 0.09f, TILE_SIZE/4, color);
 }
 
 void Grid::RenderPath(const std::list<Tile>& path, Color color){
@@ -178,4 +186,70 @@ void Grid::RenderPath(const std::list<Tile>& path, Color color){
 		++it;
 		++next;
 		}
+}
+
+
+std::vector<TileEdge> Grid::getMovementRangeOutline(const std::vector<Tile>& movementRange) {
+    std::set<Tile> rangeSet(movementRange.begin(), movementRange.end());
+    std::vector<TileEdge> outline;
+    
+    for (const auto& tile : movementRange) {
+       std::vector<std::pair<std::pair<int, int>, TileEdge::Direction>> neighborCoords = {
+            {{tile.gridPosition.x, tile.gridPosition.y - 1}, TileEdge::LEFT},
+            {{tile.gridPosition.x + 1, tile.gridPosition.y}, TileEdge::TOP},
+            {{tile.gridPosition.x, tile.gridPosition.y + 1}, TileEdge::RIGHT},
+            {{tile.gridPosition.x - 1, tile.gridPosition.y}, TileEdge::BOTTOM}
+        };
+        
+        for (const auto& [coords, direction] : neighborCoords) {
+		bool shouldDraw = false;
+		if (isValid(coords.first, coords.second)){
+			Tile neighbor = getTile(coords.first, coords.second);
+			if (neighbor.traversable && !neighbor.hasUnit && rangeSet.find(neighbor) == rangeSet.end()) {
+				shouldDraw = true;
+				//outline.push_back({tile, direction});
+			 }
+		} else {
+			shouldDraw = true;
+		//	outline.push_back({tile, direction});
+		}
+		if (shouldDraw){
+				outline.push_back({tile, direction});
+			}
+        }
+    }
+    
+    return outline;
+}
+
+void Grid::RenderOutline(const std::vector<TileEdge>& outline){
+	for (const auto& edge : outline){
+		Vector3 worldPos = edge.tile.worldPosition;
+		float tileSize = TILE_SIZE;
+		float borderHeight = 0.01f;
+
+		Vector3 start, end;
+
+		switch (edge.direction) {
+			case TileEdge::TOP:
+				start = {worldPos.x + tileSize/2, worldPos.y + borderHeight, worldPos.z + tileSize/2};
+				end = {worldPos.x + tileSize/2, worldPos.y + borderHeight, worldPos.z - tileSize/2};
+				break;
+        		case TileEdge::RIGHT:
+            			start = {worldPos.x + tileSize/2, worldPos.y + borderHeight, worldPos.z + tileSize/2};
+            			end = {worldPos.x - tileSize/2, worldPos.y + borderHeight, worldPos.z + tileSize/2};
+            			break;
+        		case TileEdge::BOTTOM:
+            			start = {worldPos.x - tileSize/2, worldPos.y + borderHeight, worldPos.z + tileSize/2};
+				end = {worldPos.x - tileSize/2, worldPos.y + borderHeight, worldPos.z - tileSize/2};
+				break;
+		        case TileEdge::LEFT:
+				start = {worldPos.x + tileSize/2, worldPos.y + borderHeight, worldPos.z - tileSize/2};
+				end = {worldPos.x - tileSize/2, worldPos.y + borderHeight, worldPos.z - tileSize/2};
+				break;
+		}
+		
+		DrawLine3D(start, end, DARKBROWN);
+
+	}
 }

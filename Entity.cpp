@@ -6,9 +6,11 @@
 #include <raymath.h>
 #include <iostream>
 #include "utils.hpp"
+#include <set>
+#include <queue>
 
 // constructor 
-GameEntity::GameEntity(Grid& grid, Vector3 initialPosition, Color initialColor, Tile* initialTile){
+GameEntity::GameEntity(Grid& grid, Vector3 initialPosition, Color initialColor, Tile* initialTile, int playerSpeed){
 	parentGrid = &grid;
 	size = 2.0f;
 	t = 0.0f;
@@ -29,6 +31,7 @@ GameEntity::GameEntity(Grid& grid, Vector3 initialPosition, Color initialColor, 
 	currentTile = initialTile;
 	currentTile->hasUnit = true;
 	prevTile = NULL;
+	speed = playerSpeed;
 
 
 }
@@ -97,6 +100,34 @@ void GameEntity::UpdateMove(float moveSpeed, float deltaTime){
 	collider.max = (Vector3){ position.x + size / 2.0f, position.y + size / 2.0f, position.z + size / 2.0f };
 
 }
+
+std::vector<Tile> GameEntity::movementPreview(){
+	std::vector<Tile> tilesInRange;
+	std::set<Tile> visited;
+	std::queue<std::pair<Tile, int>> queue;
+
+	queue.push({*currentTile, speed});
+	visited.insert(*currentTile);
+
+	while (!queue.empty()){
+		auto [currentPos, remainingMoves] = queue.front();
+		queue.pop();
+
+		tilesInRange.push_back(currentPos);
+
+		if (remainingMoves > 0){
+			std::vector<Tile> neighbors = parentGrid->getGridNeighbors(currentPos);
+			for (const auto& neighbor : neighbors){
+				if (visited.find(neighbor) == visited.end()){
+					queue.push({neighbor, remainingMoves - 1});
+					visited.insert(neighbor);
+				}
+			}
+		}
+	}
+	return tilesInRange;
+}
+
 void GameEntity::Draw(){
 	DrawModel(model, position, 1.0f, currentColor);
 	DrawBoundingBox(collider, GREEN);

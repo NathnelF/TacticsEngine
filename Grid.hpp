@@ -8,10 +8,15 @@
 #include "config.hpp"
 #include "utils.hpp"
 
+struct TileEdge {
+    Tile tile;
+    enum Direction { TOP, RIGHT, BOTTOM, LEFT } direction;
+};
 
 class Grid{
 private:
 	std::vector<std::vector <Tile>> tiles;
+
 
 
 public:
@@ -30,8 +35,10 @@ public:
 	std::list<Tile> getWaypointPath(Tile start, const std::vector<Tile>& waypoints);
 
 	void RenderGrid();
-
+	void RenderWaypoints(const Tile& waypoint, Color color);
 	void RenderPath(const std::list<Tile>&, Color color);
+	std::vector<TileEdge> getMovementRangeOutline(const std::vector<Tile>& movementRange);
+	void RenderOutline(const std::vector<TileEdge>& outline);
 };
 
 #endif

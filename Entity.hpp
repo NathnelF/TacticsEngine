@@ -27,13 +27,15 @@ public:
 	bool selected;
 	bool isMoving;
 	Grid* parentGrid;
+	int speed;
 
-	GameEntity(Grid& grid, Vector3 initialPosition, Color initialColor, Tile* initialTile);
+	GameEntity(Grid& grid, Vector3 initialPosition, Color initialColor, Tile* initialTile, int playerSpeed);
 
 	~GameEntity();
 
 	void SetPath(std::list<Tile> path);
 	void UpdateMove(float moveSpeed, float deltaTime);
+	std::vector<Tile> movementPreview();
 	void Draw();
 };
 

@@ -21,6 +21,7 @@ public:
 	Tile(int x, int y);
 	Tile();
 	bool operator<(const Tile& other) const;
+	bool operator==(const Tile& other) const;
 	void DrawTile();
 	GameEntity* getEntity();
 	void addEntity(GameEntity* entity);

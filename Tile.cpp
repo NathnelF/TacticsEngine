@@ -7,7 +7,7 @@ Tile::Tile(){
 		gridPosition = (Vector2){0.0f, 0.0f};
 		worldPosition = (Vector3){
 			0.0f * TILE_SIZE - TILE_SIZE / 2,
-			1.0f,
+			0.2f,
 			0.0f * TILE_SIZE - TILE_SIZE / 2
 		};
 		traversable = true;
@@ -25,7 +25,7 @@ Tile::Tile(int x, int y){
 		gridPosition = (Vector2){(float)x, (float)y};
 		worldPosition = (Vector3){
 			(float)x * TILE_SIZE - TILE_SIZE / 2,
-			0.0f,
+			0.2f,
 			(float)y * TILE_SIZE - TILE_SIZE / 2
 		};
 		traversable = true;
@@ -42,6 +42,11 @@ bool Tile::operator<(const Tile& other) const {
 		return gridPosition.x < other.gridPosition.x;
 	}
 	return gridPosition.y < other.gridPosition.y; 
+}
+
+bool Tile::operator==(const Tile& other) const {
+        return gridPosition.x == other.gridPosition.x && 
+               gridPosition.y == other.gridPosition.y;
 }
 
 GameEntity* Tile::getEntity(){
@@ -61,6 +66,5 @@ void Tile::addEntity(GameEntity* newEntity){
 
 
 void Tile::DrawTile(){
-		Vector3 tilePos = (Vector3){0.0f, 0.5f, 0};
-		DrawCubeWires(Vector3Subtract(worldPosition, tilePos), TILE_SIZE, 0.1f, TILE_SIZE, color);
+		DrawCubeWires(worldPosition, TILE_SIZE, 0.01f, TILE_SIZE, color);
 }
