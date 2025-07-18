@@ -27,13 +27,20 @@ int main() {
 	Vector2 unit1_start = (Vector2){10, 10};
 	Vector2 unit2_start = (Vector2){10, 11};
 	Vector2 unit3_start = (Vector2){10, 12};
+	Vector2 unit4_start = (Vector2){10, 13};
+	Vector2 unit5_start = (Vector2){10, 14};
 
 	std::vector<std::unique_ptr<GameEntity>> AllEntities;
 	AllEntities.push_back(
 	std::make_unique<GameEntity>(grid, Vector3{ grid.getTile(unit1_start.x, unit1_start.y).worldPosition.x, 0.2f, grid.getTile(unit1_start.x, unit1_start.y).worldPosition.z }, MAGENTA, grid.getTilePointer(unit1_start.x,unit1_start.y), 7));
 	AllEntities.push_back(
-	std::make_unique<GameEntity>(grid, Vector3{ grid.getTile(unit2_start.x,unit2_start.y).worldPosition.x, 0.2f, grid.getTile(unit2_start.x,unit2_start.y).worldPosition.z }, BLUE, grid.getTilePointer(unit2_start.x, unit2_start.y), 9));
+	std::make_unique<GameEntity>(grid, Vector3{ grid.getTile(unit2_start.x,unit2_start.y).worldPosition.x, 0.2f, grid.getTile(unit2_start.x,unit2_start.y).worldPosition.z }, BLUE, grid.getTilePointer(unit2_start.x, unit2_start.y), 7));
 	AllEntities.push_back(std::make_unique<GameEntity>(grid, Vector3{ grid.getTile(unit3_start.x,unit3_start.y).worldPosition.x, 0.2f, grid.getTile(unit3_start.x,unit3_start.y).worldPosition.z }, PURPLE, grid.getTilePointer(unit3_start.x, unit3_start.y), 6));
+	AllEntities.push_back(
+	std::make_unique<GameEntity>(grid, Vector3{ grid.getTile(unit4_start.x,unit4_start.y).worldPosition.x, 0.2f, grid.getTile(unit4_start.x,unit4_start.y).worldPosition.z }, DARKGREEN, grid.getTilePointer(unit4_start.x, unit4_start.y), 6));
+	AllEntities.push_back(
+	std::make_unique<GameEntity>(grid, Vector3{ grid.getTile(unit5_start.x,unit5_start.y).worldPosition.x, 0.2f, grid.getTile(unit5_start.x,unit5_start.y).worldPosition.z }, ORANGE, grid.getTilePointer(unit5_start.x, unit5_start.y), 6));
+
 	GameEntity *currentlySelected = nullptr;
 	for (const auto& ent : AllEntities){
 		ent->currentTile->addEntity(ent.get());
