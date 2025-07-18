@@ -110,9 +110,9 @@ int main() {
 			hoveredTile->color = YELLOW;
 			if (currentlySelected != nullptr && !currentlySelected->isMoving){
 				if (!waypoints.empty()){
-					pathPreview = grid.getWaypointPath(*currentlySelected->currentTile, waypoints); //from entity to last waypoint
-					std::list<Tile> secondSegmentPreview = grid.getPath(waypoints.back(), *hoveredTile); // from last waypoint to hovered Tile.
-					pathPreview.splice(pathPreview.end(), secondSegmentPreview);
+					pathPreview = grid.getWaypointPath(*currentlySelected->currentTile, waypoints, *hoveredTile); //from entity to last waypoint
+					// std::list<Tile> secondSegmentPreview = grid.getPath(waypoints.back(), *hoveredTile); // from last waypoint to hovered Tile.
+					// pathPreview.splice(pathPreview.end(), secondSegmentPreview);
 
 
 					showPath = !pathPreview.empty();
@@ -165,14 +165,25 @@ int main() {
 			// 	std::cout << "(" << tile.gridPosition.x << " , " << tile.gridPosition.y << " )"  << std::endl;
 			// }
 			if (IsKeyPressed(KEY_M) && hoveredTile != NULL && !IsKeyDown(KEY_LEFT_CONTROL)) { 
-				std::list<Tile> path = grid.getPath(*currentlySelected->currentTile, *hoveredTile);
-				if (!path.empty()){
-				currentlySelected->SetPath(path);
-				currentlySelected->currentTile->entity = NULL;
-				hoveredTile->entity=currentlySelected;
-				hoveredTile->hasUnit = true;
+				if (waypoints.empty()){
+					std::list<Tile> path = grid.getPath(*currentlySelected->currentTile, *hoveredTile);
+					if (!path.empty()){
+						currentlySelected->SetPath(path);
+						currentlySelected->currentTile->entity = NULL;
+						hoveredTile->entity=currentlySelected;
+						hoveredTile->hasUnit = true;
+					}
+				} else {
+					std::list<Tile> path = grid.getWaypointPath(*currentlySelected->currentTile, waypoints, *hoveredTile);
+					if (!path.empty()){
+						currentlySelected->SetPath(path);
+						currentlySelected->currentTile->entity = NULL;
+						hoveredTile->entity=currentlySelected;
+						hoveredTile->hasUnit = true;
+						waypoints.clear();
+					}
 				}
-			
+						
 			}
 			if (IsKeyPressed(KEY_M) && hoveredTile != NULL && IsKeyDown(KEY_LEFT_CONTROL)){
 				//this is for waypoint movement.
@@ -188,15 +199,6 @@ int main() {
 
 				}
 						}
-			if (IsKeyPressed(KEY_P) && !waypoints.empty()){
-				std::list<Tile> path = grid.getWaypointPath(*currentlySelected->currentTile, waypoints);
-				if (!path.empty()){
-					currentlySelected->SetPath(path);
-					currentlySelected->currentTile->entity = NULL;
-					//set final tile in path to has unit and assign it's entity.
-					waypoints.clear();
-				}
-			}
 		}
 		// Update position loop for each entity
 		for (const auto &entityPtr : AllEntities) {
