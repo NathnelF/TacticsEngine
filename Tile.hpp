@@ -30,6 +30,14 @@ struct TileNode{
 	Tile tile;
 	Tile parentTile;
 	float cost;
+	float trueCost;
+};
+
+struct NodeComparator {
+    bool operator()(const std::tuple<Tile, float, float, Tile>& a, 
+                   const std::tuple<Tile, float, float, Tile>& b) {
+        return std::get<1>(a) > std::get<1>(b); // Compare by totalCost
+    }
 };
 
 struct TileHash {

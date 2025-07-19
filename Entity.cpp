@@ -8,12 +8,12 @@
 #include "utils.hpp"
 #include <set>
 #include <queue>
+#include <algorithm>
 
 // constructor 
 GameEntity::GameEntity(Grid& grid, Vector3 initialPosition, Color initialColor, Tile* initialTile, float playerSpeed){
 	parentGrid = &grid;
 	size = 2.0f;
-	t = 0.0f;
 	mesh = GenMeshCube(size, size, size);
 	model = LoadModelFromMesh(mesh);
 	collider = GetMeshBoundingBox(mesh);
@@ -102,42 +102,16 @@ void GameEntity::UpdateMove(float moveSpeed, float deltaTime){
 
 }
 
-std::vector<Tile> GameEntity::movementPreview(){
-	std::vector<Tile> tilesInRange;
-	std::set<Tile> visited;
-	std::queue<std::pair<Tile, int>> queue;
-
-	queue.push({*currentTile, speed});
-	visited.insert(*currentTile);
-
-	while (!queue.empty()){
-		auto [currentPos, remainingMoves] = queue.front();
-		queue.pop();
-
-		tilesInRange.push_back(currentPos);
-
-		if (remainingMoves > 0){
-			std::vector<Tile> neighbors = parentGrid->getGridNeighbors(currentPos);
-			for (const auto& neighbor : neighbors){
-				if (visited.find(neighbor) == visited.end()){
-					queue.push({neighbor, remainingMoves - 1});
-					visited.insert(neighbor);
-				}
-			}
-		}
-	}
-	return tilesInRange;
-}
 std::unordered_map<Tile, TileNode, TileHash> GameEntity::movementPreviewWithCost(Tile& start){
 	std::unordered_map<Tile, TileNode, TileHash> nodesInRange;
 	std::set<Tile> visited;
-	std::queue<std::tuple<Tile, float, Tile>> queue;
+	std::queue<std::tuple<Tile, float, float, Tile>> queue;
 
-	queue.push({start, 0.0f, start}); //costs nothing to move to currentTile.
+	queue.push({start, 0.0f, 0.0f, start}); //costs nothing to move to currentTile.
 	visited.insert(start);
 
 	while (!queue.empty()){
-		auto [currentPos, totalCost, parentPos] = queue.front();
+		auto [currentPos, totalCost, trueCost, parentPos] = queue.front();
 		queue.pop();
 		TileNode currentNode{currentPos, parentPos, totalCost};
 
@@ -146,7 +120,18 @@ std::unordered_map<Tile, TileNode, TileHash> GameEntity::movementPreviewWithCost
 			std::vector<Tile> neighbors = parentGrid->getGridNeighbors(currentPos);
 			for (const auto& neighbor : neighbors){
 				if (neighbor.hasUnit || !neighbor.traversable){
-
+					float newTotal = 999.f;
+					float moveCost;
+					if (neighbor.gridPosition.x != currentPos.gridPosition.x && neighbor.gridPosition.y != currentPos.gridPosition.y){
+						//diagonal
+						moveCost = 1.414f;
+					} else {
+						//not diagonal
+						moveCost = 1.0f;
+					}
+					float newTrue = totalCost + moveCost;
+					queue.push({neighbor, newTotal, newTrue, currentPos});
+					visited.insert(neighbor);
 				}
 				else {
 					if (visited.find(neighbor) == visited.end()){
@@ -160,7 +145,7 @@ std::unordered_map<Tile, TileNode, TileHash> GameEntity::movementPreviewWithCost
 						}
 						float newTotal = totalCost + moveCost;
 						if (newTotal <= speed){
-							queue.push({neighbor, newTotal, currentPos});
+							queue.push({neighbor, newTotal, newTotal, currentPos});
 							visited.insert(neighbor);
 						}
 					}
@@ -173,7 +158,24 @@ std::unordered_map<Tile, TileNode, TileHash> GameEntity::movementPreviewWithCost
 	return nodesInRange;
 }
 
+std::vector<Tile> GameEntity::getPath(Tile& start, Tile& end, std::unordered_map<Tile, TileNode, TileHash>& range){
+	std::vector<Tile> path;
 
+	if (range.find(end) == range.end()){
+		return path;
+	} else {
+		Tile current = end;
+
+		while (current.gridPosition != start.gridPosition){
+			path.push_back(current);
+			current = range[current].parentTile;
+		}
+		path.push_back(start);
+		std::reverse(path.begin(), path.end());
+		return path;
+	}
+	
+}
 std::vector<Tile> GameEntity::getWaypointPath(Tile& start, std::vector<Tile>& waypoints, Tile& hoveredTile){
 	std::vector<Tile> path;
 	if (waypoints.empty()) return path;
@@ -183,7 +185,7 @@ std::vector<Tile> GameEntity::getWaypointPath(Tile& start, std::vector<Tile>& wa
 	for (auto& point : waypoints){
 
 		std::unordered_map<Tile, TileNode, TileHash> curRange = movementPreviewWithCost(curStart);
-		std::vector<Tile> curPath = parentGrid->getPathFromRange(curStart, point, curRange);
+		std::vector<Tile> curPath = getPath(curStart, point, curRange);
 
 		if (curRange.find(hoveredTile) == curRange.end()){
 			return path;
@@ -204,7 +206,7 @@ std::vector<Tile> GameEntity::getWaypointPath(Tile& start, std::vector<Tile>& wa
 	//path from last waypoint to hoveredTile
 	
 	std::unordered_map<Tile, TileNode, TileHash> finalRange = movementPreviewWithCost(curStart);
-    	std::vector<Tile> finalPath = parentGrid->getPathFromRange(curStart, hoveredTile, finalRange);
+    	std::vector<Tile> finalPath = getPath(curStart, hoveredTile, finalRange);
     
     	if (finalPath.empty()){
         	return path;
@@ -220,12 +222,6 @@ std::vector<Tile> GameEntity::getWaypointPath(Tile& start, std::vector<Tile>& wa
 
 	return path;
 }
-//
-//We need to basically do the same thing just check each neighbor to see if it's diagonal or not. The add to the cost accordingly.  
-//
-//
-//
-//
 
 void GameEntity::Draw(){
 	DrawModel(model, position, 1.0f, currentColor);

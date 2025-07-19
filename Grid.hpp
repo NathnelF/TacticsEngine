@@ -51,18 +51,16 @@ public:
 	Tile* getTileFromWorld(Vector3 worldPos);
 
 	std::vector<Tile> getGridNeighbors(Tile t);
-	std::list<Tile> getPath(Tile start, Tile end);
 
-	void RenderGrid();
-	void RenderWaypoints(const Tile& waypoint, Color color);
-	void RenderPath(const std::list<Tile>&, Color color);
-	std::vector<TileEdge> getMovementRangeOutline(const std::vector<Tile>& movementRange);
+	std::vector<TileEdge> getMovementRangeOutline(const std::unordered_map<Tile, TileNode, TileHash>& movementRange, float speed);
 	std::vector<TileEdge::Direction> getOppositeDirections(TileEdge::Direction direction);
 	TileEdge::Direction getDirectOppositeEdge(TileEdge::Direction direction);
-	void RenderOutline(const std::vector<TileEdge>& outline);
+	float checkNeighborCost(const TileNode& start, Tile& neighbor, bool ignoreImpassable);
 
-	std::vector<Tile> getPathFromRange(Tile& start, Tile& end, std::unordered_map<Tile, TileNode, TileHash>& range);
 	void RenderPathRange(const std::vector<Tile>&, Color color);
+	void RenderGrid();
+	void RenderWaypoints(const Tile& waypoint, Color color);
+	void RenderOutline(const std::vector<TileEdge>& outline);
 
 };
 

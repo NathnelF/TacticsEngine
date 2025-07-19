@@ -5,7 +5,6 @@
 #include <raylib.h>
 #include "Tile.hpp"
 #include "Grid.hpp"
-#include <list>
 #include <unordered_map>
 
 
@@ -13,8 +12,6 @@ class GameEntity{
 public:
 	// Fields
 	Vector3 position;
-	Vector3 targetPosition;
-	float t;
 	Tile* currentTile;
 	Tile* prevTile;
 	std::vector<Tile> currentPath;
@@ -37,8 +34,8 @@ public:
 
 	void SetPath(std::vector<Tile> path);
 	void UpdateMove(float moveSpeed, float deltaTime);
-	std::vector<Tile> movementPreview();
 	std::unordered_map<Tile, TileNode, TileHash> movementPreviewWithCost(Tile& start);
+	std::vector<Tile> getPath(Tile& start, Tile& end, std::unordered_map<Tile, TileNode, TileHash>& range);
 	std::vector<Tile> getWaypointPath(Tile& start, std::vector<Tile>& waypoints, Tile& hoveredTile);
 	void RenderMovementPreview(const std::unordered_map<Tile, TileNode, TileHash>& range);
 	void Draw();

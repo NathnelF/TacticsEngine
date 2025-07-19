@@ -54,8 +54,6 @@ int main() {
 	bool showPathRange = false;
 
 	std::vector<Tile> waypoints;
-	std::vector<Tile> movementRange;
-	bool showMovementRange = false;
 
 	std::unordered_map<Tile, TileNode, TileHash> nodesInRange;
 	bool showNodes = false;
@@ -76,9 +74,7 @@ int main() {
 	float cameraDistance = 45.0f;
 	Vector3 cameraTarget = initialCameraPos;
 
-	float rotationSpeed = 0.2f;
 	float moveSpeed = 10.0f;
-	float t = 0.0f;
 	float panSpeed = 3.0f;
 	float zoomSpeed = 2.0f;
 	float snapRotation = 4.0f;
@@ -126,7 +122,7 @@ int main() {
 
 				} else {
 					if (!currentlySelected->movementRange.empty()){
-						pathPreviewRange = grid.getPathFromRange(*currentlySelected->currentTile, *hoveredTile, currentlySelected->movementRange);
+						pathPreviewRange = currentlySelected->getPath(*currentlySelected->currentTile, *hoveredTile, currentlySelected->movementRange);
 						showPathRange = !pathPreviewRange.empty();
 					} else {
 						showPathRange = false;
@@ -159,18 +155,9 @@ int main() {
 			if (!waypoints.empty()){
 				waypoints.clear(); //clear waypoints on entity change.
 			}
-			if (!movementRange.empty()){
-				movementRange.clear();
-			}
 		}
 		if (currentlySelected != nullptr) {
-			movementRange = currentlySelected->movementPreview();
 			currentlySelected->movementRange = currentlySelected->movementPreviewWithCost(*currentlySelected->currentTile);
-			if (!movementRange.empty() && currentlySelected->isMoving == false){
-				showMovementRange = true;
-			} else {
-				showMovementRange = false;
-			}
 			if (!currentlySelected->movementRange.empty() && currentlySelected->isMoving == false){
 				showNodes = true;
 			} else {
@@ -178,7 +165,7 @@ int main() {
 			}
 			if (IsKeyPressed(KEY_M) && hoveredTile != NULL && !IsKeyDown(KEY_LEFT_CONTROL)) { 
 				if (waypoints.empty()){
-					std::vector<Tile> path = grid.getPathFromRange(*currentlySelected->currentTile, *hoveredTile, currentlySelected->movementRange);
+					std::vector<Tile> path = currentlySelected->getPath(*currentlySelected->currentTile, *hoveredTile, currentlySelected->movementRange);
 					if (!path.empty()){
 						currentlySelected->SetPath(path);
 						currentlySelected->currentTile->entity = NULL;
@@ -241,9 +228,6 @@ int main() {
 			}
 			if (!waypoints.empty()){
 				waypoints.clear();
-			}
-			if (!movementRange.empty()){
-				movementRange.clear();
 			}
 		}
 
@@ -316,15 +300,13 @@ int main() {
 				for (const auto &entityPtr : AllEntities) {
 					entityPtr->Draw(); // Each entity draws itself
 				}
-				if (showMovementRange){
-				std::vector<TileEdge> outline = grid.getMovementRangeOutline(movementRange);
-					grid.RenderOutline(outline);
-				}
 				if (showNodes && currentlySelected != nullptr){
 					currentlySelected->RenderMovementPreview(currentlySelected->movementRange);
 				}
-				if (showPathRange){
-					grid.RenderPathRange(pathPreviewRange, GREEN);
+				if (showPathRange && currentlySelected != nullptr){
+					grid.RenderPathRange(pathPreviewRange, DARKPURPLE);
+					std::vector<TileEdge> outline = grid.getMovementRangeOutline(currentlySelected->movementRange, currentlySelected->speed);
+					grid.RenderOutline(outline);
 				}
 				if (!waypoints.empty()){
 					for (const auto& waypoint : waypoints){
