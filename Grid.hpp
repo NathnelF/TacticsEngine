@@ -9,6 +9,8 @@
 #include "utils.hpp"
 #include <set>
 #include <iostream>
+#include <unordered_map>
+
 
 struct TileEdge {
 	Tile tile;
@@ -50,7 +52,6 @@ public:
 
 	std::vector<Tile> getGridNeighbors(Tile t);
 	std::list<Tile> getPath(Tile start, Tile end);
-	std::list<Tile> getWaypointPath(Tile start, const std::vector<Tile>& waypoints, Tile& hoveredTile);
 
 	void RenderGrid();
 	void RenderWaypoints(const Tile& waypoint, Color color);
@@ -59,6 +60,10 @@ public:
 	std::vector<TileEdge::Direction> getOppositeDirections(TileEdge::Direction direction);
 	TileEdge::Direction getDirectOppositeEdge(TileEdge::Direction direction);
 	void RenderOutline(const std::vector<TileEdge>& outline);
+
+	std::vector<Tile> getPathFromRange(Tile& start, Tile& end, std::unordered_map<Tile, TileNode, TileHash>& range);
+	void RenderPathRange(const std::vector<Tile>&, Color color);
+
 };
 
 #endif

@@ -6,6 +6,7 @@
 #include "Tile.hpp"
 #include "Grid.hpp"
 #include <list>
+#include <unordered_map>
 
 
 class GameEntity{
@@ -16,8 +17,8 @@ public:
 	float t;
 	Tile* currentTile;
 	Tile* prevTile;
-	std::list<Tile> currentPath;
-	std::list<Tile>::iterator pathIterator;
+	std::vector<Tile> currentPath;
+	std::vector<Tile>::iterator pathIterator;
 	Color currentColor;
 	Color defaultColor;
 	float size;
@@ -27,15 +28,19 @@ public:
 	bool selected;
 	bool isMoving;
 	Grid* parentGrid;
-	int speed;
+	float speed;
+	std::unordered_map<Tile, TileNode, TileHash> movementRange;
 
-	GameEntity(Grid& grid, Vector3 initialPosition, Color initialColor, Tile* initialTile, int playerSpeed);
+	GameEntity(Grid& grid, Vector3 initialPosition, Color initialColor, Tile* initialTile, float playerSpeed);
 
 	~GameEntity();
 
-	void SetPath(std::list<Tile> path);
+	void SetPath(std::vector<Tile> path);
 	void UpdateMove(float moveSpeed, float deltaTime);
 	std::vector<Tile> movementPreview();
+	std::unordered_map<Tile, TileNode, TileHash> movementPreviewWithCost(Tile& start);
+	std::vector<Tile> getWaypointPath(Tile& start, std::vector<Tile>& waypoints, Tile& hoveredTile);
+	void RenderMovementPreview(const std::unordered_map<Tile, TileNode, TileHash>& range);
 	void Draw();
 };
 

@@ -7,6 +7,7 @@
 #include <set>
 #include <map>
 #include <iostream>
+#include <algorithm>
 
 Grid::Grid(int gridWidth, int gridHeight):
 	tiles(gridHeight, std::vector<Tile>(gridWidth))
@@ -122,40 +123,7 @@ std::list<Tile> Grid::getPath(Tile start, Tile end){
 	
 }  
 
-std::list<Tile> Grid::getWaypointPath(Tile start, const std::vector<Tile>& waypoints, Tile& hoveredTile){
-	std::list<Tile> path;
-	if (waypoints.empty()) return path;
 
-	Tile curStart = start; 
-
-	for (const auto& point : waypoints){
-		std::list<Tile> curPath = getPath(curStart, point);
-		// std::cout << "checking path\n";
-
-		if (curPath.empty()){
-			return path;
-		}
-
-		if (path.empty()){
-			path.insert(path.end(), curPath.begin(), curPath.end());
-		} else {
-			path.insert(path.end(), std::next(curPath.begin()), curPath.end());
-		}
-		curStart = point;
-	}
-	//path from last waypoint to hoveredTile
-    	std::list<Tile> finalPath = getPath(curStart, hoveredTile);
-    
-    	if (finalPath.empty()){
-        	return path;
-	}
-
-    	if (!finalPath.empty()) {
-        	path.insert(path.end(), std::next(finalPath.begin()), finalPath.end());
-    	}
-
-	return path;
-}
 
 void Grid::RenderGrid(){
 	  for (int row = 0; row < GRID_HEIGHT; row++ ){
@@ -280,52 +248,52 @@ std::vector<TileEdge> Grid::getMovementRangeOutline(const std::vector<Tile>& mov
 	 		for (const auto& direction : boundaryEdges){
 				
 				TileEdge bound{tile, direction};
-				std::cout << "The boundary direction is : " << bound;
+				// std::cout << "The boundary direction is : " << bound;
 
 				TileEdge::Direction oppositeDir = getDirectOppositeEdge(direction); //direct opposite always goes in. I think.
 				TileEdge opp{tile, oppositeDir};
-				std::cout << "Opposite edge is " << opp;
+				// std::cout << "Opposite edge is " << opp;
 				outline.push_back({tile, oppositeDir});
 
 	 			//let's check the neighbors perpendicular
 	 			std::vector<TileEdge::Direction> neighborDirections = getOppositeDirections(direction);
 	 			for (const auto& dir : neighborDirections){
 					TileEdge currentEdge{tile, dir};
-					std::cout << "checking neighbor " << currentEdge;
+					// std::cout << "checking neighbor " << currentEdge;
 	 				bool shouldAdd = true;
 					switch (dir){
 							case TileEdge::TOP:
 								if (isValid(tile.gridPosition.x+1, tile.gridPosition.y)){
-									std::cout << "Valid tile at top neighbor\n";
+									// std::cout << "Valid tile at top neighbor\n";
 									Tile neighborTop = getTile(tile.gridPosition.x+1, tile.gridPosition.y);
 									if (!neighborTop.hasUnit && neighborTop.traversable){
-										std::cout << "Top neighbor is free, add the edge to the outline\n";
+										// std::cout << "Top neighbor is free, add the edge to the outline\n";
 									} else {
-										std::cout << "Not free. Skip top edge\n";
+										// std::cout << "Not free. Skip top edge\n";
 	 									shouldAdd = false;
 									}
 								}
 							break;
 							case TileEdge::BOTTOM:
 								if (isValid(tile.gridPosition.x-1, tile.gridPosition.y)){
-									std::cout << "Valid tile at bottom neighbor\n";
+									// std::cout << "Valid tile at bottom neighbor\n";
 									Tile neighborBottom = getTile(tile.gridPosition.x-1, tile.gridPosition.y);
 									if (!neighborBottom.hasUnit && neighborBottom.traversable){
-										std::cout << "Bottom neighbor is free, add the edge to the outline\n";
+										// std::cout << "Bottom neighbor is free, add the edge to the outline\n";
 									} else {
-										std::cout << "Not free. Skip bottom edge\n";
+										// std::cout << "Not free. Skip bottom edge\n";
 	 									shouldAdd = false;
 									}
 								}
 								break;
 							case TileEdge::RIGHT:
 								if (isValid(tile.gridPosition.x, tile.gridPosition.y+1)){
-									std::cout << "Valid tile at right neighbor\n";
+									// std::cout << "Valid tile at right neighbor\n";
 									Tile neighborRight = getTile(tile.gridPosition.x, tile.gridPosition.y+1);
 									if (!neighborRight.hasUnit && neighborRight.traversable){
-										std::cout << "Right neighbor is free, add edge to the outline\n";
+										// std::cout << "Right neighbor is free, add edge to the outline\n";
 									} else {
-										std::cout << "Not free. Skip right edge\n";
+										// std::cout << "Not free. Skip right edge\n";
 										shouldAdd = false;
 									}
 								}
@@ -333,12 +301,12 @@ std::vector<TileEdge> Grid::getMovementRangeOutline(const std::vector<Tile>& mov
 
 							case TileEdge::LEFT:
 								if (isValid(tile.gridPosition.x, tile.gridPosition.y-1)){
-									std::cout << "Valid tile at left neighbor\n";
+									// std::cout << "Valid tile at left neighbor\n";
 									Tile neighborLeft = getTile(tile.gridPosition.x, tile.gridPosition.y-1);
 									if (!neighborLeft.hasUnit && neighborLeft.traversable){
-										std::cout << "Left neighbor is free, add edge to the outline\n";
+										// std::cout << "Left neighbor is free, add edge to the outline\n";
 									} else {
-										std::cout << "Not free. Skip left edge\n";
+										// std::cout << "Not free. Skip left edge\n";
 										shouldAdd = false;
 									}
 								}
@@ -360,47 +328,47 @@ std::vector<TileEdge> Grid::getMovementRangeOutline(const std::vector<Tile>& mov
 		//boundary edges are more than 1. This is a corner.
 		// we need to always remove the boundary edges.
 		// check both opposite directions, and only add the one without a neighbor!
-		std::cout << "Two boundary edges identified!\n";
+		// std::cout << "Two boundary edges identified!\n";
 		for (const auto& direction : boundaryEdges){
 			TileEdge boundary{tile, direction};
-			std::cout << "Boundary edge : " << boundary;
+			// std::cout << "Boundary edge : " << boundary;
 			TileEdge::Direction opposite = getDirectOppositeEdge(direction);
 			TileEdge opp{tile, opposite};
-			std::cout << "Opposite edge is : " << opp;
+			// std::cout << "Opposite edge is : " << opp;
 			bool shouldAdd = true;
 					switch (opposite){
 							case TileEdge::TOP:
 								if (isValid(tile.gridPosition.x+1, tile.gridPosition.y)){
-									std::cout << "Valid tile at top neighbor\n";
+									// std::cout << "Valid tile at top neighbor\n";
 									Tile neighborTop = getTile(tile.gridPosition.x+1, tile.gridPosition.y);
 									if (!neighborTop.hasUnit && neighborTop.traversable){
-										std::cout << "Top neighbor is free, add the edge to the outline\n";
+										// std::cout << "Top neighbor is free, add the edge to the outline\n";
 									} else {
-										std::cout << "Not free. Skip top edge\n";
+										// std::cout << "Not free. Skip top edge\n";
 	 									shouldAdd = false;
 									}
 								}
 								break;
 							case TileEdge::BOTTOM:
 								if (isValid(tile.gridPosition.x-1, tile.gridPosition.y)){
-									std::cout << "Valid tile at bottom neighbor\n";
+									// std::cout << "Valid tile at bottom neighbor\n";
 									Tile neighborBottom = getTile(tile.gridPosition.x-1, tile.gridPosition.y);
 									if (!neighborBottom.hasUnit && neighborBottom.traversable){
-										std::cout << "Bottom neighbor is free, add the edge to the outline\n";
+										// std::cout << "Bottom neighbor is free, add the edge to the outline\n";
 									} else {
-										std::cout << "Not free. Skip bottom edge\n";
+										// std::cout << "Not free. Skip bottom edge\n";
 	 									shouldAdd = false;
 									}
 								}
 								break;
 							case TileEdge::RIGHT:
 								if (isValid(tile.gridPosition.x, tile.gridPosition.y+1)){
-									std::cout << "Valid tile at right neighbor\n";
+									// std::cout << "Valid tile at right neighbor\n";
 									Tile neighborRight = getTile(tile.gridPosition.x, tile.gridPosition.y+1);
 									if (!neighborRight.hasUnit && neighborRight.traversable){
-										std::cout << "Right neighbor is free, add edge to the outline\n";
+										// std::cout << "Right neighbor is free, add edge to the outline\n";
 									} else {
-										std::cout << "Not free. Skip right edge\n";
+										// std::cout << "Not free. Skip right edge\n";
 										shouldAdd = false;
 									}
 								}
@@ -408,12 +376,12 @@ std::vector<TileEdge> Grid::getMovementRangeOutline(const std::vector<Tile>& mov
 
 							case TileEdge::LEFT:
 								if (isValid(tile.gridPosition.x, tile.gridPosition.y-1)){
-									std::cout << "Valid tile at left neighbor\n";
+									// std::cout << "Valid tile at left neighbor\n";
 									Tile neighborLeft = getTile(tile.gridPosition.x, tile.gridPosition.y-1);
 									if (!neighborLeft.hasUnit && neighborLeft.traversable){
-										std::cout << "Left neighbor is free, add edge to the outline\n";
+										// std::cout << "Left neighbor is free, add edge to the outline\n";
 									} else {
-										std::cout << "Not free. Skip left edge\n";
+										// std::cout << "Not free. Skip left edge\n";
 										shouldAdd = false;
 									}
 								}
@@ -457,4 +425,54 @@ void Grid::RenderOutline(const std::vector<TileEdge>& outline){
 
         DrawLine3D(start, end, DARKBROWN);
     }
+}
+
+
+std::vector<Tile> Grid::getPathFromRange(Tile& start, Tile& end, std::unordered_map<Tile, TileNode, TileHash>& range){
+	std::vector<Tile> path;
+
+	if (range.find(end) == range.end()){
+		return path;
+	} else {
+		Tile current = end;
+
+		while (current.gridPosition != start.gridPosition){
+			path.push_back(current);
+			current = range[current].parentTile;
+		}
+		path.push_back(start);
+		std::reverse(path.begin(), path.end());
+		return path;
+	}
+	
+}
+
+void Grid::RenderPathRange(const std::vector<Tile>& path, Color color){
+	if (path.size() < 2){
+		return;
+	}
+
+	auto it = path.begin();
+	auto next = it;
+	++next;
+
+	while(next != path.end()){
+		Vector3 start = it->worldPosition;
+		// std::cout << start << std::endl;
+		start.y -= 1.01f;
+		Vector3 end = next->worldPosition;
+		// std::cout << end << std::endl;
+		end.y -= 1.01f;
+		
+		auto temp = next;
+		++temp;
+		if (temp == path.end()){
+			Vector3 direction = Vector3Normalize(Vector3Subtract(end, start));
+			end = Vector3Subtract(end, Vector3Scale(direction, TILE_SIZE / 2.0f));
+		}
+
+		DrawLine3D(start, end, color);
+		++it;
+		++next;
+		}
 }

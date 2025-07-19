@@ -6,7 +6,6 @@
 #include <vector>
 
 class GameEntity;
-
 class Tile{
 public:
 	Vector3 worldPosition;
@@ -26,4 +25,18 @@ public:
 	GameEntity* getEntity();
 	void addEntity(GameEntity* entity);
 };
+
+struct TileNode{
+	Tile tile;
+	Tile parentTile;
+	float cost;
+};
+
+struct TileHash {
+    std::size_t operator()(const Tile& tile) const {
+        return std::hash<int>()(tile.gridPosition.x) ^ 
+               (std::hash<int>()(tile.gridPosition.y) << 1);
+    }
+};
+
 #endif
