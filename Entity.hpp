@@ -35,7 +35,7 @@ public:
 	void SetPath(std::vector<Tile> path);
 	void UpdateMove(float moveSpeed, float deltaTime);
 	std::unordered_map<Tile, TileNode, TileHash> movementPreviewWithCost(Tile& start);
-	std::vector<Tile> getPath(Tile& start, Tile& end, std::unordered_map<Tile, TileNode, TileHash>& range);
+	std::vector<Tile> getPath(Tile& start, Tile& end, std::unordered_map<Tile, TileNode, TileHash>& movementRange);
 	std::vector<Tile> getWaypointPath(Tile& start, std::vector<Tile>& waypoints, Tile& hoveredTile);
 	void RenderMovementPreview(const std::unordered_map<Tile, TileNode, TileHash>& range);
 	void Draw();

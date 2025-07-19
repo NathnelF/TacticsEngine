@@ -103,79 +103,98 @@ void GameEntity::UpdateMove(float moveSpeed, float deltaTime){
 }
 
 std::unordered_map<Tile, TileNode, TileHash> GameEntity::movementPreviewWithCost(Tile& start){
-	std::unordered_map<Tile, TileNode, TileHash> nodesInRange;
-	std::set<Tile> visited;
-	std::queue<std::tuple<Tile, float, float, Tile>> queue;
-
-	queue.push({start, 0.0f, 0.0f, start}); //costs nothing to move to currentTile.
-	visited.insert(start);
-
-	while (!queue.empty()){
-		auto [currentPos, totalCost, trueCost, parentPos] = queue.front();
-		queue.pop();
-		TileNode currentNode{currentPos, parentPos, totalCost};
-
-		nodesInRange[currentPos] = currentNode;
-		if (totalCost < speed){
-			std::vector<Tile> neighbors = parentGrid->getGridNeighbors(currentPos);
-			for (const auto& neighbor : neighbors){
-				if (neighbor.hasUnit || !neighbor.traversable){
-					float newTotal = 999.f;
-					float moveCost;
-					if (neighbor.gridPosition.x != currentPos.gridPosition.x && neighbor.gridPosition.y != currentPos.gridPosition.y){
-						//diagonal
-						moveCost = 1.414f;
-					} else {
-						//not diagonal
-						moveCost = 1.0f;
-					}
-					float newTrue = totalCost + moveCost;
-					queue.push({neighbor, newTotal, newTrue, currentPos});
-					visited.insert(neighbor);
-				}
-				else {
-					if (visited.find(neighbor) == visited.end()){
-						float moveCost;
-						if (neighbor.gridPosition.x != currentPos.gridPosition.x && neighbor.gridPosition.y != currentPos.gridPosition.y){
-							//diagonal
-							moveCost = 1.414f;
-						} else {
-							//not diagonal
-							moveCost = 1.0f;
-						}
-						float newTotal = totalCost + moveCost;
-						if (newTotal <= speed){
-							queue.push({neighbor, newTotal, newTotal, currentPos});
-							visited.insert(neighbor);
-						}
-					}
-
-				}
-			
-			}
-		}
-	}
-	return nodesInRange;
+    std::unordered_map<Tile, TileNode, TileHash> nodesInRange;
+    std::unordered_map<Tile, float, TileHash> distances; // Track best known distances
+    std::priority_queue<std::tuple<Tile, float, float, Tile>, 
+                       std::vector<std::tuple<Tile, float, float, Tile>>, 
+                       NodeComparator> pq;
+    
+    // Initialize start node
+    pq.push({start, 0.0f, 0.0f, start});
+    distances[start] = 0.0f;
+    
+    while (!pq.empty()){
+        auto [currentPos, totalCost, trueCost, parentPos] = pq.top();
+        pq.pop();
+        
+        // Skip if we've already found a better path to this tile
+        if (distances.find(currentPos) != distances.end() && 
+            distances[currentPos] < totalCost) {
+            continue;
+        }
+        
+        // Add to results
+        TileNode currentNode{currentPos, parentPos, totalCost, trueCost};
+        nodesInRange[currentPos] = currentNode;
+        
+        // Only explore neighbors if within movement range
+        if (totalCost < speed){
+            std::vector<Tile> neighbors = parentGrid->getGridNeighbors(currentPos);
+            for (const auto& neighbor : neighbors){
+                float moveCost = (neighbor.gridPosition.x != currentPos.gridPosition.x && 
+                                neighbor.gridPosition.y != currentPos.gridPosition.y) ? 1.414f : 1.0f;
+                
+                if (neighbor.hasUnit || !neighbor.traversable){
+                    // Add unreachable tiles with high cost for outline generation
+                    float newTotal = 999.0f;
+                    float newTrue = trueCost + moveCost;
+                    
+                    // Only add if we haven't processed this tile or found a better path
+                    if (distances.find(neighbor) == distances.end() || 
+                        distances[neighbor] > newTrue) {
+                        distances[neighbor] = newTrue;
+                        pq.push({neighbor, newTotal, newTrue, currentPos});
+                    }
+                } else {
+                    float newTotal = totalCost + moveCost;
+                    float newTrue = trueCost + moveCost;
+                    
+                    // Only add if within range and we haven't found a better path
+                    if (newTotal <= speed && 
+                        (distances.find(neighbor) == distances.end() || 
+                         distances[neighbor] > newTotal)) {
+                        distances[neighbor] = newTotal;
+                        pq.push({neighbor, newTotal, newTrue, currentPos});
+                    }
+                }
+            }
+        }
+    }
+    return nodesInRange;
 }
 
-std::vector<Tile> GameEntity::getPath(Tile& start, Tile& end, std::unordered_map<Tile, TileNode, TileHash>& range){
-	std::vector<Tile> path;
-
-	if (range.find(end) == range.end()){
-		return path;
-	} else {
-		Tile current = end;
-
-		while (current.gridPosition != start.gridPosition){
-			path.push_back(current);
-			current = range[current].parentTile;
-		}
-		path.push_back(start);
-		std::reverse(path.begin(), path.end());
-		return path;
-	}
-	
+std::vector<Tile> GameEntity::getPath(Tile& start, Tile& target, std::unordered_map<Tile, TileNode, TileHash>& movementRange) {
+    std::vector<Tile> path;
+    
+    // Check if target is reachable
+    auto targetIt = movementRange.find(target);
+    if (targetIt == movementRange.end() || targetIt->second.cost >= 999.0f) {
+        return path; // Empty path if unreachable
+    }
+    
+    // Trace back from target to start
+    Tile current = target;
+    Tile startTile = start; // Your entity's current position
+    
+    while (current.gridPosition != startTile.gridPosition) {
+        path.push_back(current);
+        
+        auto currentIt = movementRange.find(current);
+        if (currentIt == movementRange.end()) {
+            // Error in path reconstruction
+            return {};
+        }
+        
+        current = currentIt->second.parentTile;
+    }
+    
+    path.push_back(startTile); // Add start position
+    std::reverse(path.begin(), path.end()); // Reverse to get start->target order
+    
+    return path;
 }
+
+
 std::vector<Tile> GameEntity::getWaypointPath(Tile& start, std::vector<Tile>& waypoints, Tile& hoveredTile){
 	std::vector<Tile> path;
 	if (waypoints.empty()) return path;

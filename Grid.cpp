@@ -154,11 +154,11 @@ std::vector<TileEdge> Grid::getMovementRangeOutline(const std::unordered_map<Til
 				//this checks to see if the neighbor is outside of the range. If it is, then the current tile marks the boundary of movement.
 				if (movementRange.find(neighbor) == movementRange.end()){
 					// check if the boundary would otherwise be traversable
-					float neighborCost = checkNeighborCost(node, neighbor, true);
-					if (neighborCost >= speed-1.414f){
-						std::cout << "Neighbor cost of: " << neighborCost << " at (" << neighbor.gridPosition.x << " , " << neighbor.gridPosition.y << " )\n"; 
+					// float neighborCost = node.trueCost;
+					// std::cout << "Neighbor cost of: " << neighborCost << " at (" << neighbor.gridPosition.x << " , " << neighbor.gridPosition.y << " )\n"; 
+					// if (neighborCost < speed) {
 						outline.push_back({tile, direction});
-					}
+					// }
 				
 				}
 					
