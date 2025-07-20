@@ -12,7 +12,7 @@ Tile::Tile(){
 		};
 		traversable = true;
 		hasUnit = false;
-		color = tileDefaultColor;
+		currentColor = tileDefaultColorFaded;
 		bounds = {
 			(Vector3){worldPosition.x - TILE_SIZE / 2.0f, worldPosition.y - 0.1f / 2.0f, worldPosition.z - TILE_SIZE / 2.0f},
 			(Vector3){worldPosition.x + TILE_SIZE / 2.0f, worldPosition.y + 0.1f / 2.0f, worldPosition.z + TILE_SIZE / 2.0f}
@@ -30,7 +30,7 @@ Tile::Tile(int x, int y){
 		};
 		traversable = true;
 		hasUnit = false;
-		color = tileDefaultColor;
+		currentColor = tileDefaultColorFaded;
 		bounds = {
 			(Vector3){(float)x * TILE_SIZE - TILE_SIZE, 0.0f, (float)y * TILE_SIZE - TILE_SIZE},
 			(Vector3){(float)x * TILE_SIZE, 0.0f, (float)y * TILE_SIZE},
@@ -65,6 +65,6 @@ void Tile::addEntity(GameEntity* newEntity){
 }
 
 
-void Tile::DrawTile(){
+void Tile::DrawTile(Color color){
 		DrawCubeWires(worldPosition, TILE_SIZE, 0.01f, TILE_SIZE, color);
 }

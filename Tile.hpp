@@ -13,7 +13,7 @@ public:
 	float height;
 	bool hasUnit;
 	bool traversable;
-	Color color;
+	Color currentColor;
 	BoundingBox bounds;
 	GameEntity* entity;
 
@@ -21,7 +21,7 @@ public:
 	Tile();
 	bool operator<(const Tile& other) const;
 	bool operator==(const Tile& other) const;
-	void DrawTile();
+	void DrawTile(Color color);
 	GameEntity* getEntity();
 	void addEntity(GameEntity* entity);
 };

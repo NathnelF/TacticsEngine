@@ -1,5 +1,6 @@
 
 #include "Grid.hpp"
+#include "config.hpp"
 #include <raylib.h>
 #include <raymath.h>
 #include <stdexcept>
@@ -21,7 +22,7 @@ Grid::Grid(int gridWidth, int gridHeight):
 			};
 			tiles[row][col].traversable = true;
 			tiles[row][col].hasUnit = false;
-			tiles[row][col].color = tileDefaultColor;
+			tiles[row][col].currentColor = tileDefaultColorFaded;
 			tiles[row][col].bounds = {
 				(Vector3){(float)col * TILE_SIZE - TILE_SIZE, 0.0f, (float)row * TILE_SIZE - TILE_SIZE},
 				(Vector3){(float)col * TILE_SIZE, 0.0f, (float)row * TILE_SIZE},
@@ -200,15 +201,20 @@ void Grid::RenderOutline(const std::vector<TileEdge>& outline){
     }
 }
 
-
-void Grid::RenderGrid(){
-	  for (int row = 0; row < GRID_HEIGHT; row++ ){
-		for (int col = 0; col < GRID_WIDTH; col++){
-			Tile& currentTile = getTile(row, col);
-			currentTile.DrawTile();
-		}
+void Grid::HighlightMovementRange(const std::unordered_map<Tile, TileNode, TileHash>& range){
+	for (auto& [tile, node] : range){
+		Tile& mutTile = getTile(tile.gridPosition.x, tile.gridPosition.y);
+		mutTile.DrawTile(tileScootColor);
 	}
 }
+
+void Grid::HideMovementRange(const std::unordered_map<Tile, TileNode, TileHash>& range){
+	for (auto& [tile, node] : range){
+		Tile& mutTile = getTile(tile.gridPosition.x, tile.gridPosition.y);
+		mutTile.currentColor = tileDefaultColorFaded;
+	}
+}
+
 
 void Grid::RenderWaypoints(const Tile& waypoint, Color color){
 	Vector3 pos = waypoint.worldPosition;

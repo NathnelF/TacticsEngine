@@ -166,30 +166,27 @@ std::unordered_map<Tile, TileNode, TileHash> GameEntity::movementPreviewWithCost
 std::vector<Tile> GameEntity::getPath(Tile& start, Tile& target, std::unordered_map<Tile, TileNode, TileHash>& movementRange) {
     std::vector<Tile> path;
     
-    // Check if target is reachable
     auto targetIt = movementRange.find(target);
     if (targetIt == movementRange.end() || targetIt->second.cost >= 999.0f) {
-        return path; // Empty path if unreachable
+        return path; 
     }
     
-    // Trace back from target to start
     Tile current = target;
-    Tile startTile = start; // Your entity's current position
+    Tile startTile = start; 
     
     while (current.gridPosition != startTile.gridPosition) {
         path.push_back(current);
         
         auto currentIt = movementRange.find(current);
         if (currentIt == movementRange.end()) {
-            // Error in path reconstruction
             return {};
         }
         
         current = currentIt->second.parentTile;
     }
     
-    path.push_back(startTile); // Add start position
-    std::reverse(path.begin(), path.end()); // Reverse to get start->target order
+    path.push_back(startTile); 
+    std::reverse(path.begin(), path.end()); 
     
     return path;
 }
@@ -209,7 +206,6 @@ std::vector<Tile> GameEntity::getWaypointPath(Tile& start, std::vector<Tile>& wa
 		if (curRange.find(hoveredTile) == curRange.end()){
 			return path;
 		}
-		// std::cout << "checking path\n";
 
 		if (curPath.empty()){
 			return path;
@@ -248,9 +244,3 @@ void GameEntity::Draw(){
 }
 
 
-void GameEntity::RenderMovementPreview(const std::unordered_map<Tile, TileNode, TileHash>& range){
-	for (const auto& [tile, node] : range){
-		Vector3 pos = tile.worldPosition;
-		DrawCube(pos, 0.5f, 0.01f, 0.5f, YELLOW);
-	}
-}

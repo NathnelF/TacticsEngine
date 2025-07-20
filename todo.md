@@ -1,16 +1,9 @@
-Grid:
-    - Draw borders around The last tile in blue / yellow move range
-    - because we now have a cost associated with each tile it tells you how far it is from the player
-    - Which should let us wrap around tiles easier.
 
-Tile:
-    - Make a TileNode struct that has it's cost to move to
-
-Entity:
-    - Calculate TileNodes that are in blue / yellow move range on select.
-    - 
-
-
-Optimization:
-    If we run into path calculation issues play with calculating paths once and then storing them on selection.
-    It might make waypoints a little trickier though.
+1. Implement turns
+2. Once per entity per turn, compute movement cost to all tiles (or all tiles in a max range)
+3. Cache the computed tiles and their cost to reach.
+4. Generate movement ranges based on all tiles with a cost less than speed.
+5. Reconstruct a minimum cost path for each tile within movement range.
+6. Outline the movement range
+    a. Search tiles within range to see if they border a higher cost tile
+    b. 
