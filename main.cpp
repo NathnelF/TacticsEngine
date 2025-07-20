@@ -3,21 +3,12 @@
 #include "Grid.hpp"
 #include "Tile.hpp"
 #include "config.hpp"
+#include "camera.hpp"
 #include <iostream>
 #include <memory>
 #include <raylib.h>
 #include <raymath.h>
 #include <vector>
-
-
-
-bool operator<(const Vector2& a, const Vector2& b) {
-    if (a.x != b.x) {
-        return a.x < b.x;
-    }
-    return a.y < b.y;
-}
-
 
 
 int main() {
@@ -47,7 +38,6 @@ int main() {
 	}
 	std::unique_ptr<GameEntity>& firstEntityPtr = AllEntities.at(0);
 	Vector3 initialCameraPos = (Vector3){(float)firstEntityPtr->position.x, 1.0f, (float)firstEntityPtr->position.z};
-	Tile* previouslyHoveredTile = NULL;
 
 	
 	std::vector<Tile> pathPreviewRange;
@@ -55,30 +45,13 @@ int main() {
 
 	std::vector<Tile> waypoints;
 
-	std::unordered_map<Tile, TileNode, TileHash> nodesInRange;
-
 	bool showGrid = false;
 
 	int numPlayers = AllEntities.size();
 	int entityIndex = 0;
 
 	Camera3D camera = {0};
-	camera.position = (Vector3){10.0f, 50.0f, 10.f};
-	camera.target = initialCameraPos; 
-	camera.up = (Vector3){0.0f, 1.0f, 0.0f};
-	camera.fovy = 35.0f;
-	camera.projection = CAMERA_PERSPECTIVE;
-
-
-	float cameraPitch = 45.0f;
-	float cameraYaw = 45.0f;
-	float cameraDistance = 45.0f;
-	Vector3 cameraTarget = initialCameraPos;
-
-	float moveSpeed = 10.0f;
-	float panSpeed = 3.0f;
-	float zoomSpeed = 2.0f;
-	float snapRotation = 4.0f;
+	initCamera(camera, initialCameraPos);
 	SetTargetFPS(60);
 
 	float lastFrame = GetTime();
@@ -93,10 +66,6 @@ int main() {
 		Tile* hoveredTile = NULL;
 		Tile* currentWaypoint = NULL;
 	
-		
-		if (previouslyHoveredTile != NULL){
-				previouslyHoveredTile = NULL;
-			}
 		for (int x = 0; x < GRID_WIDTH; x++){
 			for (int y = 0; y < GRID_HEIGHT; y++){
 				Tile& currentTile = grid.getTile(x,y);

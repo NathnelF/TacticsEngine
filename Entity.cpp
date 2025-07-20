@@ -257,3 +257,9 @@ void GameEntity::HighlightMovementRange(){
 		}
 	}
 }
+
+
+
+void GameEntity::CreateEntityInGame(std::vector<std::unique_ptr<GameEntity>> AllEntities, int x, int y, Color color, float speed){
+	// AllEntities.push_back(G)
+}

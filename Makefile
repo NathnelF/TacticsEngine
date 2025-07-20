@@ -1,9 +1,9 @@
 build: game
 
-game: main.o Entity.o Tile.o Grid.o utils.o
-	g++ main.o Entity.o Tile.o Grid.o utils.o -o game -lraylib -lm -Wall
+game: main.o Entity.o Tile.o Grid.o utils.o camera.o
+	g++ main.o Entity.o Tile.o Grid.o utils.o camera.o -o game -lraylib -lm -Wall
 
-main.o: main.cpp Entity.hpp Tile.hpp Grid.hpp utils.hpp
+main.o: main.cpp Entity.hpp Tile.hpp Grid.hpp utils.hpp camera.hpp
 	g++ -c main.cpp -o main.o -Wall
 
 Entity.o: Entity.cpp Entity.hpp
@@ -17,6 +17,9 @@ Tile.o: Tile.cpp Tile.hpp
 
 utils.o: utils.cpp utils.hpp
 	g++ -c utils.cpp -o utils.o -Wall
+
+camera.o: camera.cpp camera.hpp
+	g++ -c camera.cpp -o camera.o -Wall
 
 
 clean:

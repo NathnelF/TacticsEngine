@@ -6,6 +6,7 @@
 #include "Tile.hpp"
 #include "Grid.hpp"
 #include <unordered_map>
+#include <memory>
 
 
 class GameEntity{
@@ -40,6 +41,8 @@ public:
 
 	void HighlightMovementRange();
 	void Draw();
+	
+	void CreateEntityInGame(std::vector<std::unique_ptr<GameEntity>> AllEntities, int x, int y, Color color, float speed);
 };
 
 #endif
