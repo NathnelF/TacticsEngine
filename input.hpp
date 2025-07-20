@@ -19,8 +19,17 @@ namespace Input {
 		bool rotateLeft = false;
 		bool rotateRight = false;
 	};
+	struct MouseInput {
 
-	void updateInput();
+        	Vector2 screenPosition = {0.0f, 0.0f};    // Raw mouse screen coords
+		Vector2 gridPosition = {-1.0f, -1.0f};    // Grid coordinates (-1,-1 = invalid)
+		bool leftClicked = false;
+		bool rightClicked = false;
+		bool hasValidGridPos = false;             // True if mouse is over valid grid tile
+	};
+
+	void updateInput(Camera3D& camera, Vector3 worldOrigin, int gridWidth, int gridHeight);
 
 	const CameraInput& getCameraInput();
+	const MouseInput& getMouseInput();
 }
