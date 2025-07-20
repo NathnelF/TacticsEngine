@@ -1,6 +1,9 @@
+
 #pragma once
 
 #include <raylib.h>
+#include <raymath.h>
+#include "input.hpp"
 
 
 extern float cameraPitch;
@@ -13,3 +16,5 @@ extern 	float zoomSpeed;
 extern 	float snapRotation;
 
 void initCamera(Camera3D& camera, Vector3 initialCameraPos);
+void updateCamera(Camera3D& camera, const Input::CameraInput& input);
+

@@ -1,25 +1,30 @@
+
 build: game
 
-game: main.o Entity.o Tile.o Grid.o utils.o camera.o
-	g++ main.o Entity.o Tile.o Grid.o utils.o camera.o -o game -lraylib -lm -Wall
+game: main.o camera.o input.o grid.o #Entity.o Tile.o Grid.o utils.o
+	g++ main.o camera.o input.o grid.o -o game -lraylib -lm -Wall
+	# g++ main.o Entity.o Tile.o Grid.o utils.o camera.o -o game -lraylib -lm -Wall
 
-main.o: main.cpp Entity.hpp Tile.hpp Grid.hpp utils.hpp camera.hpp
+main.o: main.cpp camera.hpp input.hpp grid.hpp #Entity.hpp Tile.hpp Grid.hpp utils.hpp
 	g++ -c main.cpp -o main.o -Wall
 
-Entity.o: Entity.cpp Entity.hpp
-	g++ -c Entity.cpp -o Entity.o -Wall
+# Entity.o: Entity.cpp Entity.hpp
+	# g++ -c Entity.cpp -o Entity.o -Wall
 
-Grid.o: Grid.cpp Grid.hpp Tile.hpp
-	g++ -c Grid.cpp -o Grid.o -Wall
+grid.o: grid.cpp grid.hpp 
+	g++ -c grid.cpp -o grid.o -Wall
 
-Tile.o: Tile.cpp Tile.hpp
-	g++ -c Tile.cpp -o Tile.o -Wall
+# Tile.o: Tile.cpp Tile.hpp
+	# g++ -c Tile.cpp -o Tile.o -Wall
 
-utils.o: utils.cpp utils.hpp
-	g++ -c utils.cpp -o utils.o -Wall
+# utils.o: utils.cpp utils.hpp
+	# g++ -c utils.cpp -o utils.o -Wall
 
-camera.o: camera.cpp camera.hpp
+camera.o: camera.cpp camera.hpp input.hpp
 	g++ -c camera.cpp -o camera.o -Wall
+
+input.o: input.hpp input.hpp
+	g++ -c input.cpp -o input.o -Wall
 
 
 clean:
