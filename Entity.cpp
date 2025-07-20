@@ -128,7 +128,7 @@ std::unordered_map<Tile, TileNode, TileHash> GameEntity::movementPreviewWithCost
         nodesInRange[currentPos] = currentNode;
         
         // Only explore neighbors if within movement range
-        if (totalCost < speed){
+        if (totalCost < speed*2){
             std::vector<Tile> neighbors = parentGrid->getGridNeighbors(currentPos);
             for (const auto& neighbor : neighbors){
                 float moveCost = (neighbor.gridPosition.x != currentPos.gridPosition.x && 
@@ -150,7 +150,7 @@ std::unordered_map<Tile, TileNode, TileHash> GameEntity::movementPreviewWithCost
                     float newTrue = trueCost + moveCost;
                     
                     // Only add if within range and we haven't found a better path
-                    if (newTotal <= speed && 
+                    if (newTotal <= speed*2 && 
                         (distances.find(neighbor) == distances.end() || 
                          distances[neighbor] > newTotal)) {
                         distances[neighbor] = newTotal;
@@ -244,3 +244,16 @@ void GameEntity::Draw(){
 }
 
 
+void GameEntity::HighlightMovementRange(){
+	for (auto& [tile, node] : movementRange){
+		if (node.cost < speed){
+			Tile& mutTile = parentGrid->getTile(tile.gridPosition.x, tile.gridPosition.y);
+			mutTile.DrawTile(tileScootColor);
+
+		}
+		else {
+			Tile& mutTile = parentGrid->getTile(tile.gridPosition.x, tile.gridPosition.y);
+			mutTile.DrawTile(tileDashColor);
+		}
+	}
+}

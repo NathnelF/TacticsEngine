@@ -296,7 +296,7 @@ int main() {
 					entityPtr->Draw(); // Each entity draws itself
 				}
 				if (showGrid && currentlySelected != nullptr){
-					grid.HighlightMovementRange(currentlySelected->movementRange);
+					currentlySelected->HighlightMovementRange();
 				}
 				if (hoveredTile != NULL){
 					hoveredTile->DrawTile(tileScootColorBright);

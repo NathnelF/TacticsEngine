@@ -201,20 +201,6 @@ void Grid::RenderOutline(const std::vector<TileEdge>& outline){
     }
 }
 
-void Grid::HighlightMovementRange(const std::unordered_map<Tile, TileNode, TileHash>& range){
-	for (auto& [tile, node] : range){
-		Tile& mutTile = getTile(tile.gridPosition.x, tile.gridPosition.y);
-		mutTile.DrawTile(tileScootColor);
-	}
-}
-
-void Grid::HideMovementRange(const std::unordered_map<Tile, TileNode, TileHash>& range){
-	for (auto& [tile, node] : range){
-		Tile& mutTile = getTile(tile.gridPosition.x, tile.gridPosition.y);
-		mutTile.currentColor = tileDefaultColorFaded;
-	}
-}
-
 
 void Grid::RenderWaypoints(const Tile& waypoint, Color color){
 	Vector3 pos = waypoint.worldPosition;

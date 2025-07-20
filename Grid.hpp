@@ -57,8 +57,6 @@ public:
 	TileEdge::Direction getDirectOppositeEdge(TileEdge::Direction direction);
 	float checkNeighborCost(const TileNode& start, Tile& neighbor, bool ignoreImpassable);
 
-	void HighlightMovementRange(const std::unordered_map<Tile, TileNode, TileHash>& range);
-	void HideMovementRange(const std::unordered_map<Tile, TileNode, TileHash>& range);
 	void RenderPathRange(const std::vector<Tile>&, Color color);
 	void RenderGrid();
 	void RenderWaypoints(const Tile& waypoint, Color color);
