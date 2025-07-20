@@ -25,15 +25,25 @@ int main(){
 		updateCamera(camera, Input::getCameraInput());
 
 		const auto& mouseInput = Input::getMouseInput();
+		int x = (int)mouseInput.gridPosition.x;
+		int y = (int)mouseInput.gridPosition.y;
+
 
 		if (mouseInput.leftClicked && mouseInput.hasValidGridPos){
-			int x = (int)mouseInput.gridPosition.x;
-			int y = (int)mouseInput.gridPosition.y;
-			    printf("Clicked grid tile: (%d, %d)\n", x, y);
+			printf("Clicked grid tile: (%d, %d)\n", x, y);
+			std::cout << TacticalGrid::isUnitAt(x,y) << " unit at ( " << x << " , " << y << ")\n";
+			if (TacticalGrid::getUnitAt(x,y) != nullptr) selectedUnit = TacticalGrid::getUnitAt(x,y);
 		}
 
 		if (selectedUnit){
 			TacticalGrid::calculateMovementRange(selectedUnit->id);
+		}
+
+		if (selectedUnit && mouseInput.hasValidGridPos && IsKeyPressed(KEY_M)){
+			if (TacticalGrid::inRange(x,y)) {
+				TacticalGrid::moveUnit(selectedUnit->id, x, y);
+				std::cout << "moved unit to " << x << " , " << y << ")\n";
+			}
 		}
 
 		if (IsKeyPressed(KEY_T)){

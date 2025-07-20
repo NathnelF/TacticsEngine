@@ -53,6 +53,8 @@ namespace TacticalGrid {
 	bool isUnitAt(int x, int y);
 	void moveUnit(int unitId, int newX, int newY);
 
+	bool inRange(int x, int y);
+
 	void calculateMovementRange(int unitId);
 	void showMovementPath(int fromX, int fromY, int toX, int toY); 
 	

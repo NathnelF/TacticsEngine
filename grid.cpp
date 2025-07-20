@@ -94,15 +94,25 @@ namespace TacticalGrid {
 	bool isUnitAt(int x, int y){
 		return getUnitAt(x, y) != nullptr;
 	}
+
+	bool inRange(int x, int y){
+		if (x < 0 || x >= GRID_WIDTH || y < 0 || y >= GRID_HEIGHT){
+			return false;
+		}
+		return movementGrid[y][x];
+
+	}
 	
 	void moveUnit(int unitId, int newX, int newY){
 		if (!isPassable(newX, newY)) return;
+
+		if (!inRange(newX, newY)) return;
 		
 		for (auto& unit : units){
 			if (unitId == unit.id){
 				unitGrid[(int)unit.gridPosition.y][(int)unit.gridPosition.x] = -1;
 
-				unit.gridPosition = {(float)newY, (float)newX};
+				unit.gridPosition = {(float)newX, (float)newY};
 				unitGrid[newY][newX] = unitId;
 				break;
 			}
