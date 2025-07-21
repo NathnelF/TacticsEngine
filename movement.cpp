@@ -35,16 +35,15 @@ namespace Movement{
 		for (auto& movingUnit : movingUnits){
 
 			movingUnit.moveProgress += movementSpeed * deltaTime;
-			std::cout << "Current moveProgress: " << movingUnit.moveProgress << std::endl;
-
+			// std::cout << "Current moveProgress: " << movingUnit.moveProgress << std::endl;
 			Vector3 startPos = TacticalGrid::gridToWorldPosition(movingUnit.path[movingUnit.currentWaypointIndex], 1.0f);
-			std::cout << "Current position " << startPos << std::endl;
+			// std::cout << "Current position " << startPos << std::endl;
 			Vector3 targetPos = TacticalGrid::gridToWorldPosition(movingUnit.path[movingUnit.currentWaypointIndex + 1], 1.0f);
-			std::cout << "Current target pos " << targetPos << std::endl;
+			// std::cout << "Current target pos " << targetPos << std::endl;
 		
 
 			if (movingUnit.moveProgress >= 1.0f){
-				std::cout << "reached waypoint!\n";
+				// std::cout << "reached waypoint!\n";
 				movingUnit.moveProgress = 0.0f;
 				//we have reached the next waypoint
 				movingUnit.currentWaypointIndex++;
@@ -62,12 +61,12 @@ namespace Movement{
 					movingUnit.currentWaypointIndex = -1;
 				}
 			} else {
-				std::cout << "Not at waypoint yet.\n";
+				// std::cout << "Not at waypoint yet.\n";
 				//move to next waypoint
 				Vector3 newPos = Vector3Lerp(startPos, targetPos, movingUnit.moveProgress);
-				std::cout << "New position will be " << newPos << std::endl;
+				// std::cout << "New position will be " << newPos << std::endl;
 				movingUnit.position = newPos;
-				std::cout << "Position updated to " << movingUnit.position << std::endl;
+				// std::cout << "Position updated to " << movingUnit.position << std::endl;
 			}
 
 		}

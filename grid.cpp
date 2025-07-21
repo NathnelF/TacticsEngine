@@ -3,6 +3,7 @@
 #include <queue>
 #include <iostream>
 #include <algorithm>
+#include <raymath.h>
 
 std::ostream& operator<<(std::ostream& os, const Vector3& v) {
     os << "(" << v.x << ", " << v.y << ", " << v.z << ")";
@@ -210,11 +211,11 @@ namespace TacticalGrid {
 	
         }
 
-	std::vector<Vector2> reconstructPath(int fromX, int fromY, int toX, int toY) {
+	std::vector<Vector2> reconstructPath(int fromX, int fromY, int toX, int toY, float speed) {
 		std::vector<Vector2> path;
 
 		// Check if destination is reachable
-		if (movementGrid[toY][toX].cost < 0 || movementGrid[toY][toX].cost > 7.0f) {
+		if (movementGrid[toY][toX].cost < 0 || movementGrid[toY][toX].cost > speed) {
 			return path; // Empty path = unreachable
 		}
 
@@ -285,8 +286,15 @@ namespace TacticalGrid {
 					case TILE_TREE: color = DARKGREEN; break;
 					case TILE_ROCK: color = DARKGRAY; break;
 				}
-
-				DrawCube(terrainPos, 2.0f, 2.0f, 2.0f, color);
+				float height;
+				switch (terrainGrid[y][x]) {
+					case TILE_WALL: height = 4.0f; break;
+					case TILE_BOX: height = 2.0f; break;
+					case TILE_TREE: height = 4.0f; break;
+					case TILE_ROCK: height = 2.0f; break;
+				}
+				DrawCube(terrainPos, 2.0f, height, 2.0f, color);
+				
 				// DrawCubeWires(wirePos, TILE_SIZE, 0.1f, TILE_SIZE, BLACK);
 			}
 		
@@ -315,6 +323,32 @@ namespace TacticalGrid {
 				}
 			}
 		}
+	}
+
+	void drawPathPreview(std::vector<Vector2> path, Color color){
+		if (path.size() < 3){
+			return;
+		}
+
+		auto from = path.begin();
+		auto to = from;
+		to++;
+
+		while (to != path.end()){
+			Vector3 start = gridToWorldPosition(*from, 0.0f);
+			Vector3 end = gridToWorldPosition(*to, 0.0f);
+
+			auto temp = to;
+			temp++;
+			if (temp == path.end()){
+				Vector3 direction = Vector3Normalize(Vector3Subtract(end, start));
+				end = Vector3Subtract(end, Vector3Scale(direction, TILE_SIZE / 2.0f));
+			}
+			DrawLine3D(start, end, color);
+			from++;
+			to++;
+		}
+		
 	}
 
 }

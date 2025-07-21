@@ -72,7 +72,7 @@ namespace TacticalGrid {
 	float getUnitMultiplier(int x, int y);
 
 	void calculateMovementRange(int unitId);
-	std::vector<Vector2> reconstructPath(int fromX, int fromY, int toX, int toY);
+	std::vector<Vector2> reconstructPath(int fromX, int fromY, int toX, int toY, float speed);
 	void showMovementPath(std::vector<Vector2>); 
 	
 	void setSelectedHighlight(int unitId);
@@ -81,4 +81,5 @@ namespace TacticalGrid {
 	void drawTerrain(Vector3 worldOrigin);
 	void drawUnits(Vector3 worldOrigin);
 	void drawMovementOverlay(Vector3 worldOrigin);
+	void drawPathPreview(std::vector<Vector2> path, Color color);
 }
