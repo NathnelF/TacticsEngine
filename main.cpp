@@ -4,6 +4,7 @@
 #include "input.hpp"
 #include "grid.hpp"
 #include <iostream>
+#include "movement.hpp"
 
 
 
@@ -22,7 +23,12 @@ int main(){
 	int timer = 0;
 	bool showHover = false;
 
+	float lastFrame = GetTime();
+
 	while (!WindowShouldClose()){
+		float currentFrame = GetTime();
+		float deltaTime = currentFrame - lastFrame;
+		lastFrame = currentFrame;
 		
 		Input::updateInput(camera, worldOrigin, GRID_WIDTH, GRID_HEIGHT);
 		updateCamera(camera, Input::getCameraInput());
@@ -37,6 +43,17 @@ int main(){
 
 		if (mouseInput.hasValidGridPos && selectedUnit){
 			showHover = TacticalGrid::inRange(x, y, selectedUnit->speed);
+			if (IsKeyPressed(KEY_M)){
+				std::vector<Vector2> path = TacticalGrid::reconstructPath((int)selectedUnit->gridPosition.x, (int)selectedUnit->gridPosition.y, x, y);
+				if (!path.empty()){
+					for (auto& cord : path){
+						std::cout << cord << " ";
+					}
+					std::cout << std::endl;
+					Movement::setPath(selectedUnit, path);
+					std::cout << "Started unit moving!\n";
+				}
+			}
 		}
 		if (mouseInput.leftClicked && mouseInput.hasValidGridPos){
 			printf("Clicked grid tile: (%d, %d)\n", x, y);
@@ -54,6 +71,10 @@ int main(){
 			std::cout << selectedUnit->gridPosition.x << " , " << selectedUnit->gridPosition.y << std::endl;
 		}
 
+		Movement::updateMove(deltaTime);
+
+		
+
 
 		BeginDrawing();
 			ClearBackground(RAYWHITE);
@@ -61,6 +82,7 @@ int main(){
 				TacticalGrid::drawTerrain(worldOrigin);
 				TacticalGrid::setSelectedHighlight(selectedUnit->id);
 				TacticalGrid::drawUnits(worldOrigin);
+				Movement::drawMovingUnits(worldOrigin);	
 				TacticalGrid::drawMovementOverlay(worldOrigin);
 				if (showHover) TacticalGrid::drawHoverHighlight(x, y, worldOrigin);
 		

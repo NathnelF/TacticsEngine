@@ -1,11 +1,14 @@
 
 build: game
 
-game: main.o camera.o input.o grid.o 
-	g++ main.o camera.o input.o grid.o -o game -lraylib -lm -Wall
+game: main.o camera.o input.o grid.o movement.o 
+	g++ main.o camera.o input.o grid.o movement.o -o game -lraylib -lm -Wall
 
-main.o: main.cpp camera.hpp input.hpp grid.hpp   
+main.o: main.cpp camera.hpp input.hpp grid.hpp movement.hpp 
 	g++ -c main.cpp -o main.o -Wall
+
+movement.o: movement.cpp movement.hpp grid.hpp
+	g++ -c movement.cpp -o movement.o -Wall
 
 grid.o: grid.cpp grid.hpp 
 	g++ -c grid.cpp -o grid.o -Wall

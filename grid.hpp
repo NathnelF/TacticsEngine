@@ -2,6 +2,7 @@
 #pragma once
 #include <raylib.h>
 #include <vector>
+#include <iostream>
 
 const int GRID_WIDTH = 30;
 const int GRID_HEIGHT = 30;
@@ -19,13 +20,14 @@ enum TileType {
 struct Unit {
 	int id;
 	Vector2 gridPosition;
-	float speed;
 
+	float speed;
 	int health;
 	int aim;
 	int resolve;
 
 	Color color;
+	bool isMoving;
 
 	//eventually they need a mesh / collider I think?
 	//	// maybe not on collider that might all be grid math.
@@ -36,6 +38,10 @@ struct MoveCell {
 	float cost;
 	Vector2 parent;
 };
+
+
+std::ostream& operator<<(std::ostream& os, const Vector3& v);
+std::ostream& operator<<(std::ostream& os, const Vector2& v);
 
 namespace TacticalGrid {
 	extern TileType terrainGrid[GRID_HEIGHT][GRID_WIDTH];
@@ -50,6 +56,8 @@ namespace TacticalGrid {
 	void clearMovementGrid();
 	void clearUnitGrid();
 	// void clearHighlightGrid();
+
+	Vector3 gridToWorldPosition(Vector2 gridPos, float yLevel);
 
 	void printMovementGrid();
 

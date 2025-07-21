@@ -4,6 +4,16 @@
 #include <iostream>
 #include <algorithm>
 
+std::ostream& operator<<(std::ostream& os, const Vector3& v) {
+    os << "(" << v.x << ", " << v.y << ", " << v.z << ")";
+    return os;
+}
+
+std::ostream& operator<<(std::ostream& os, const Vector2& v) {
+    os << "(" << v.x << ", " << v.y << ")";
+    return os;
+
+}
 namespace TacticalGrid {
 	TileType terrainGrid[GRID_HEIGHT][GRID_WIDTH];
 	int unitGrid[GRID_HEIGHT][GRID_WIDTH];
@@ -37,9 +47,9 @@ namespace TacticalGrid {
 		terrainGrid[9][6] = TILE_BOX;
 	
 		units.clear();
-		units.push_back({1, {5,5}, 6.0f, 5, 30, 30, RED});
-		units.push_back({2, {4,6}, 6.0f, 5, 28, 32, GREEN});
-		units.push_back({3, {5,7}, 7.0f, 3, 33, 25, BLUE});
+		units.push_back({1, {5,5}, 6.0f, 5, 30, 30, RED, false});
+		units.push_back({2, {4,6}, 6.0f, 5, 28, 32, GREEN, false});
+		units.push_back({3, {5,7}, 7.0f, 3, 33, 25, BLUE, false});
 
 		for (auto& unit : units){
 			unitGrid[(int)unit.gridPosition.y][(int)unit.gridPosition.x] = unit.id;
@@ -68,6 +78,11 @@ namespace TacticalGrid {
 				unitGrid[y][x] = -1;
 			}
 		}
+	}
+
+	Vector3 gridToWorldPosition(Vector2 gridPos, float yLevel){
+		Vector3 worldPos = {gridPos.x * TILE_SIZE, yLevel, gridPos.y * TILE_SIZE};
+		return worldPos;
 	}
 
 	bool isPassable(int x, int y){
@@ -172,10 +187,8 @@ namespace TacticalGrid {
 
 				float terrainMultiplier = getTerrainMultiplier(neighborX,neighborY);
 				if (terrainMultiplier < 0) continue;
-				if (neighborX != startX && neighborY != startY){
-					float unitMultiplier = getUnitMultiplier(neighborX,neighborY); 
-					if (unitMultiplier < 0) continue;
-				}
+				float unitMultiplier = getUnitMultiplier(neighborX,neighborY); 
+				if (unitMultiplier < 0) continue;
 			
 				float moveCost = costs[i] * terrainMultiplier;
 				float newCost = currentCost + moveCost;
@@ -279,11 +292,15 @@ namespace TacticalGrid {
 		
 		}
 	}
+
 	
 	void drawUnits(Vector3 worldOrigin){
 		for (auto& unit : units){
-			Vector3 unitPos = {worldOrigin.x + unit.gridPosition.x * TILE_SIZE, worldOrigin.y + 1.0f, worldOrigin.z + unit.gridPosition.y * TILE_SIZE};
-			DrawCube(unitPos, 1.5f, 1.0f, 1.5f, unit.color);
+			if (!unit.isMoving){
+				Vector3 unitPos = {worldOrigin.x + unit.gridPosition.x * TILE_SIZE, worldOrigin.y + 1.0f, worldOrigin.z + unit.gridPosition.y * TILE_SIZE};
+				DrawCube(unitPos, 1.5f, 1.0f, 1.5f, unit.color);
+			}
+				
 		}
 	}
 	
