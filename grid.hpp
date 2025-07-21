@@ -67,9 +67,9 @@ namespace TacticalGrid {
 	std::vector<Vector2> reconstructPath(int fromX, int fromY, int toX, int toY);
 	void showMovementPath(std::vector<Vector2>); 
 	
-	void setHighlight(int unitId);
-	
-	void drawHighlight(Vector3 worldOrigin);
+	void setSelectedHighlight(int unitId);
+
+	void drawHoverHighlight(int x, int y, Vector3 worldOrigin);
 	void drawTerrain(Vector3 worldOrigin);
 	void drawUnits(Vector3 worldOrigin);
 	void drawMovementOverlay(Vector3 worldOrigin);

@@ -97,7 +97,11 @@ namespace TacticalGrid {
 	}
 
 	bool inRange(int x, int y, float range){
-		//TBD
+		if (movementGrid[y][x].cost < 0.0f || movementGrid[y][x].cost > range){
+			return false;	
+		} else {
+			return true;
+		}
 	}
 
 	
@@ -234,14 +238,19 @@ namespace TacticalGrid {
 	}
 
 
-	void setHighlight(int unitId){
+	void setSelectedHighlight(int unitId){
 		for (auto& unit : units){
 			if (unitId == unit.id){
-				Vector3 Pos = {unit.gridPosition.x * TILE_SIZE, 0.0f, unit.gridPosition.y * TILE_SIZE};
-				DrawCubeWires(Pos, TILE_SIZE, 0.1f, TILE_SIZE, GOLD);
+				Vector3 pos = {unit.gridPosition.x * TILE_SIZE, 0.0f, unit.gridPosition.y * TILE_SIZE};
+				DrawCubeWires(pos, TILE_SIZE, 0.1f, TILE_SIZE, SKYBLUE);
 				break;
 			}
 		}
+	}
+
+	void drawHoverHighlight(int x, int y, Vector3 worldOrigin){
+		Vector3 pos = {worldOrigin.x + x * TILE_SIZE, worldOrigin.y, worldOrigin.z + y * TILE_SIZE};
+		DrawCubeWires(pos, TILE_SIZE, 0.15f, TILE_SIZE, GOLD);
 	}
 
 

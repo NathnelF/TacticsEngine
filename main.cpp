@@ -20,6 +20,7 @@ int main(){
 	Unit* selectedUnit = TacticalGrid::getUnitAt(5,5);
 
 	int timer = 0;
+	bool showHover = false;
 
 	while (!WindowShouldClose()){
 		
@@ -30,16 +31,19 @@ int main(){
 		int x = (int)mouseInput.gridPosition.x;
 		int y = (int)mouseInput.gridPosition.y;
 
+		if (selectedUnit){
+			TacticalGrid::calculateMovementRange(selectedUnit->id);
+		}
 
+		if (mouseInput.hasValidGridPos && selectedUnit){
+			showHover = TacticalGrid::inRange(x, y, selectedUnit->speed);
+		}
 		if (mouseInput.leftClicked && mouseInput.hasValidGridPos){
 			printf("Clicked grid tile: (%d, %d)\n", x, y);
 			std::cout << TacticalGrid::isUnitAt(x,y) << " unit at ( " << x << " , " << y << ")\n";
 			if (TacticalGrid::getUnitAt(x,y) != nullptr) selectedUnit = TacticalGrid::getUnitAt(x,y);
 		}
 
-		if (selectedUnit){
-			TacticalGrid::calculateMovementRange(selectedUnit->id);
-		}
 
 		if (selectedUnit && mouseInput.hasValidGridPos && IsKeyPressed(KEY_M)){
 		     //move to location 
@@ -55,9 +59,12 @@ int main(){
 			ClearBackground(RAYWHITE);
 			BeginMode3D(camera);
 				TacticalGrid::drawTerrain(worldOrigin);
-				TacticalGrid::setHighlight(selectedUnit->id);
+				TacticalGrid::setSelectedHighlight(selectedUnit->id);
 				TacticalGrid::drawUnits(worldOrigin);
 				TacticalGrid::drawMovementOverlay(worldOrigin);
+				if (showHover) TacticalGrid::drawHoverHighlight(x, y, worldOrigin);
+		
+
 			EndMode3D();
 		EndDrawing();
 	}
