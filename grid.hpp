@@ -31,10 +31,16 @@ struct Unit {
 	//	// maybe not on collider that might all be grid math.
 };
 
+struct MoveCell {
+	//should only be 12 bytes of storage.
+	float cost;
+	Vector2 parent;
+};
+
 namespace TacticalGrid {
 	extern TileType terrainGrid[GRID_HEIGHT][GRID_WIDTH];
 	extern int unitGrid[GRID_HEIGHT][GRID_WIDTH];
-	extern bool movementGrid[GRID_HEIGHT][GRID_WIDTH];
+	extern MoveCell movementGrid[GRID_HEIGHT][GRID_WIDTH];
 	// extern bool highlightGrid[GRID_HEIGHT][GRID_WIDTH];
 
 	extern std::vector<Unit> units; 
@@ -53,10 +59,13 @@ namespace TacticalGrid {
 	bool isUnitAt(int x, int y);
 	void moveUnit(int unitId, int newX, int newY);
 
-	bool inRange(int x, int y);
+	bool inRange(int x, int y, float range);
+	float getTerrainMultiplier(int x, int y);
+	float getUnitMultiplier(int x, int y);
 
 	void calculateMovementRange(int unitId);
-	void showMovementPath(int fromX, int fromY, int toX, int toY); 
+	std::vector<Vector2> reconstructPath(int fromX, int fromY, int toX, int toY);
+	void showMovementPath(std::vector<Vector2>); 
 	
 	void setHighlight(int unitId);
 	

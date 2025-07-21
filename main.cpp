@@ -5,6 +5,8 @@
 #include "grid.hpp"
 #include <iostream>
 
+
+
 int main(){
 	InitWindow(1200, 800, "Camera Test");
 	Camera3D camera = {0};
@@ -40,30 +42,26 @@ int main(){
 		}
 
 		if (selectedUnit && mouseInput.hasValidGridPos && IsKeyPressed(KEY_M)){
-			if (TacticalGrid::inRange(x,y)) {
-				TacticalGrid::moveUnit(selectedUnit->id, x, y);
-				std::cout << "moved unit to " << x << " , " << y << ")\n";
-			}
+		     //move to location 
 		}
+		
 
 		if (IsKeyPressed(KEY_T)){
 			std::cout << selectedUnit->gridPosition.x << " , " << selectedUnit->gridPosition.y << std::endl;
 		}
-		if (IsKeyPressed(KEY_P)){
-			TacticalGrid::printMovementGrid();
-		}
+
 
 		BeginDrawing();
 			ClearBackground(RAYWHITE);
 			BeginMode3D(camera);
 				TacticalGrid::drawTerrain(worldOrigin);
+				TacticalGrid::setHighlight(selectedUnit->id);
 				TacticalGrid::drawUnits(worldOrigin);
 				TacticalGrid::drawMovementOverlay(worldOrigin);
-				TacticalGrid::setHighlight(selectedUnit->id);
-		
 			EndMode3D();
 		EndDrawing();
 	}
 	CloseWindow();
 	return 0;
 }
+
