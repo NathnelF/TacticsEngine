@@ -43,22 +43,20 @@ struct MoveCell {
 
 std::ostream& operator<<(std::ostream& os, const Vector3& v);
 std::ostream& operator<<(std::ostream& os, const Vector2& v);
+std::ostream& operator<<(std::ostream& os, const std::vector<Vector2>& v);
 
 namespace TacticalGrid {
 	extern TileType terrainGrid[GRID_HEIGHT][GRID_WIDTH];
 	extern int unitGrid[GRID_HEIGHT][GRID_WIDTH];
 	extern MoveCell movementGrid[GRID_HEIGHT][GRID_WIDTH];
-	extern bool waypointGrid[GRID_HEIGHT][GRID_WIDTH];
 	// extern bool highlightGrid[GRID_HEIGHT][GRID_WIDTH];
 
 	extern std::vector<Unit> units; 
-	extern std::vector<Vector2> waypoints;
 
 	void initGrids();
 	void clearTerrainGrid();
 	void clearMovementGrid();
 	void clearUnitGrid();
-	void clearWaypoints();
 	// void clearHighlightGrid();
 
 	Vector3 gridToWorldPosition(Vector2 gridPos, float yLevel);
@@ -76,16 +74,13 @@ namespace TacticalGrid {
 	float getUnitMultiplier(int x, int y);
 
 	void calculateMovementRange(int unitD);
-	void calculateRangeFrom(int x, int y, float speed);
-	std::vector<Vector2> reconstructPath(int fromX, int fromY, int toX, int toY, float speed);
-	void showMovementPath(std::vector<Vector2>); 
-	
+	std::vector<Vector2> reconstructPath(int fromX, int fromY, int toX, int toY);
+
 	void setSelectedHighlight(int unitId);
 
 	void drawHoverHighlight(int x, int y, Vector3 worldOrigin);
 	void drawTerrain(Vector3 worldOrigin);
 	void drawUnits(Vector3 worldOrigin);
 	void drawMovementOverlay(Vector3 worldOrigin);
-	void drawWaypoints(Vector3 worldOrigin);
 	void drawPathPreview(std::vector<Vector2> path, Color color);
 }

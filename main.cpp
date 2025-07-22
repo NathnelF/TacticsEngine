@@ -19,15 +19,19 @@ int main(){
 	TacticalGrid::initGrids();
 
 	Unit* selectedUnit = TacticalGrid::getUnitAt(5,5);
+	TacticalGrid::calculateMovementRange(selectedUnit->id);
 
 	bool showHover = false;
-	bool showRange = false;
-	bool showWaypoints = false;
+	bool showRange = true;
 
 	std::vector<Vector2> pathPreview;
 	bool showPreview = false;
 
 	float lastFrame = GetTime();
+
+	int lastX = -999;
+	int lastY = -999;
+	bool mousePosChanged = false;
 
 	while (!WindowShouldClose()){
 		float currentFrame = GetTime();
@@ -41,54 +45,41 @@ int main(){
 		int x = (int)mouseInput.gridPosition.x;
 		int y = (int)mouseInput.gridPosition.y;
 
-		if (selectedUnit){	
-			if (!TacticalGrid::waypoints.empty()){
-				std::cout << "waypoint exists. Attempting to calc range!\n";
-				TacticalGrid::calculateRangeFrom((int)TacticalGrid::waypoints.back().x, (int)TacticalGrid::waypoints.back().y, selectedUnit->movePoints);	
-				// TacticalGrid::calculateWaypointRange(x, y, selectedUnit->speed);	
-				std::cout << "range successfully calculated.\n";
-				showWaypoints = !selectedUnit->isMoving;
-				std::cout << "show waypoints " << showWaypoints << std::endl;
-				showRange = !selectedUnit->isMoving;
-			} else {
-				TacticalGrid::calculateMovementRange(selectedUnit->id);
-				showRange = !selectedUnit->isMoving;
-				showWaypoints = false;
-			}
+		if (x != lastX || y != lastY){
+			mousePosChanged = true;
 		}
 
 		if (mouseInput.hasValidGridPos && selectedUnit){
+			showRange = !selectedUnit->isMoving;
+			 // std::cout <<"test\n";
+			TacticalGrid::calculateMovementRange(selectedUnit->id);	
 			if (TacticalGrid::inRange(x,y, selectedUnit->speed)){
 				showHover = TacticalGrid::inRange(x, y, selectedUnit->speed);
-				if (IsKeyPressed(KEY_O)){
-						TacticalGrid::waypoints.push_back({(float)x, (float)y});
-						float cost = TacticalGrid::movementGrid[y][x].cost;
-						selectedUnit->movePoints -= cost;
-						std::cout << "Attempted to add waypoint\n";
-						std::cout << TacticalGrid::waypoints[0] << std::endl;
-				}
-				if (TacticalGrid::waypoints.empty()){
-					pathPreview = TacticalGrid::reconstructPath((int)selectedUnit->gridPosition.x, (int)selectedUnit->gridPosition.y, x, y, selectedUnit->speed);
-					showPreview = !pathPreview.empty();
-					if (showPreview && IsKeyPressed(KEY_M)){
-						Movement::setPath(selectedUnit, pathPreview);
-						std::cout << "Started unit moving!\n";
-					} 
-				} else {
-					std::cout<<"waypoint exits\n";					
-				}
+				pathPreview = TacticalGrid::reconstructPath((int)selectedUnit->gridPosition.x, (int)selectedUnit->gridPosition.y, x, y);
+				showPreview = !pathPreview.empty();
+				if (showPreview && IsKeyPressed(KEY_M)){ 
+					Movement::setPath(selectedUnit, pathPreview);
+					std::cout << "Started unit moving!\n";
+					selectedUnit->movePoints = 0.0f;
+					TacticalGrid::calculateMovementRange(selectedUnit->id);
+					pathPreview.clear();
+				} 
+			} else pathPreview.clear();
+		} else pathPreview.clear();
+		
+		
+
 							
 
-			} else pathPreview.clear();
-				
-		} else pathPreview.clear();
+
+			
 		if (mouseInput.leftClicked && mouseInput.hasValidGridPos){
 			printf("Clicked grid tile: (%d, %d)\n", x, y);
 			std::cout << TacticalGrid::isUnitAt(x,y) << " unit at ( " << x << " , " << y << ")\n";
+			std::cout << "move cost from og pos " << TacticalGrid::movementGrid[y][x].cost << std::endl;
 			if (TacticalGrid::getUnitAt(x,y) != nullptr){
 				selectedUnit = TacticalGrid::getUnitAt(x,y);
-				TacticalGrid::clearWaypoints();
-				selectedUnit->movePoints = selectedUnit->speed;
+
 			}
 		}
 
@@ -98,9 +89,14 @@ int main(){
 			std::cout << selectedUnit->gridPosition.x << " , " << selectedUnit->gridPosition.y << std::endl;
 		}
 
+		if (IsKeyPressed(KEY_L)){
+			std::cout << "Current path preview:\n" << pathPreview << std::endl;
+		}
+
 		Movement::updateMove(deltaTime);
 
-		
+		lastX = x;
+		lastY = y;
 
 
 		BeginDrawing();
@@ -113,7 +109,6 @@ int main(){
 				if (showRange) TacticalGrid::drawMovementOverlay(worldOrigin);
 				if (showHover) TacticalGrid::drawHoverHighlight(x, y, worldOrigin);
 				if (showPreview) TacticalGrid::drawPathPreview(pathPreview, SKYBLUE);
-				if (showWaypoints) TacticalGrid::drawWaypoints(worldOrigin);
 		
 
 			EndMode3D();

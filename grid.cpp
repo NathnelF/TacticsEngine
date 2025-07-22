@@ -15,14 +15,17 @@ std::ostream& operator<<(std::ostream& os, const Vector2& v) {
     return os;
 
 }
+std::ostream& operator<<(std::ostream& os, const std::vector<Vector2>& v) {
+	for (auto& coord : v ){
+		os << "(" << coord.x << ", " << coord.y << ")\n";
+	}
+	return os;
+}
 namespace TacticalGrid {
 	TileType terrainGrid[GRID_HEIGHT][GRID_WIDTH];
 	int unitGrid[GRID_HEIGHT][GRID_WIDTH];
 	MoveCell movementGrid[GRID_HEIGHT][GRID_WIDTH];
-	bool waypointGrid[GRID_HEIGHT][GRID_WIDTH];
-
 	std::vector<Unit> units;
-	std::vector<Vector2> waypoints;
 
 	void initGrids(){
 		for (int y = 0; y < GRID_HEIGHT; y++){
@@ -30,7 +33,6 @@ namespace TacticalGrid {
 				terrainGrid[y][x] = TILE_EMPTY;
 				unitGrid[y][x] = -1;
 				movementGrid[y][x] = {-1.0f, {-1, -1}};
-				waypointGrid[y][x] = false;
 			}
 		}
 		
@@ -76,6 +78,7 @@ namespace TacticalGrid {
 			}
 		}
 	}
+
 	void clearUnitGrid(){
 		for (int y = 0; y < GRID_HEIGHT; y++){
 			for (int x = 0; x < GRID_WIDTH; x++){
@@ -84,9 +87,6 @@ namespace TacticalGrid {
 		}
 	}
 
-	void clearWaypoints(){
-		waypoints.clear();
-	}
 
 	Vector3 gridToWorldPosition(Vector2 gridPos, float yLevel){
 		Vector3 worldPos = {gridPos.x * TILE_SIZE, yLevel, gridPos.y * TILE_SIZE};
@@ -218,68 +218,15 @@ namespace TacticalGrid {
 	
         }
 
-	void calculateRangeFrom(int x, int y, float speed){
-		clearMovementGrid();
-
-		std::priority_queue<std::pair<float, std::pair<int, int>>, std::vector<std::pair<float, std::pair<int,int>>>, std::greater<>> pq;
-
-		movementGrid[y][x].cost = 0.0f;
-		movementGrid[y][x].parent = {(float)x, (float)y};
-		pq.push({0.0f, {x, y}});
-
-		int dx[] = {-1, -1, -1,  0,  0,  1,  1,  1};
-		int dy[] = {-1,  0,  1, -1,  1, -1,  0,  1};
-		float costs[] = {
-		    //  NW,  N, NE,  W,  E, SW,  S, SE
-		    1.414f, 1.0f, 1.414f, 1.0f, 1.0f, 1.414f, 1.0f, 1.414f
-		};
-		while (!pq.empty()){
-			float currentCost = pq.top().first;
-			int x = pq.top().second.first;
-			int y = pq.top().second.second;
-			pq.pop();
-
-			//check if the current cost is greater than speed.
-			if (currentCost > movementGrid[y][x].cost) continue;
-
-			//check neighbors
-			for (int i = 0; i < 8; i++) {
-				int neighborX = x + dx[i];
-				int neighborY = y + dy[i];
-				if (neighborX < 0 || neighborX >= GRID_WIDTH || neighborY < 0 || neighborY >= GRID_HEIGHT) continue;
-
-				float terrainMultiplier = getTerrainMultiplier(neighborX,neighborY);
-				if (terrainMultiplier < 0) continue;
-				float unitMultiplier = getUnitMultiplier(neighborX,neighborY); 
-				if (unitMultiplier < 0) continue;
-			
-				float moveCost = costs[i] * terrainMultiplier;
-				float newCost = currentCost + moveCost;
-				
-				if (newCost > speed){
-					continue;
-				}
-
-				if (movementGrid[neighborY][neighborX].cost < 0 || newCost < movementGrid[neighborY][neighborX].cost){
-					movementGrid[neighborY][neighborX].cost = newCost;
-					movementGrid[neighborY][neighborX].parent = {(float)x, (float)y};
-					pq.push({newCost, {neighborX, neighborY}});
-				}
-				
-			} 
-
-		}
-		movementGrid[y][x].cost = -1.0f;
-
-	}
-
-	std::vector<Vector2> reconstructPath(int fromX, int fromY, int toX, int toY, float speed) {
+	std::vector<Vector2> reconstructPath(int fromX, int fromY, int toX, int toY) {
 		std::vector<Vector2> path;
 
+		// if (fromX == toX && fromY == toY){
+		// 	return path;
+		// }
+
 		// Check if destination is reachable
-		if (movementGrid[toY][toX].cost < 0 || movementGrid[toY][toX].cost > speed) {
-			return path; // Empty path = unreachable
-		}
+		// Call is locked to reachable tiles only. See main.cpp.	
 
 		// Reconstruct path by following parent pointers
 		int currentX = toX;
@@ -312,7 +259,6 @@ namespace TacticalGrid {
   
 		return path;
 	}
-
 
 	void setSelectedHighlight(int unitId){
 		for (auto& unit : units){
@@ -373,7 +319,7 @@ namespace TacticalGrid {
 				
 		}
 	}
-	
+
 	void drawMovementOverlay(Vector3 worldOrigin){
 		for (int y = 0; y < GRID_HEIGHT; y++){
 			for (int x = 0; x < GRID_WIDTH; x++){
@@ -384,14 +330,6 @@ namespace TacticalGrid {
 
 				}
 			}
-		}
-	}
-
-	void drawWaypoints(Vector3 worldOrigin){
-		for (auto& waypoint : waypoints){
-			Vector3 pos = {worldOrigin.x + waypoint.x * TILE_SIZE, worldOrigin.y + 0.5f , worldOrigin.z + waypoint.y * TILE_SIZE};
-			DrawCube(pos, 0.5f, 0.05f, 0.5f, MAGENTA);
-
 		}
 	}
 
