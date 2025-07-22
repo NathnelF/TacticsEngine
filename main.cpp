@@ -19,7 +19,7 @@ int main(){
 	TacticalGrid::initGrids();
 
 	Unit* selectedUnit = TacticalGrid::getUnitAt(5,5);
-	TacticalGrid::calculateMovementRange(selectedUnit->id);
+	TacticalGrid::setMovementDisplay(selectedUnit);
 
 	bool showHover = false;
 	bool showRange = true;
@@ -49,41 +49,73 @@ int main(){
 			mousePosChanged = true;
 		}
 
+		
+
 		if (mouseInput.hasValidGridPos && selectedUnit){
 			showRange = !selectedUnit->isMoving;
-			 // std::cout <<"test\n";
-			TacticalGrid::calculateMovementRange(selectedUnit->id);	
-			if (TacticalGrid::inRange(x,y, selectedUnit->speed)){
-				showHover = TacticalGrid::inRange(x, y, selectedUnit->speed);
-				pathPreview = TacticalGrid::reconstructPath((int)selectedUnit->gridPosition.x, (int)selectedUnit->gridPosition.y, x, y);
-				showPreview = !pathPreview.empty();
-				if (showPreview && IsKeyPressed(KEY_M)){ 
+			if (TacticalGrid::canUnitReach(selectedUnit, x, y)){
+				showHover = true;
+				if (TacticalGrid::waypoints.empty()){
+					pathPreview = TacticalGrid::reconstructPath(selectedUnit->gridPosition.x, selectedUnit->gridPosition.y, x, y);
+					showPreview = !pathPreview.empty();
+
+				}
+				else {
+					PathData waypointPath = TacticalGrid::calculateWaypointPath(selectedUnit, mouseInput.gridPosition);
+					// std::cout << waypointPath.totalCost << std::endl;
+					// this needs to be the total cost of the last waypoint not the current preview.  
+					std::cout << TacticalGrid::waypoints.back().cost << std::endl;
+					if (waypointPath.isReachable){
+						pathPreview = waypointPath.path;
+					}
+				}
+				if (IsKeyPressed(KEY_M) && !pathPreview.empty()){
 					Movement::setPath(selectedUnit, pathPreview);
-					std::cout << "Started unit moving!\n";
-					selectedUnit->movePoints = 0.0f;
-					TacticalGrid::calculateMovementRange(selectedUnit->id);
-					pathPreview.clear();
-				} 
-			} else pathPreview.clear();
-		} else pathPreview.clear();
-		
-		
-
-							
-
-
+				}
+				if (IsKeyPressed(KEY_O)){
+				    if (TacticalGrid::waypoints.empty()){
+					float cost = TacticalGrid::getMovementCost(selectedUnit, x, y);
+					TacticalGrid::waypoints.push_back({cost, mouseInput.gridPosition});
+					
+					// Remaining movement = total speed - cost to reach this waypoint
+					float remainingMovement = selectedUnit->speed - cost;
+					TacticalGrid::setMovementDisplay(x, y, remainingMovement);
+				    } else {
+					int wayX = TacticalGrid::waypoints.back().parent.x;
+					int wayY = TacticalGrid::waypoints.back().parent.y;
+					float totalCost = TacticalGrid::waypoints.back().cost;
+					float cost = TacticalGrid::getMovementCost(wayX, wayY, x, y);
+					totalCost += cost;
+					TacticalGrid::waypoints.push_back({totalCost, mouseInput.gridPosition});
+					
+					// Remaining movement = total speed - total cost to reach this waypoint
+					float remainingMovement = selectedUnit->speed - totalCost;
+					TacticalGrid::setMovementDisplay(x, y, remainingMovement);
+				    }
+				}				
+				if (IsKeyPressed(KEY_I) && !TacticalGrid::waypoints.empty()){
+					PathData waypointPath = TacticalGrid::calculateWaypointPath(selectedUnit, mouseInput.gridPosition);
+					if (waypointPath.isReachable){
+						std::cout << "waypoint path reachable\n";
+						pathPreview = waypointPath.path;
+					}
+				}
+			} else showHover = false;
+		}
 			
 		if (mouseInput.leftClicked && mouseInput.hasValidGridPos){
 			printf("Clicked grid tile: (%d, %d)\n", x, y);
 			std::cout << TacticalGrid::isUnitAt(x,y) << " unit at ( " << x << " , " << y << ")\n";
-			std::cout << "move cost from og pos " << TacticalGrid::movementGrid[y][x].cost << std::endl;
 			if (TacticalGrid::getUnitAt(x,y) != nullptr){
 				selectedUnit = TacticalGrid::getUnitAt(x,y);
+				TacticalGrid::setMovementDisplay(selectedUnit);
 
 			}
 		}
 
-
+		if (IsKeyPressed(KEY_P)){
+			TacticalGrid::waypoints.clear();
+		}	
 
 		if (IsKeyPressed(KEY_T)){
 			std::cout << selectedUnit->gridPosition.x << " , " << selectedUnit->gridPosition.y << std::endl;
@@ -109,6 +141,13 @@ int main(){
 				if (showRange) TacticalGrid::drawMovementOverlay(worldOrigin);
 				if (showHover) TacticalGrid::drawHoverHighlight(x, y, worldOrigin);
 				if (showPreview) TacticalGrid::drawPathPreview(pathPreview, SKYBLUE);
+				for (auto& point : TacticalGrid::waypoints){
+					Vector3 pos = TacticalGrid::gridToWorldPosition(point.parent, 0.1f);
+					DrawCube(pos, .25f, .01f, .25f, MAGENTA);
+			
+				}
+				pathPreview.clear();	
+		
 		
 
 			EndMode3D();

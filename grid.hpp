@@ -40,6 +40,12 @@ struct MoveCell {
 	Vector2 parent;
 };
 
+struct PathData {
+	std::vector<Vector2> path;
+	float totalCost;
+	bool isReachable;
+}; 
+
 
 std::ostream& operator<<(std::ostream& os, const Vector3& v);
 std::ostream& operator<<(std::ostream& os, const Vector2& v);
@@ -48,35 +54,45 @@ std::ostream& operator<<(std::ostream& os, const std::vector<Vector2>& v);
 namespace TacticalGrid {
 	extern TileType terrainGrid[GRID_HEIGHT][GRID_WIDTH];
 	extern int unitGrid[GRID_HEIGHT][GRID_WIDTH];
-	extern MoveCell movementGrid[GRID_HEIGHT][GRID_WIDTH];
+	extern int movementGrid[GRID_HEIGHT][GRID_WIDTH];
+	extern MoveCell pathGrid[GRID_HEIGHT][GRID_WIDTH];
 	// extern bool highlightGrid[GRID_HEIGHT][GRID_WIDTH];
 
 	extern std::vector<Unit> units; 
+	extern std::vector<MoveCell> waypoints;
 
 	void initGrids();
 	void clearTerrainGrid();
 	void clearMovementGrid();
 	void clearUnitGrid();
+	void clearPathGrid();
 	// void clearHighlightGrid();
 
 	Vector3 gridToWorldPosition(Vector2 gridPos, float yLevel);
 
-	void printMovementGrid();
 
 	bool isPassable(int x, int y);
-
 	Unit* getUnitAt(int x, int y);
 	bool isUnitAt(int x, int y);
 	void moveUnit(int unitId, int newX, int newY);
 
-	bool inRange(int x, int y, float range);
 	float getTerrainMultiplier(int x, int y);
 	float getUnitMultiplier(int x, int y);
 
-	void calculateMovementRange(int unitD);
+     	void calculateCostsFrom(int startX, int startY, float maxRange = 999.0f);
 	std::vector<Vector2> reconstructPath(int fromX, int fromY, int toX, int toY);
 
+	float getMovementCost(int fromX, int fromY, int toX, int toY);
+	float getMovementCost(const Unit* unit, int toX, int toY);
+	bool isReachable(int fromX, int fromY, int toX, int toY, float maxMovement);
+	bool canUnitReach(const Unit* unit, int toX, int toY);
+	PathData getPathInfo(int fromX, int fromY, int toX, int toY, float maxMovement = 999.0f);	
+	std::vector<Vector2> getTilesInRange(int fromX, int fromY, float maxMovement);
+	PathData calculateWaypointPath(const Unit* unit, Vector2 finalDestination);
 	void setSelectedHighlight(int unitId);
+
+	void setMovementDisplay(Unit* unit);
+	void setMovementDisplay(int fromX, int fromY, float maxMovement);
 
 	void drawHoverHighlight(int x, int y, Vector3 worldOrigin);
 	void drawTerrain(Vector3 worldOrigin);

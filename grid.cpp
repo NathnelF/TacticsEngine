@@ -24,15 +24,18 @@ std::ostream& operator<<(std::ostream& os, const std::vector<Vector2>& v) {
 namespace TacticalGrid {
 	TileType terrainGrid[GRID_HEIGHT][GRID_WIDTH];
 	int unitGrid[GRID_HEIGHT][GRID_WIDTH];
-	MoveCell movementGrid[GRID_HEIGHT][GRID_WIDTH];
+	int movementGrid[GRID_HEIGHT][GRID_WIDTH];
+	MoveCell pathGrid[GRID_HEIGHT][GRID_WIDTH];
 	std::vector<Unit> units;
+	std::vector<MoveCell> waypoints;
 
 	void initGrids(){
 		for (int y = 0; y < GRID_HEIGHT; y++){
 			for (int x = 0; x < GRID_WIDTH; x++){
 				terrainGrid[y][x] = TILE_EMPTY;
 				unitGrid[y][x] = -1;
-				movementGrid[y][x] = {-1.0f, {-1, -1}};
+				movementGrid[y][x] = -1;
+				pathGrid[y][x] = {-1.0f, {-1, -1}};
 			}
 		}
 		
@@ -74,7 +77,7 @@ namespace TacticalGrid {
 	void clearMovementGrid(){
 		for (int y = 0; y < GRID_HEIGHT; y++){
 			for (int x = 0; x < GRID_WIDTH; x++){
-				movementGrid[y][x] = {-1.0f, {-1, -1}};
+				movementGrid[y][x] = -1;
 			}
 		}
 	}
@@ -85,6 +88,15 @@ namespace TacticalGrid {
 				unitGrid[y][x] = -1;
 			}
 		}
+	}
+
+	void clearPathGrid(){
+		for (int y = 0; y < GRID_HEIGHT; y++){
+			for (int x = 0; x < GRID_WIDTH; x++){
+				pathGrid[y][x] = {-1.0f, {-1, -1}};
+			}
+		}
+	
 	}
 
 
@@ -119,14 +131,6 @@ namespace TacticalGrid {
 		return getUnitAt(x, y) != nullptr;
 	}
 
-	bool inRange(int x, int y, float range){
-		if (movementGrid[y][x].cost < 0.0f || movementGrid[y][x].cost > range){
-			return false;	
-		} else {
-			return true;
-		}
-	}
-
 	
 	float getTerrainMultiplier(int x, int y){
 		if (x < 0 || x >= GRID_WIDTH || y < 0 || y >= GRID_HEIGHT) return -1.0f;
@@ -146,89 +150,65 @@ namespace TacticalGrid {
 			return 1.0f;
 		}
 	}
-	
-	void moveUnit(int unitId, int newX, int newY){
-		//TBD	
-	}
 
-	void calculateMovementRange(int unitId) {
-		clearMovementGrid();
+     	void calculateCostsFrom(int startX, int startY, float maxRange)  {
+		clearPathGrid();
+		
+		std::priority_queue<std::pair<float, std::pair<int, int>>, 
+				   std::vector<std::pair<float, std::pair<int,int>>>, 
+				   std::greater<>> pq;
 
-		Unit* unit = nullptr;
-		for (auto& u : units){
-			if (unitId == u.id){
-				unit = &u;
-				break;
-			}
-		}
-		if (!unit) return;
-
-		int startX = (int)unit->gridPosition.x;
-		int startY = (int)unit->gridPosition.y;
-
-		std::priority_queue<std::pair<float, std::pair<int, int>>, std::vector<std::pair<float, std::pair<int,int>>>, std::greater<>> pq;
-
-		movementGrid[startY][startX].cost = 0.0f;
-		movementGrid[startY][startX].parent = unit->gridPosition;
+		pathGrid[startY][startX].cost = 0.0f;
+		pathGrid[startY][startX].parent = {(float)startX, (float)startY};
 		pq.push({0.0f, {startX, startY}});
 
 		int dx[] = {-1, -1, -1,  0,  0,  1,  1,  1};
 		int dy[] = {-1,  0,  1, -1,  1, -1,  0,  1};
-		float costs[] = {
-		    //  NW,  N, NE,  W,  E, SW,  S, SE
-		    1.414f, 1.0f, 1.414f, 1.0f, 1.0f, 1.414f, 1.0f, 1.414f
-		};
-		while (!pq.empty()){
-			float currentCost = pq.top().first;
-			int x = pq.top().second.first;
-			int y = pq.top().second.second;
-			pq.pop();
+		float costs[] = {1.414f, 1.0f, 1.414f, 1.0f, 1.0f, 1.414f, 1.0f, 1.414f};
 
-			//check if the current cost is greater than speed.
-			if (currentCost > movementGrid[y][x].cost) continue;
+		while (!pq.empty()) {
+		    float currentCost = pq.top().first;
+		    int currentX = pq.top().second.first;
+		    int currentY = pq.top().second.second;
+		    pq.pop();
 
-			//check neighbors
-			for (int i = 0; i < 8; i++) {
-				int neighborX = x + dx[i];
-				int neighborY = y + dy[i];
-				if (neighborX < 0 || neighborX >= GRID_WIDTH || neighborY < 0 || neighborY >= GRID_HEIGHT) continue;
+		    if (currentCost > pathGrid[currentY][currentX].cost) continue;
 
-				float terrainMultiplier = getTerrainMultiplier(neighborX,neighborY);
-				if (terrainMultiplier < 0) continue;
-				float unitMultiplier = getUnitMultiplier(neighborX,neighborY); 
-				if (unitMultiplier < 0) continue;
+		    for (int i = 0; i < 8; i++) {
+			int neighborX = currentX + dx[i];
+			int neighborY = currentY + dy[i];
 			
-				float moveCost = costs[i] * terrainMultiplier;
-				float newCost = currentCost + moveCost;
-				
-				if (newCost > unit->speed){
-					continue;
-				}
+			if (neighborX < 0 || neighborX >= GRID_WIDTH || 
+			    neighborY < 0 || neighborY >= GRID_HEIGHT) continue;
 
-				if (movementGrid[neighborY][neighborX].cost < 0 || newCost < movementGrid[neighborY][neighborX].cost){
-					movementGrid[neighborY][neighborX].cost = newCost;
-					movementGrid[neighborY][neighborX].parent = {(float)x, (float)y};
-					pq.push({newCost, {neighborX, neighborY}});
-				}
-				
-			} 
+			float terrainMultiplier = getTerrainMultiplier(neighborX, neighborY);
+			if (terrainMultiplier < 0) continue;
+			
+			float unitMultiplier = getUnitMultiplier(neighborX, neighborY); 
+			if (unitMultiplier < 0) continue;
+		    
+			float moveCost = costs[i] * terrainMultiplier;
+			float newCost = currentCost + moveCost;
+			
+			if (newCost > maxRange) continue;
 
+			if (pathGrid[neighborY][neighborX].cost < 0 || 
+			    newCost < pathGrid[neighborY][neighborX].cost) {
+			    
+			    pathGrid[neighborY][neighborX].cost = newCost;
+			    pathGrid[neighborY][neighborX].parent = {(float)currentX, (float)currentY};
+			    pq.push({newCost, {neighborX, neighborY}});
+			}
+		    }
 		}
-		movementGrid[startY][startX].cost = -1.0f;
-	
-        }
+    	}
 
 	std::vector<Vector2> reconstructPath(int fromX, int fromY, int toX, int toY) {
 		std::vector<Vector2> path;
 
-		// if (fromX == toX && fromY == toY){
-		// 	return path;
-		// }
-
-		// Check if destination is reachable
-		// Call is locked to reachable tiles only. See main.cpp.	
-
-		// Reconstruct path by following parent pointers
+		if (pathGrid[toY][toX].cost < 0){
+			return path;
+		}
 		int currentX = toX;
 		int currentY = toY;
 
@@ -236,7 +216,7 @@ namespace TacticalGrid {
 		while (true) {
 			path.push_back({(float)currentX, (float)currentY});
 
-			Vector2 parent = movementGrid[currentY][currentX].parent;
+			Vector2 parent = pathGrid[currentY][currentX].parent;
 			int parentX = (int)parent.x;
 			int parentY = (int)parent.y;
 
@@ -258,6 +238,70 @@ namespace TacticalGrid {
 		std::reverse(path.begin(), path.end());
   
 		return path;
+	}
+
+
+	float getMovementCost(int fromX, int fromY, int toX, int toY){
+		calculateCostsFrom(fromX, fromY);
+		return pathGrid[toY][toX].cost;	
+	}
+	float getMovementCost(const Unit* unit, int toX, int toY){
+		calculateCostsFrom(unit->gridPosition.x, unit->gridPosition.y);
+		return pathGrid[toY][toX].cost;
+	}
+	bool isReachable(int fromX, int fromY, int toX, int toY, float maxMovement){
+		float cost = getMovementCost(fromX, fromY, toX, toY);
+		return cost >= 0 && cost <= maxMovement;
+	}
+	bool canUnitReach(const Unit* unit, int toX, int toY){
+		return isReachable(unit->gridPosition.x, unit->gridPosition.y, toX, toY, unit->speed);
+	}
+
+	PathData getPathInfo(int fromX, int fromY, int toX, int toY, float maxMovement){
+		calculateCostsFrom(fromX, fromY, maxMovement);
+		
+		PathData result;
+		result.totalCost = pathGrid[toY][toX].cost;
+		result.isReachable = isReachable(fromX, fromY, toX, toY, maxMovement);
+
+		if (result.isReachable){
+			result.path = reconstructPath(fromX, fromY, toX, toY);
+		}
+		
+		return result;
+	}	
+	std::vector<Vector2> getTilesInRange(int fromX, int fromY, float maxMovement){
+		calculateCostsFrom(fromX, fromY, maxMovement);
+
+		std::vector<Vector2> tilesInRange;
+		for (int y = 0; y < GRID_HEIGHT; y++){
+			for (int x = 0; x < GRID_WIDTH; x++){
+				if (pathGrid[y][x].cost >= 0 && pathGrid[y][x].cost <= maxMovement){
+					tilesInRange.push_back({(float)x, (float)y});
+				}
+			}
+		}
+		return tilesInRange;
+	}
+
+	void setMovementDisplay(Unit* unit){
+		clearMovementGrid();
+		std::vector<Vector2> tiles = getTilesInRange(unit->gridPosition.x, unit->gridPosition.y, unit->speed);
+		for ( auto& coord : tiles){
+			int y = (int)coord.y;
+			int x = (int)coord.x;
+			movementGrid[y][x] = 1;
+		}
+	}
+
+	void setMovementDisplay(int fromX, int fromY, float maxMovement){
+		clearMovementGrid();
+		std::vector<Vector2> tiles = getTilesInRange(fromX, fromY, maxMovement);
+		for ( auto& coord : tiles){
+			int y = (int)coord.y;
+			int x = (int)coord.x;
+			movementGrid[y][x] = 1;
+		}
 	}
 
 	void setSelectedHighlight(int unitId){
@@ -309,6 +353,67 @@ namespace TacticalGrid {
 		}
 	}
 
+	PathData calculateWaypointPath(const Unit* unit, Vector2 finalDestination) {
+		PathData result;
+		result.totalCost = 0.0f;
+		result.isReachable = true;
+		
+		Vector2 currentPos = unit->gridPosition;
+		float remainingMovement = unit->speed;
+		
+		// Path to first waypoint
+		if (!waypoints.empty()) {
+		    PathData segmentResult = getPathInfo((int)currentPos.x, (int)currentPos.y, 
+							 (int)waypoints[0].parent.x, (int)waypoints[0].parent.y, remainingMovement);
+		    if (!segmentResult.isReachable) {
+			result.isReachable = false;
+			return result;
+		    }
+		    
+		    result.path = segmentResult.path;
+		    result.totalCost += segmentResult.totalCost;
+		    remainingMovement -= segmentResult.totalCost;
+		    currentPos = waypoints[0].parent;
+		}
+		
+		// Path through waypoints
+		for (size_t i = 1; i < waypoints.size(); i++) {
+		    PathData segmentResult = getPathInfo((int)currentPos.x, (int)currentPos.y, 
+							 (int)waypoints[i].parent.x, (int)waypoints[i].parent.y, remainingMovement);
+		    if (!segmentResult.isReachable) {
+			result.isReachable = false;
+			return result;
+		    }
+		    
+		    // Remove first element to avoid duplicates
+		    if (!segmentResult.path.empty()) {
+			segmentResult.path.erase(segmentResult.path.begin());
+			result.path.insert(result.path.end(), segmentResult.path.begin(), segmentResult.path.end());
+		    }
+		    
+		    result.totalCost += segmentResult.totalCost;
+		    remainingMovement -= segmentResult.totalCost;
+		    currentPos = waypoints[i].parent;
+		}
+		
+		// Path to final destination
+		PathData finalSegment = getPathInfo((int)currentPos.x, (int)currentPos.y, 
+						    (int)finalDestination.x, (int)finalDestination.y, remainingMovement);
+		if (!finalSegment.isReachable) {
+		    result.isReachable = false;
+		    return result;
+		}
+		
+		if (!finalSegment.path.empty()) {
+		    finalSegment.path.erase(finalSegment.path.begin());
+		    result.path.insert(result.path.end(), finalSegment.path.begin(), finalSegment.path.end());
+		}
+		
+		result.totalCost += finalSegment.totalCost;
+		
+		return result;
+	    }
+
 	
 	void drawUnits(Vector3 worldOrigin){
 		for (auto& unit : units){
@@ -323,8 +428,8 @@ namespace TacticalGrid {
 	void drawMovementOverlay(Vector3 worldOrigin){
 		for (int y = 0; y < GRID_HEIGHT; y++){
 			for (int x = 0; x < GRID_WIDTH; x++){
-				float cost = movementGrid[y][x].cost;
-				if (cost > 0 && cost < 7.0f){
+				int cost = movementGrid[y][x];
+				if (cost > 0){
 					Vector3 pos = {worldOrigin.x + x * TILE_SIZE, worldOrigin.y , worldOrigin.z + y * TILE_SIZE};
 					DrawCube(pos, 0.5f, 0.05f, 0.5f, SKYBLUE);
 
