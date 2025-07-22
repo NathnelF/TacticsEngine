@@ -22,6 +22,7 @@ struct Unit {
 	Vector2 gridPosition;
 
 	float speed;
+	float movePoints;
 	int health;
 	int aim;
 	int resolve;
@@ -47,14 +48,17 @@ namespace TacticalGrid {
 	extern TileType terrainGrid[GRID_HEIGHT][GRID_WIDTH];
 	extern int unitGrid[GRID_HEIGHT][GRID_WIDTH];
 	extern MoveCell movementGrid[GRID_HEIGHT][GRID_WIDTH];
+	extern bool waypointGrid[GRID_HEIGHT][GRID_WIDTH];
 	// extern bool highlightGrid[GRID_HEIGHT][GRID_WIDTH];
 
 	extern std::vector<Unit> units; 
+	extern std::vector<Vector2> waypoints;
 
 	void initGrids();
 	void clearTerrainGrid();
 	void clearMovementGrid();
 	void clearUnitGrid();
+	void clearWaypoints();
 	// void clearHighlightGrid();
 
 	Vector3 gridToWorldPosition(Vector2 gridPos, float yLevel);
@@ -71,7 +75,8 @@ namespace TacticalGrid {
 	float getTerrainMultiplier(int x, int y);
 	float getUnitMultiplier(int x, int y);
 
-	void calculateMovementRange(int unitId);
+	void calculateMovementRange(int unitD);
+	void calculateRangeFrom(int x, int y, float speed);
 	std::vector<Vector2> reconstructPath(int fromX, int fromY, int toX, int toY, float speed);
 	void showMovementPath(std::vector<Vector2>); 
 	
@@ -81,5 +86,6 @@ namespace TacticalGrid {
 	void drawTerrain(Vector3 worldOrigin);
 	void drawUnits(Vector3 worldOrigin);
 	void drawMovementOverlay(Vector3 worldOrigin);
+	void drawWaypoints(Vector3 worldOrigin);
 	void drawPathPreview(std::vector<Vector2> path, Color color);
 }
