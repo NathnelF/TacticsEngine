@@ -56,9 +56,9 @@ namespace TacticalGrid {
 		terrainGrid[9][6] = TILE_BOX;
 	
 		units.clear();
-		units.push_back({1, {5,5}, 6.0f, 6.0f, 5, 30, 30, RED, false});
-		units.push_back({2, {4,6}, 6.0f, 6.0f, 5, 28, 32, GREEN, false});
-		units.push_back({3, {5,7}, 7.0f, 7.0f, 3, 33, 25, BLUE, false});
+		units.push_back({0, {5,5}, 6.0f, 6.0f, 5, 30, 30, RED, false});
+		units.push_back({1, {4,6}, 6.0f, 6.0f, 5, 28, 32, GREEN, false});
+		units.push_back({2, {5,7}, 7.0f, 7.0f, 3, 33, 25, BLUE, false});
 
 		for (auto& unit : units){
 			unitGrid[(int)unit.gridPosition.y][(int)unit.gridPosition.x] = unit.id;
@@ -115,16 +115,32 @@ namespace TacticalGrid {
 			return false;
 		}
 	}
+	
+	Unit* getUnitById(int unitId){
+		for (auto& unit : units){
+			if (unitId == unit.id){
+				return &unit;
+			}
+		}
+		return nullptr;
+	}
+	Unit* getNextUnit(int currentId){
+		int temp;
+		temp = currentId + 1;
+		if (temp > units.size() - 1){
+			return getUnitById(0);
+		}
+		else {
+			return getUnitById(temp);
+		}
+	}
 
 	Unit* getUnitAt(int x, int y){
 		if (x < 0 || x >= GRID_WIDTH || y < 0 || y >= GRID_HEIGHT) return nullptr;
 		int unitId = unitGrid[y][x];
 		if (unitId == -1) return nullptr;
 		
-		for (auto& unit : units){
-			if (unitId == unit.id) return &unit;
-		}
-		return nullptr;
+		return getUnitById(unitId);
 	}
 
 	bool isUnitAt(int x, int y){
@@ -132,6 +148,8 @@ namespace TacticalGrid {
 	}
 
 	
+
+
 	float getTerrainMultiplier(int x, int y){
 		if (x < 0 || x >= GRID_WIDTH || y < 0 || y >= GRID_HEIGHT) return -1.0f;
 		TileType terrainType = terrainGrid[y][x];

@@ -62,16 +62,18 @@ int main(){
 				}
 				else {
 					PathData waypointPath = TacticalGrid::calculateWaypointPath(selectedUnit, mouseInput.gridPosition);
-					// std::cout << waypointPath.totalCost << std::endl;
-					// this needs to be the total cost of the last waypoint not the current preview.  
-					std::cout << TacticalGrid::waypoints.back().cost << std::endl;
 					if (waypointPath.isReachable){
 						pathPreview = waypointPath.path;
 					}
 				}
 				if (IsKeyPressed(KEY_M) && !pathPreview.empty()){
 					Movement::setPath(selectedUnit, pathPreview);
+					TacticalGrid::waypoints.clear();
 				}
+				if (IsKeyPressed(KEY_P)){
+					TacticalGrid::waypoints.clear();
+					TacticalGrid::setMovementDisplay(selectedUnit);
+				}	
 				if (IsKeyPressed(KEY_O)){
 				    if (TacticalGrid::waypoints.empty()){
 					float cost = TacticalGrid::getMovementCost(selectedUnit, x, y);
@@ -113,8 +115,12 @@ int main(){
 			}
 		}
 
-		if (IsKeyPressed(KEY_P)){
-			TacticalGrid::waypoints.clear();
+		if (IsKeyPressed(KEY_TAB) && selectedUnit){
+			int currentId = selectedUnit->id;
+			if (TacticalGrid::getNextUnit(currentId) != nullptr){
+				selectedUnit = TacticalGrid::getNextUnit(currentId);
+				TacticalGrid::setMovementDisplay(selectedUnit);
+			}
 		}	
 
 		if (IsKeyPressed(KEY_T)){

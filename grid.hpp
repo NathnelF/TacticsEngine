@@ -75,6 +75,8 @@ namespace TacticalGrid {
 	Unit* getUnitAt(int x, int y);
 	bool isUnitAt(int x, int y);
 	void moveUnit(int unitId, int newX, int newY);
+	Unit* getUnitById(int unitId);
+	Unit* getNextUnit(int currentId);
 
 	float getTerrainMultiplier(int x, int y);
 	float getUnitMultiplier(int x, int y);

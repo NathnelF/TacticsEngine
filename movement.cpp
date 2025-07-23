@@ -29,6 +29,7 @@ namespace Movement{
 		TacticalGrid::unitGrid[(int)oldPos.y][(int)oldPos.x] = -1;
 		TacticalGrid::unitGrid[(int)newPos.y][(int)newPos.x] = unit->id;
 		unit->gridPosition = newPos;
+		TacticalGrid::setMovementDisplay(unit);
 	}
 
 	void updateMove(float deltaTime){
