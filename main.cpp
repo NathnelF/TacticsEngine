@@ -23,7 +23,8 @@ int main(){
 
 	bool showHover = false;
 	Color hoverColor;
-	bool showRange = true;
+	bool showRange = false;
+	bool toggleRange = false;
 
 	std::vector<Vector2> pathPreview;
 	bool showPreview = false;
@@ -43,7 +44,6 @@ int main(){
 		int y = (int)mouseInput.gridPosition.y;
 
 		if (mouseInput.hasValidGridPos && selectedUnit){
-			showRange = !selectedUnit->isMoving;
 			int moveCost = TacticalGrid::checkMoveDistance(x, y);
 			if (moveCost != -1){
 				showHover = true;
@@ -143,6 +143,17 @@ int main(){
 				TacticalGrid::setMovementDisplay(selectedUnit);
 			}
 		}	
+
+		if (IsKeyPressed(KEY_G)){
+			toggleRange = !toggleRange;
+		}
+
+		if (selectedUnit->isMoving){
+			showRange = false;
+		}
+		else {
+			showRange = toggleRange;
+		}
 
 		if (IsKeyPressed(KEY_T)){
 			std::cout << selectedUnit->gridPosition.x << " , " << selectedUnit->gridPosition.y << std::endl;
