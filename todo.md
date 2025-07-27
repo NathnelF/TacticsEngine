@@ -1,20 +1,13 @@
 
 # Grid movement.
-1. Tab select between entities.
-2. Add waypoint system
-    - Refactor calculate movement range to take startX and starY as parameters
-        - On unit selection, check if there are any waypoints.
-            - if there are we calculate the movement range from the last one.
-            - if there aren't we calculate the movement range from the unit's current tile.
-        - upon adding a waypoint we clear the movemenet range and recalculate it from latest waypoint
-        - only allow waypoint addition in the movement range
+1. Add blue versus yellow movement ranges
 
-    - alternate idea. Add a waypoint vector2 to units
-        - calculate movement range from the waypoint vector2
-        - adding a waypoint will just move the waypoint vector2
-        - we would need to store the temp cost somehow. oh wait we just get the starting cost from that tiles cost in movement range.
-3. Add blue versus yellow movement ranges
--- I think this wraps up grid movement. A few areas to go to next.
+    1a. Calculate blue and yellow move range (speed + speed * 2)
+    2a. Store the move costs for both in the movement grid
+        2b. 1 for blue, 2 for yellow.
+    3a. display the blue move range always, and yellow move range if the cursor hovers over a tile in yellow range
+
+
 
 # Turns
 

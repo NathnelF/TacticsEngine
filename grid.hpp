@@ -87,16 +87,20 @@ namespace TacticalGrid {
 	float getMovementCost(int fromX, int fromY, int toX, int toY);
 	float getMovementCost(const Unit* unit, int toX, int toY);
 	bool isReachable(int fromX, int fromY, int toX, int toY, float maxMovement);
-	bool canUnitReach(const Unit* unit, int toX, int toY);
+	bool inScootRange(const Unit* unit, int toX, int toY);
+	bool inDashRange(const Unit* unit, int toX, int toY);
 	PathData getPathInfo(int fromX, int fromY, int toX, int toY, float maxMovement = 999.0f);	
-	std::vector<Vector2> getTilesInRange(int fromX, int fromY, float maxMovement);
+	std::vector<Vector2> getTilesinRange(int fromX, int fromY, float maxMovement);
+	std::vector<Vector2> getScootTiles(Unit* unit);
+	std::vector<Vector2> getDashTiles(Unit* unit);
+	int checkMoveDistance(int x, int y);
 	PathData calculateWaypointPath(const Unit* unit, Vector2 finalDestination);
 	void setSelectedHighlight(int unitId);
 
 	void setMovementDisplay(Unit* unit);
-	void setMovementDisplay(int fromX, int fromY, float maxMovement);
+	void setMovementDisplay(int fromX, int fromY, float remainingScootRange, float remainingDashRange);
 
-	void drawHoverHighlight(int x, int y, Vector3 worldOrigin);
+	void drawHoverHighlight(int x, int y, Vector3 worldOrigin, Color hoverColor);
 	void drawTerrain(Vector3 worldOrigin);
 	void drawUnits(Vector3 worldOrigin);
 	void drawMovementOverlay(Vector3 worldOrigin);

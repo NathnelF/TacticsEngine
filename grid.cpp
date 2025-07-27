@@ -271,7 +271,10 @@ namespace TacticalGrid {
 		float cost = getMovementCost(fromX, fromY, toX, toY);
 		return cost >= 0 && cost <= maxMovement;
 	}
-	bool canUnitReach(const Unit* unit, int toX, int toY){
+	bool inDashRange(const Unit* unit, int toX, int toY){
+		return isReachable(unit->gridPosition.x, unit->gridPosition.y, toX, toY, unit->speed*2);
+	}
+	bool inScootRange(const Unit* unit, int toX, int toY){
 		return isReachable(unit->gridPosition.x, unit->gridPosition.y, toX, toY, unit->speed);
 	}
 
@@ -302,23 +305,53 @@ namespace TacticalGrid {
 		return tilesInRange;
 	}
 
-	void setMovementDisplay(Unit* unit){
-		clearMovementGrid();
-		std::vector<Vector2> tiles = getTilesInRange(unit->gridPosition.x, unit->gridPosition.y, unit->speed);
-		for ( auto& coord : tiles){
-			int y = (int)coord.y;
-			int x = (int)coord.x;
-			movementGrid[y][x] = 1;
-		}
+	std::vector<Vector2> getScootTiles(Unit* unit){
+		std::vector<Vector2> scootTiles = getTilesInRange(unit->gridPosition.x, unit->gridPosition.y, unit->speed);
+		return scootTiles;
 	}
 
-	void setMovementDisplay(int fromX, int fromY, float maxMovement){
+	std::vector<Vector2> getDashTiles(Unit* unit){
+		std::vector<Vector2> dashTiles = getTilesInRange(unit->gridPosition.x, unit->gridPosition.y, unit->speed * 1.5);
+		return dashTiles;
+	}
+
+	int checkMoveDistance(int x, int y){
+		return movementGrid[y][x];
+	}
+
+	void setMovementDisplay(Unit* unit){
 		clearMovementGrid();
-		std::vector<Vector2> tiles = getTilesInRange(fromX, fromY, maxMovement);
-		for ( auto& coord : tiles){
-			int y = (int)coord.y;
-			int x = (int)coord.x;
-			movementGrid[y][x] = 1;
+		calculateCostsFrom(unit->gridPosition.x, unit->gridPosition.y, unit->speed*1.5);
+
+		for (int y = 0; y < GRID_HEIGHT; y++){
+			for (int x = 0; x < GRID_WIDTH; x++){
+				float cost = pathGrid[y][x].cost;
+				if (cost > 0 && cost <= unit->speed){
+					movementGrid[y][x] = 1;
+				}
+				if (cost > unit->speed && cost <= unit->speed*1.5){
+					movementGrid[y][x] = 2;
+				}
+			}
+		}
+
+	
+	}
+
+	void setMovementDisplay(int fromX, int fromY, float remainingScootRange, float remainingDashRange){
+		clearMovementGrid();
+
+		calculateCostsFrom(fromX, fromY, remainingDashRange);
+		for (int y = 0; y < GRID_HEIGHT; y++){
+			for (int x = 0; x < GRID_WIDTH; x++){
+				float cost = pathGrid[y][x].cost;
+				if (cost > 0 && cost <= remainingScootRange){
+					movementGrid[y][x] = 1;
+				}
+				if (cost > remainingScootRange && cost <= remainingDashRange){
+					movementGrid[y][x] = 2;
+				}
+			}
 		}
 	}
 
@@ -332,9 +365,9 @@ namespace TacticalGrid {
 		}
 	}
 
-	void drawHoverHighlight(int x, int y, Vector3 worldOrigin){
+	void drawHoverHighlight(int x, int y, Vector3 worldOrigin, Color hoverColor){
 		Vector3 pos = {worldOrigin.x + x * TILE_SIZE, worldOrigin.y, worldOrigin.z + y * TILE_SIZE};
-		DrawCubeWires(pos, TILE_SIZE, 0.15f, TILE_SIZE, GOLD);
+		DrawCubeWires(pos, TILE_SIZE, 0.15f, TILE_SIZE, hoverColor);
 	}
 
 
@@ -377,7 +410,7 @@ namespace TacticalGrid {
 		result.isReachable = true;
 		
 		Vector2 currentPos = unit->gridPosition;
-		float remainingMovement = unit->speed;
+		float remainingMovement = unit->speed*1.5;
 		
 		// Path to first waypoint
 		if (!waypoints.empty()) {
@@ -447,9 +480,14 @@ namespace TacticalGrid {
 		for (int y = 0; y < GRID_HEIGHT; y++){
 			for (int x = 0; x < GRID_WIDTH; x++){
 				int cost = movementGrid[y][x];
-				if (cost > 0){
+				if (cost == 1){
 					Vector3 pos = {worldOrigin.x + x * TILE_SIZE, worldOrigin.y , worldOrigin.z + y * TILE_SIZE};
 					DrawCube(pos, 0.5f, 0.05f, 0.5f, SKYBLUE);
+
+				}
+				if (cost == 2){
+					Vector3 pos = {worldOrigin.x + x * TILE_SIZE, worldOrigin.y , worldOrigin.z + y * TILE_SIZE};
+					DrawCube(pos, 0.5f, 0.05f, 0.5f, GOLD);
 
 				}
 			}
