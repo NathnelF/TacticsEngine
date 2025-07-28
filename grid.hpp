@@ -18,17 +18,28 @@ enum TileType {
 };
 
 struct Unit {
+
+	//grid stuff
 	int id;
 	Vector2 gridPosition;
 
+	//stats
 	float speed;
-	float movePoints;
 	int health;
 	int aim;
 	int resolve;
 
+	//render stuff
 	Color color;
 	bool isMoving;
+
+	//turn stuff
+	bool hasMoved; //has stepped this turn.
+	bool hasDashed; //has dashed this turn.
+	bool hasActed; // has taken a primary action this turn.
+	bool turnComplete; // used up all actions for this turn.
+	// bool isStunned
+
 
 	//eventually they need a mesh / collider I think?
 	//	// maybe not on collider that might all be grid math.
@@ -97,8 +108,10 @@ namespace TacticalGrid {
 	PathData calculateWaypointPath(const Unit* unit, Vector2 finalDestination);
 	void setSelectedHighlight(int unitId);
 
-	void setMovementDisplay(Unit* unit);
-	void setMovementDisplay(int fromX, int fromY, float remainingScootRange, float remainingDashRange);
+	void setMovementDisplayFull(Unit* unit);
+	void setMovementDisplayFull(int fromX, int fromY, float remainingScootRange, float remainingDashRange);
+	void setMovementDisplayDash(Unit* unit);	
+
 
 	void drawHoverHighlight(int x, int y, Vector3 worldOrigin, Color hoverColor);
 	void drawTerrain(Vector3 worldOrigin);

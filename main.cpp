@@ -3,6 +3,7 @@
 #include "camera.hpp"
 #include "input.hpp"
 #include "grid.hpp"
+#include "turns.hpp"
 #include <iostream>
 #include "movement.hpp"
 
@@ -17,9 +18,10 @@ int main(){
 
 	Vector3 worldOrigin = {0.0f, 0.0f, 0.0f};
 	TacticalGrid::initGrids();
+	TurnSystem::initializeTurn();
 
 	Unit* selectedUnit = TacticalGrid::getUnitAt(5,5);
-	TacticalGrid::setMovementDisplay(selectedUnit);
+	TacticalGrid::setMovementDisplayFull(selectedUnit);
 
 	bool showHover = false;
 	Color hoverColor;
@@ -71,6 +73,15 @@ int main(){
 				if (IsKeyPressed(KEY_M) && !pathPreview.empty()){
 					Movement::setPath(selectedUnit, pathPreview);
 					TacticalGrid::waypoints.clear();
+					if (moveCost == 1){
+						TurnSystem::executeAction(selectedUnit, TurnSystem::STEP_ACTION);
+						TacticalGrid::setMovementDisplayDash(selectedUnit);
+					}
+					if (moveCost == 2){
+						TurnSystem::executeAction(selectedUnit, TurnSystem::DASH_ACTION);
+						TacticalGrid::clearMovementGrid();
+					}
+
 				}
 			
 				if (IsKeyPressed(KEY_O)){
@@ -85,14 +96,14 @@ int main(){
 					float dashRange;
 					if (remainingMovement < 0){
 							//used up all scoot range
-							scootRange = 0;
-							dashRange = selectedUnit->speed*1.5 - cost;
+						scootRange = 0;
+						dashRange = selectedUnit->speed*1.5 - cost;
 					}
 					else {
 						scootRange = selectedUnit->speed - cost;
 						dashRange = selectedUnit->speed * 1.5 - cost;
 					}
-					TacticalGrid::setMovementDisplay(x, y, scootRange, dashRange);
+					TacticalGrid::setMovementDisplayFull(x, y, scootRange, dashRange);
 				    } else {
 					int wayX = TacticalGrid::waypoints.back().parent.x;
 					int wayY = TacticalGrid::waypoints.back().parent.y;
@@ -112,7 +123,7 @@ int main(){
 						scootRange = selectedUnit->speed - totalCost;
 						dashRange = selectedUnit->speed * 1.5 - totalCost;
 					}
-					TacticalGrid::setMovementDisplay(x, y, scootRange, dashRange);
+					TacticalGrid::setMovementDisplayFull(x, y, scootRange, dashRange);
 				    }
 				}				
 
@@ -127,20 +138,47 @@ int main(){
 			std::cout << TacticalGrid::isUnitAt(x,y) << " unit at ( " << x << " , " << y << ")\n";
 			if (TacticalGrid::getUnitAt(x,y) != nullptr){
 				selectedUnit = TacticalGrid::getUnitAt(x,y);
-				TacticalGrid::setMovementDisplay(selectedUnit);
+				if (selectedUnit->hasActed || selectedUnit->turnComplete || selectedUnit->hasDashed){
+					std::cout << "clear movement display\n";
+					TacticalGrid::clearMovementGrid();
+				}
+				else {
+					if (selectedUnit->hasMoved){
+						TacticalGrid::setMovementDisplayDash(selectedUnit);
+					}
+					else {
+						TacticalGrid::setMovementDisplayFull(selectedUnit);
+					}
+				}
+			
 
 			}
 		}
 		if (IsKeyPressed(KEY_P) && selectedUnit){
 				TacticalGrid::waypoints.clear();
-				TacticalGrid::setMovementDisplay(selectedUnit);
-			}	
+				if (selectedUnit->hasMoved){
+					TacticalGrid::setMovementDisplayDash(selectedUnit);
+				}
+				else {
+					TacticalGrid::setMovementDisplayFull(selectedUnit);
+				}			}	
 
 		if (IsKeyPressed(KEY_TAB) && selectedUnit){
 			int currentId = selectedUnit->id;
 			if (TacticalGrid::getNextUnit(currentId) != nullptr){
 				selectedUnit = TacticalGrid::getNextUnit(currentId);
-				TacticalGrid::setMovementDisplay(selectedUnit);
+				if (selectedUnit->hasActed || selectedUnit->turnComplete || selectedUnit->hasDashed){
+					std::cout << "clear movement display\n";
+					TacticalGrid::clearMovementGrid();
+				}
+				else {
+					if (selectedUnit->hasMoved){
+						TacticalGrid::setMovementDisplayDash(selectedUnit);
+					}
+					else {
+						TacticalGrid::setMovementDisplayFull(selectedUnit);
+					}
+				}			
 			}
 		}	
 
@@ -163,10 +201,17 @@ int main(){
 			std::cout << "Current path preview:\n" << pathPreview << std::endl;
 		}
 
+		if (IsKeyPressed(KEY_ENTER)){
+			TurnSystem::endTurn();
+		}
+
 		Movement::updateMove(deltaTime);
 
 		BeginDrawing();
 			ClearBackground(RAYWHITE);
+
+				TurnSystem::displayTurnInfo();
+				DrawText(TextFormat("Unit Id: %d, has Moved: %b, has Dashed %b, has Acted %b, turn Complete %b", selectedUnit->id, selectedUnit->hasMoved, selectedUnit->hasActed, selectedUnit->hasDashed, selectedUnit->turnComplete), 300, 725, 25, BLACK);
 			BeginMode3D(camera);
 				TacticalGrid::drawTerrain(worldOrigin);
 				TacticalGrid::setSelectedHighlight(selectedUnit->id);
@@ -181,9 +226,6 @@ int main(){
 			
 				}
 				pathPreview.clear();	
-		
-		
-
 			EndMode3D();
 		EndDrawing();
 	}
