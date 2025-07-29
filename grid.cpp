@@ -56,9 +56,9 @@ namespace TacticalGrid {
 		terrainGrid[9][6] = TILE_BOX;
 	
 		units.clear();
-		units.push_back({0, {5,5}, 6.0f, 5, 30, 30, RED, false, false, false, false, false});
-		units.push_back({1, {4,6}, 6.0f, 5, 28, 32, GREEN, false, false, false, false, false});
-		units.push_back({2, {5,7}, 7.0f, 3, 33, 25, BLUE, false, false, false, false, false});
+		units.push_back({0, {5,5}, 6.0f, 5, 30, 30, RED, false, 2, 1, false});
+		units.push_back({1, {4,6}, 6.0f, 5, 28, 32, GREEN, false, 2, 1, false});
+		units.push_back({2, {5,7}, 7.0f, 3, 33, 25, BLUE, false, 2, 1, false});
 
 		for (auto& unit : units){
 			unitGrid[(int)unit.gridPosition.y][(int)unit.gridPosition.x] = unit.id;
@@ -368,7 +368,20 @@ namespace TacticalGrid {
 				}
 			}
 		}
-	}	
+	}
+	void setMovementDisplayDash(int fromX, int fromY, float remainingDashRange){
+		//used to set display after step movement.
+		clearMovementGrid();
+		calculateCostsFrom(fromX, fromY, remainingDashRange);
+		for (int y = 0; y < GRID_HEIGHT; y++){
+			for (int x = 0; x < GRID_WIDTH; x++){
+				float cost = pathGrid[y][x].cost;
+				if (cost > 0 && cost <= remainingDashRange){
+					movementGrid[y][x] = 2;
+				}
+			}
+		}
+	}		
 
 
 	// void setMovementDisplayDash(int fromX, int fromY, float remain){

@@ -4,6 +4,7 @@
 #include "input.hpp"
 #include "grid.hpp"
 #include "turns.hpp"
+#include "abilities.hpp"
 #include <iostream>
 #include "movement.hpp"
 
@@ -17,6 +18,8 @@ int main(){
 	SetTargetFPS(60);
 
 	Vector3 worldOrigin = {0.0f, 0.0f, 0.0f};
+
+	AbilityRegistry::initializeRegistry();
 	TacticalGrid::initGrids();
 	TurnSystem::initializeTurn();
 
@@ -71,59 +74,88 @@ int main(){
 					
 				}
 				if (IsKeyPressed(KEY_M) && !pathPreview.empty()){
-					Movement::setPath(selectedUnit, pathPreview);
-					TacticalGrid::waypoints.clear();
+					// Movement::setPath(selectedUnit, pathPreview);
 					if (moveCost == 1){
-						TurnSystem::executeAction(selectedUnit, TurnSystem::STEP_ACTION);
-						TacticalGrid::setMovementDisplayDash(selectedUnit);
+						std::cout << "hello from main\n";
+						TurnSystem::executeAction(selectedUnit, ABILITY_STEP, mouseInput.gridPosition);
+						TacticalGrid::waypoints.clear();
 					}
 					if (moveCost == 2){
-						TurnSystem::executeAction(selectedUnit, TurnSystem::DASH_ACTION);
-						TacticalGrid::clearMovementGrid();
+						std::cout << "hello from main\n";
+						TurnSystem::executeAction(selectedUnit, ABILITY_DASH, mouseInput.gridPosition);
+						TacticalGrid::waypoints.clear();
 					}
 
 				}
 			
 				if (IsKeyPressed(KEY_O)){
 				    if (TacticalGrid::waypoints.empty()){
-					float cost = TacticalGrid::getMovementCost(selectedUnit, x, y);
-					TacticalGrid::waypoints.push_back({cost, mouseInput.gridPosition});
-					
-					// Remaining movement = total speed - cost to reach this waypoint
-					// check for remaining scoot + dash range
-					float remainingMovement = selectedUnit->speed - cost;
-					float scootRange;
-					float dashRange;
-					if (remainingMovement < 0){
-							//used up all scoot range
-						scootRange = 0;
-						dashRange = selectedUnit->speed*1.5 - cost;
+					//first waypoint
+					if (selectedUnit->movePointsRemaining == 2){
+						//unit has both move actions
+						float cost = TacticalGrid::getMovementCost(selectedUnit, x, y);
+						TacticalGrid::waypoints.push_back({cost, mouseInput.gridPosition});
+						
+						// Remaining movement = total speed - cost to reach this waypoint
+						// check for remaining scoot + dash range
+						float remainingMovement = selectedUnit->speed - cost;
+						float scootRange;
+						float dashRange;
+						if (remainingMovement < 0){
+								//used up all scoot range
+							scootRange = 0;
+							dashRange = selectedUnit->speed*.5 - cost;
+						}
+						else {
+							scootRange = selectedUnit->speed - cost;
+							dashRange = selectedUnit->speed * 1.5 - cost;
+						}
+						TacticalGrid::setMovementDisplayFull(x, y, scootRange, dashRange);
 					}
 					else {
-						scootRange = selectedUnit->speed - cost;
-						dashRange = selectedUnit->speed * 1.5 - cost;
+						//unit only has dash left
+						float cost = TacticalGrid::getMovementCost(selectedUnit, x, y);
+						TacticalGrid::waypoints.push_back({cost, mouseInput.gridPosition});
+						float remainingMovement = selectedUnit->speed*0.5 - cost;
+						TacticalGrid::setMovementDisplayDash(x, y, remainingMovement);
+
 					}
-					TacticalGrid::setMovementDisplayFull(x, y, scootRange, dashRange);
 				    } else {
-					int wayX = TacticalGrid::waypoints.back().parent.x;
-					int wayY = TacticalGrid::waypoints.back().parent.y;
-					float totalCost = TacticalGrid::waypoints.back().cost;
-					float cost = TacticalGrid::getMovementCost(wayX, wayY, x, y);
-					totalCost += cost;
-					TacticalGrid::waypoints.push_back({totalCost, mouseInput.gridPosition});
-					
-					// Remaining movement = total speed - total cost to reach this waypoint
-					float remainingMovement = selectedUnit->speed - totalCost;
-					float scootRange;
-					float dashRange;
-					if (remainingMovement < 0){
-						scootRange = 0;
-						dashRange = selectedUnit->speed*1.5 - totalCost;
-					} else {
-						scootRange = selectedUnit->speed - totalCost;
-						dashRange = selectedUnit->speed * 1.5 - totalCost;
+						//there are existing waypoints with costs to account for
+					if (selectedUnit->movePointsRemaining == 2){
+						//unit has both move actions left.
+						int wayX = TacticalGrid::waypoints.back().parent.x;
+						int wayY = TacticalGrid::waypoints.back().parent.y;
+						float totalCost = TacticalGrid::waypoints.back().cost;
+						float cost = TacticalGrid::getMovementCost(wayX, wayY, x, y);
+						totalCost += cost;
+						TacticalGrid::waypoints.push_back({totalCost, mouseInput.gridPosition});
+						
+						// Remaining movement = total speed - total cost to reach this waypoint
+						float remainingMovement = selectedUnit->speed - totalCost;
+						float scootRange;
+						float dashRange;
+						if (remainingMovement < 0){
+							scootRange = 0;
+							dashRange = selectedUnit->speed*1.5 - totalCost;
+						} else {
+							scootRange = selectedUnit->speed - totalCost;
+							dashRange = selectedUnit->speed * 1.5 - totalCost;
+						}
+						TacticalGrid::setMovementDisplayFull(x, y, scootRange, dashRange);
 					}
-					TacticalGrid::setMovementDisplayFull(x, y, scootRange, dashRange);
+					else {
+						//unit only has dash action left.
+						int wayX = TacticalGrid::waypoints.back().parent.x;
+						int wayY = TacticalGrid::waypoints.back().parent.y;
+						float totalCost = TacticalGrid::waypoints.back().cost;
+						float cost = TacticalGrid::getMovementCost(wayX, wayY, x, y);
+						totalCost += cost;
+						TacticalGrid::waypoints.push_back({totalCost, mouseInput.gridPosition});
+						float remainingMovement = selectedUnit->speed*0.5 - totalCost;
+						TacticalGrid::setMovementDisplayDash(x,y, remainingMovement);
+
+					}
 				    }
 				}				
 
@@ -138,12 +170,12 @@ int main(){
 			std::cout << TacticalGrid::isUnitAt(x,y) << " unit at ( " << x << " , " << y << ")\n";
 			if (TacticalGrid::getUnitAt(x,y) != nullptr){
 				selectedUnit = TacticalGrid::getUnitAt(x,y);
-				if (selectedUnit->hasActed || selectedUnit->turnComplete || selectedUnit->hasDashed){
+				if (selectedUnit->movePointsRemaining <= 0 || selectedUnit->turnComplete || selectedUnit->actionPointsRemaining <= 0){
 					std::cout << "clear movement display\n";
 					TacticalGrid::clearMovementGrid();
 				}
 				else {
-					if (selectedUnit->hasMoved){
+					if (selectedUnit->movePointsRemaining == 1){
 						TacticalGrid::setMovementDisplayDash(selectedUnit);
 					}
 					else {
@@ -156,29 +188,30 @@ int main(){
 		}
 		if (IsKeyPressed(KEY_P) && selectedUnit){
 				TacticalGrid::waypoints.clear();
-				if (selectedUnit->hasMoved){
-					TacticalGrid::setMovementDisplayDash(selectedUnit);
+				if (selectedUnit->actionPointsRemaining == 1){
+						TacticalGrid::setMovementDisplayDash(selectedUnit);
 				}
 				else {
 					TacticalGrid::setMovementDisplayFull(selectedUnit);
-				}			}	
+				}		
+		}	
 
 		if (IsKeyPressed(KEY_TAB) && selectedUnit){
 			int currentId = selectedUnit->id;
 			if (TacticalGrid::getNextUnit(currentId) != nullptr){
 				selectedUnit = TacticalGrid::getNextUnit(currentId);
-				if (selectedUnit->hasActed || selectedUnit->turnComplete || selectedUnit->hasDashed){
+				if (selectedUnit->movePointsRemaining <= 0 || selectedUnit->turnComplete || selectedUnit->actionPointsRemaining <= 0){
 					std::cout << "clear movement display\n";
 					TacticalGrid::clearMovementGrid();
 				}
 				else {
-					if (selectedUnit->hasMoved){
+					if (selectedUnit->movePointsRemaining == 1){
 						TacticalGrid::setMovementDisplayDash(selectedUnit);
 					}
 					else {
 						TacticalGrid::setMovementDisplayFull(selectedUnit);
 					}
-				}			
+				}		
 			}
 		}	
 
@@ -211,7 +244,7 @@ int main(){
 			ClearBackground(RAYWHITE);
 
 				TurnSystem::displayTurnInfo();
-				DrawText(TextFormat("Unit Id: %d, has Moved: %b, has Dashed %b, has Acted %b, turn Complete %b", selectedUnit->id, selectedUnit->hasMoved, selectedUnit->hasActed, selectedUnit->hasDashed, selectedUnit->turnComplete), 300, 725, 25, BLACK);
+				DrawText(TextFormat("Unit Id: %d, move points: %d, action points: %d, turn Complete: %b", selectedUnit->id, selectedUnit->movePointsRemaining, selectedUnit->actionPointsRemaining, selectedUnit->turnComplete), 300, 725, 25, BLACK);
 			BeginMode3D(camera);
 				TacticalGrid::drawTerrain(worldOrigin);
 				TacticalGrid::setSelectedHighlight(selectedUnit->id);

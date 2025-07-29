@@ -34,9 +34,8 @@ struct Unit {
 	bool isMoving;
 
 	//turn stuff
-	bool hasMoved; //has stepped this turn.
-	bool hasDashed; //has dashed this turn.
-	bool hasActed; // has taken a primary action this turn.
+	int movePointsRemaining;
+	int actionPointsRemaining;
 	bool turnComplete; // used up all actions for this turn.
 	// bool isStunned
 
@@ -111,7 +110,7 @@ namespace TacticalGrid {
 	void setMovementDisplayFull(Unit* unit);
 	void setMovementDisplayFull(int fromX, int fromY, float remainingScootRange, float remainingDashRange);
 	void setMovementDisplayDash(Unit* unit);	
-
+	void setMovementDisplayDash(int fromX, int fromY, float remainingDashRange);
 
 	void drawHoverHighlight(int x, int y, Vector3 worldOrigin, Color hoverColor);
 	void drawTerrain(Vector3 worldOrigin);

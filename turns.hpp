@@ -4,6 +4,7 @@
 #include "grid.hpp"
 #include <raylib.h>
 #include <raymath.h>
+#include "abilities.hpp"
 
 namespace TurnSystem {
 	enum TurnPhase {
@@ -13,19 +14,13 @@ namespace TurnSystem {
 
 	extern TurnPhase currentPhase;
 
-	enum ActionType{
-		STEP_ACTION,
-		DASH_ACTION,
-		SHOOT_ACTION,
-		PRIMARY_ACTION,
-		FREE_ACTION,
-	};
+	
 	void initializeTurn(); //reset turn state.  
 	bool isPlayerTurn();
 	bool isEnemyTurn();
 
-	bool canUnitPerformAction(Unit* unit, ActionType action);
-	void executeAction(Unit* unit, ActionType action);
+	bool canUnitPerformAction(Unit* unit, AbilityID abilityId);
+	void executeAction(Unit* unit, AbilityID abilityId, Vector2 target);
 
 	void endTurn();
 

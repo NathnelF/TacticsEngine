@@ -1,5 +1,6 @@
 
 #include "turns.hpp"
+#include "abilities.hpp"
 
 
 namespace TurnSystem {
@@ -10,9 +11,8 @@ namespace TurnSystem {
 
 	void initializeTurn(){
 		for (auto& unit : TacticalGrid::units){
-			unit.hasActed = false;
-			unit.hasMoved = false;
-			unit.hasDashed = false;
+			unit.movePointsRemaining = 2;
+			unit.actionPointsRemaining = 1;
 			unit.turnComplete = false;
 		}
 	}
@@ -25,30 +25,37 @@ namespace TurnSystem {
 		return currentPhase == PHASE_ENEMY;
 	}
 
-	bool canUnitPerformAction(Unit *unit, ActionType action){
-		switch (action){
-			case STEP_ACTION:
-				if (unit->hasMoved || unit-> hasDashed || unit->hasActed || unit->turnComplete) return false;
-				else return true;
-			case DASH_ACTION:
-				if (unit->hasDashed || unit->hasActed || unit->turnComplete) return false;
-				else return true;
-				
-		}
+	bool canUnitPerformAction(Unit *unit, AbilityID abilityId){
+		//get the ability
+		AbilityDefinition* ability = AbilityRegistry::getAbility(abilityId);
+		const AbilityData& data = ability->data;
+		
+		if (data.movePointCost > unit->movePointsRemaining) return false;
+		if (data.actionPointCost > unit->actionPointsRemaining) return false;
+
+		//check usage limits as well
+		// usage per turn
+		// usage per mission
+		return true;
 	} 
 
-	void executeAction(Unit* unit, ActionType action){
-		switch (action){
-			case STEP_ACTION:
-				unit->hasMoved = true;
-				break;
-			case DASH_ACTION:
-				unit->hasMoved = true;
-				unit->hasDashed = true;
-				unit-> hasActed = true;
-				unit->turnComplete = true;
-				break;
+	void executeAction(Unit* unit, AbilityID abilityId, Vector2 target){
+		//get the ability
+	
+		AbilityDefinition* ability = AbilityRegistry::getAbility(abilityId);
+		const AbilityData& data =ability->data;
+		//apply ability costs to unit
+		unit->movePointsRemaining -= data.movePointCost;
+		unit->actionPointsRemaining -= data.actionPointCost;
+
+		//apply turn / mission usage
+
+		ability->executeFunction(unit, target);
+		//execute action
+		if (data.endsTurn || unit->movePointsRemaining <= 0 || unit-> actionPointsRemaining <= 0){
+			unit->turnComplete = true;
 		}	
+	
 		
 	}	
 
