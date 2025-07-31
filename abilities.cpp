@@ -2,6 +2,7 @@
 #include "abilities.hpp"
 #include "grid.hpp"
 #include "movement.hpp"
+#include <raymath.h>
 
 
 namespace AbilityRegistry{

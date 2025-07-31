@@ -9,6 +9,17 @@
 #include "movement.hpp"
 
 
+void debugDrawCircle3D(Vector3 position) {
+    float radius = 1.0f;
+    
+    // Test different parameters to see what actually changes
+    DrawCircle3D({position.x - 3, position.y, position.z}, radius, {1, 0, 0}, 0, RED);
+    DrawCircle3D({position.x - 1, position.y, position.z}, radius, {1, 0, 0}, 90, GREEN);
+    DrawCircle3D({position.x + 1, position.y, position.z}, radius, {0, 1, 0}, 0, BLUE);
+    DrawCircle3D({position.x + 3, position.y, position.z}, radius, {0, 0, 1}, 0, BLACK);
+    
+    // Draw labels
+}
 
 int main(){
 	InitWindow(1200, 800, "Camera Test");
@@ -21,6 +32,7 @@ int main(){
 
 	AbilityRegistry::initializeRegistry();
 	TacticalGrid::initGrids();
+	TacticalGrid::calculateCoverGrid();
 	TurnSystem::initializeTurn();
 
 	Unit* selectedUnit = TacticalGrid::getUnitAt(5,5);
@@ -30,6 +42,7 @@ int main(){
 	Color hoverColor;
 	bool showRange = false;
 	bool toggleRange = false;
+	bool showCover = false;
 
 	std::vector<Vector2> pathPreview;
 	bool showPreview = false;
@@ -52,7 +65,9 @@ int main(){
 			int moveCost = TacticalGrid::checkMoveDistance(x, y);
 			if (moveCost != -1){
 				showHover = true;
+				showCover = true;
 				if (selectedUnit->isMoving){
+					showHover = false;
 					showHover = false;
 				}
 				if (moveCost == 1){
@@ -156,14 +171,19 @@ int main(){
 						TacticalGrid::setMovementDisplayDash(x,y, remainingMovement);
 
 					}
-				    }
+			    }
 				}				
 
-			} else showHover = false;
+			} else {
+				showHover = false;
+				showCover = false;
+			}
 		}
 			
 		if (mouseInput.leftClicked && mouseInput.hasValidGridPos){
 			printf("Clicked grid tile: (%d, %d)\n", x, y);
+			CoverData& cover = TacticalGrid::coverGrid[y][x];
+			std::cout << cover << std::endl;
 			if (selectedUnit){
 				std::cout << "It will cost " << TacticalGrid::getMovementCost(selectedUnit, x, y) << " to move to ( " << x << " , " << y << ")\n";
 			}
@@ -256,8 +276,10 @@ int main(){
 				for (auto& point : TacticalGrid::waypoints){
 					Vector3 pos = TacticalGrid::gridToWorldPosition(point.parent, 0.1f);
 					DrawCube(pos, .25f, .01f, .25f, MAGENTA);
-			
+
 				}
+				if (showCover) CoverSystem::renderCover(mouseInput.gridPosition, hoverColor);
+				 // if (showCover) debugDrawCircle3D(TacticalGrid::gridToWorldPosition(mouseInput.gridPosition, 0.2f));
 				pathPreview.clear();	
 			EndMode3D();
 		EndDrawing();

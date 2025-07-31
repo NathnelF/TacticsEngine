@@ -3,6 +3,7 @@
 #include <raylib.h>
 #include <vector>
 #include <iostream>
+#include "cover.hpp"
 
 const int GRID_WIDTH = 30;
 const int GRID_HEIGHT = 30;
@@ -66,6 +67,7 @@ namespace TacticalGrid {
 	extern int unitGrid[GRID_HEIGHT][GRID_WIDTH];
 	extern int movementGrid[GRID_HEIGHT][GRID_WIDTH];
 	extern MoveCell pathGrid[GRID_HEIGHT][GRID_WIDTH];
+	extern CoverData coverGrid[GRID_HEIGHT][GRID_WIDTH];
 	// extern bool highlightGrid[GRID_HEIGHT][GRID_WIDTH];
 
 	extern std::vector<Unit> units; 
@@ -76,6 +78,9 @@ namespace TacticalGrid {
 	void clearMovementGrid();
 	void clearUnitGrid();
 	void clearPathGrid();
+	void clearCoverGrid();
+	CoverType calculateCoverFromTerrain(TileType terrain);
+	void calculateCoverGrid();
 	// void clearHighlightGrid();
 
 	Vector3 gridToWorldPosition(Vector2 gridPos, float yLevel);

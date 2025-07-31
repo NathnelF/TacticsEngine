@@ -26,6 +26,11 @@
 # Line of sight
 
 # Cover
+    1. Directional cover based on terrain.
+        a. cover Grid perhaps.
+            i. Calculate based on adjacent terrain
+            ii. 
+            
 
 # Detection
 

@@ -26,6 +26,7 @@ namespace TacticalGrid {
 	int unitGrid[GRID_HEIGHT][GRID_WIDTH];
 	int movementGrid[GRID_HEIGHT][GRID_WIDTH];
 	MoveCell pathGrid[GRID_HEIGHT][GRID_WIDTH];
+	CoverData coverGrid[GRID_HEIGHT][GRID_WIDTH];
 	std::vector<Unit> units;
 	std::vector<MoveCell> waypoints;
 
@@ -36,6 +37,7 @@ namespace TacticalGrid {
 				unitGrid[y][x] = -1;
 				movementGrid[y][x] = -1;
 				pathGrid[y][x] = {-1.0f, {-1, -1}};
+				coverGrid[y][x] = {COVER_NONE, COVER_NONE, COVER_NONE, COVER_NONE,};
 			}
 		}
 		
@@ -52,6 +54,8 @@ namespace TacticalGrid {
 		terrainGrid[20][5] = TILE_ROCK;
 		terrainGrid[14][26] = TILE_ROCK;
 		terrainGrid[4][2] = TILE_BOX;
+		terrainGrid[4][3] = TILE_BOX;
+		terrainGrid[3][2] = TILE_BOX;
 		terrainGrid[17][21] = TILE_ROCK;
 		terrainGrid[9][6] = TILE_BOX;
 	
@@ -96,7 +100,55 @@ namespace TacticalGrid {
 				pathGrid[y][x] = {-1.0f, {-1, -1}};
 			}
 		}
-	
+	}
+
+	void clearCoverGrid(){
+		for (int y = 0; y < GRID_HEIGHT; y++){
+			for (int x = 0; x < GRID_WIDTH; x++){
+				coverGrid[y][x] = {COVER_NONE, COVER_NONE, COVER_NONE, COVER_NONE};
+			}
+		}
+	}
+
+	CoverType calculateCoverFromTerrain(TileType terrain){
+		switch (terrain){
+			case TILE_WALL: return COVER_FULL;
+			case TILE_TREE: return COVER_FULL;
+			case TILE_EMPTY: return COVER_NONE;
+			case TILE_ROCK: return COVER_HALF;
+			case TILE_BOX: return COVER_HALF;
+		}
+	}
+	void calculateCoverGrid(){
+		for (int y = 0; y < GRID_HEIGHT; y++){
+			for (int x = 0; x < GRID_WIDTH; x++){
+				//check each direction (only if in bounds)
+				//north
+				if (y > 0){
+					TileType northTerrain = terrainGrid[y-1][x];	
+					CoverType coverVal = calculateCoverFromTerrain(northTerrain);
+					coverGrid[y][x].north = coverVal;
+				}
+				//south
+				if (y < GRID_HEIGHT-1){
+					TileType southTerrain = terrainGrid[y+1][x];	
+					CoverType coverVal = calculateCoverFromTerrain(southTerrain);
+					coverGrid[y][x].south = coverVal;
+				}
+				//east
+				if (x < GRID_WIDTH - 1){
+					TileType eastTerrain = terrainGrid[y][x+1];	
+					CoverType coverVal = calculateCoverFromTerrain(eastTerrain);
+					coverGrid[y][x].east = coverVal;
+				}
+				//west
+				if (x > 0){
+					TileType westTerrain = terrainGrid[y][x-1];	
+					CoverType coverVal = calculateCoverFromTerrain(westTerrain);
+					coverGrid[y][x].west = coverVal;
+				}
+			}
+		}
 	}
 
 
