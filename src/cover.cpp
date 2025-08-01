@@ -54,6 +54,47 @@ bool hasCover(Vector2 target, Direction direction) {
   }
 }
 
+int getCoverBonus(CoverType cover){
+  switch(cover){
+    case COVER_NONE: return 0;
+    case COVER_HALF: return 20;
+    case COVER_FULL: return 40;
+    default: return 0;
+  }
+}
+
+int getTargetCoverBonus(Vector2 from, Vector2 target){
+  CoverData& cover = TacticalGrid::coverGrid[(int)target.y][(int)target.x];
+  Vector2 difference = {from.x - target.x, from.y - target.y};
+  //check the differences to see attack direction
+  // Diff same -> attack is diagonal (we will default to vertical cover for diagonal attacks)
+  // X diff > Y diff -> attack horizontal
+  // X diff < Y diff -> attack vertical
+  if (abs(difference.x) >  abs(difference.y)){
+    //horizontal
+    if (difference.x > 0){
+      //shot from east. Get west cover
+      return getCoverBonus(cover.west);
+    }
+    else {
+      //shot from west. Get east cover.
+      return getCoverBonus(cover.east);
+    }
+  }
+  else {
+    //vertical
+    if (difference.y > 0){
+      //shot from south. Get north cover
+      return getCoverBonus(cover.north);
+    }
+    else {
+      //shot from north, Get south cover
+      return getCoverBonus(cover.south);
+    }
+  }
+    
+}
+
 // Get direction offset vector
 Vector2 getDirectionOffset(Direction dir) {
   switch (dir) {

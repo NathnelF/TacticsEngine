@@ -7,19 +7,8 @@
 #include "abilities.hpp"
 #include <iostream>
 #include "movement.hpp"
-
-
-void debugDrawCircle3D(Vector3 position) {
-    float radius = 1.0f;
-    
-    // Test different parameters to see what actually changes
-    DrawCircle3D({position.x - 3, position.y, position.z}, radius, {1, 0, 0}, 0, RED);
-    DrawCircle3D({position.x - 1, position.y, position.z}, radius, {1, 0, 0}, 90, GREEN);
-    DrawCircle3D({position.x + 1, position.y, position.z}, radius, {0, 1, 0}, 0, BLUE);
-    DrawCircle3D({position.x + 3, position.y, position.z}, radius, {0, 0, 1}, 0, BLACK);
-    
-    // Draw labels
-}
+#include "imgui.h"
+#include "rlImGui.h"
 
 int main(){
 	InitWindow(1200, 800, "Camera Test");
@@ -27,6 +16,7 @@ int main(){
 	Vector3 initialCameraPos = {0.0f, 0.0f, 0.0f};
 	initCamera(camera, initialCameraPos);
 	SetTargetFPS(60);
+	rlImGuiSetup(true);
 
 	Vector3 worldOrigin = {0.0f, 0.0f, 0.0f};
 
@@ -262,6 +252,10 @@ int main(){
 
 		BeginDrawing();
 			ClearBackground(RAYWHITE);
+			rlImGuiBegin();
+			bool open = true;
+			ImGui::ShowDemoWindow(&open);
+			rlImGuiEnd();
 
 				TurnSystem::displayTurnInfo();
 				DrawText(TextFormat("Unit Id: %d, move points: %d, action points: %d, turn Complete: %b", selectedUnit->id, selectedUnit->movePointsRemaining, selectedUnit->actionPointsRemaining, selectedUnit->turnComplete), 300, 725, 25, BLACK);
@@ -279,7 +273,6 @@ int main(){
 
 				}
 				if (showCover) CoverSystem::renderCover(mouseInput.gridPosition, hoverColor);
-				 // if (showCover) debugDrawCircle3D(TacticalGrid::gridToWorldPosition(mouseInput.gridPosition, 0.2f));
 				pathPreview.clear();	
 			EndMode3D();
 		EndDrawing();

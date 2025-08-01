@@ -1,0 +1,98 @@
+[
+{
+  "directory": "/home/natef08/Documents/mk2/build",
+  "command": "/usr/bin/c++ -DIMGUI_DISABLE_OBSOLETE_FUNCTIONS -I/home/natef08/Documents/mk2/external/imgui -std=gnu++17 -o CMakeFiles/imgui_lib.dir/external/imgui/imgui.cpp.o -c /home/natef08/Documents/mk2/external/imgui/imgui.cpp",
+  "file": "/home/natef08/Documents/mk2/external/imgui/imgui.cpp",
+  "output": "CMakeFiles/imgui_lib.dir/external/imgui/imgui.cpp.o"
+},
+{
+  "directory": "/home/natef08/Documents/mk2/build",
+  "command": "/usr/bin/c++ -DIMGUI_DISABLE_OBSOLETE_FUNCTIONS -I/home/natef08/Documents/mk2/external/imgui -std=gnu++17 -o CMakeFiles/imgui_lib.dir/external/imgui/imgui_demo.cpp.o -c /home/natef08/Documents/mk2/external/imgui/imgui_demo.cpp",
+  "file": "/home/natef08/Documents/mk2/external/imgui/imgui_demo.cpp",
+  "output": "CMakeFiles/imgui_lib.dir/external/imgui/imgui_demo.cpp.o"
+},
+{
+  "directory": "/home/natef08/Documents/mk2/build",
+  "command": "/usr/bin/c++ -DIMGUI_DISABLE_OBSOLETE_FUNCTIONS -I/home/natef08/Documents/mk2/external/imgui -std=gnu++17 -o CMakeFiles/imgui_lib.dir/external/imgui/imgui_draw.cpp.o -c /home/natef08/Documents/mk2/external/imgui/imgui_draw.cpp",
+  "file": "/home/natef08/Documents/mk2/external/imgui/imgui_draw.cpp",
+  "output": "CMakeFiles/imgui_lib.dir/external/imgui/imgui_draw.cpp.o"
+},
+{
+  "directory": "/home/natef08/Documents/mk2/build",
+  "command": "/usr/bin/c++ -DIMGUI_DISABLE_OBSOLETE_FUNCTIONS -I/home/natef08/Documents/mk2/external/imgui -std=gnu++17 -o CMakeFiles/imgui_lib.dir/external/imgui/imgui_tables.cpp.o -c /home/natef08/Documents/mk2/external/imgui/imgui_tables.cpp",
+  "file": "/home/natef08/Documents/mk2/external/imgui/imgui_tables.cpp",
+  "output": "CMakeFiles/imgui_lib.dir/external/imgui/imgui_tables.cpp.o"
+},
+{
+  "directory": "/home/natef08/Documents/mk2/build",
+  "command": "/usr/bin/c++ -DIMGUI_DISABLE_OBSOLETE_FUNCTIONS -I/home/natef08/Documents/mk2/external/imgui -std=gnu++17 -o CMakeFiles/imgui_lib.dir/external/imgui/imgui_widgets.cpp.o -c /home/natef08/Documents/mk2/external/imgui/imgui_widgets.cpp",
+  "file": "/home/natef08/Documents/mk2/external/imgui/imgui_widgets.cpp",
+  "output": "CMakeFiles/imgui_lib.dir/external/imgui/imgui_widgets.cpp.o"
+},
+{
+  "directory": "/home/natef08/Documents/mk2/build",
+  "command": "/usr/bin/c++  -I/home/natef08/Documents/mk2/external/rlImGui -I/home/natef08/Documents/mk2/external/imgui -std=gnu++17 -I/usr/include -o CMakeFiles/rlimgui_lib.dir/external/rlImGui/rlImGui.cpp.o -c /home/natef08/Documents/mk2/external/rlImGui/rlImGui.cpp",
+  "file": "/home/natef08/Documents/mk2/external/rlImGui/rlImGui.cpp",
+  "output": "CMakeFiles/rlimgui_lib.dir/external/rlImGui/rlImGui.cpp.o"
+},
+{
+  "directory": "/home/natef08/Documents/mk2/build",
+  "command": "/usr/bin/c++  -I/home/natef08/Documents/mk2/src -I/home/natef08/Documents/mk2/external/imgui -I/home/natef08/Documents/mk2/external/rlImGui -std=gnu++17 -Wall -I/usr/include -o CMakeFiles/TacticalGame.dir/src/abilities.cpp.o -c /home/natef08/Documents/mk2/src/abilities.cpp",
+  "file": "/home/natef08/Documents/mk2/src/abilities.cpp",
+  "output": "CMakeFiles/TacticalGame.dir/src/abilities.cpp.o"
+},
+{
+  "directory": "/home/natef08/Documents/mk2/build",
+  "command": "/usr/bin/c++  -I/home/natef08/Documents/mk2/src -I/home/natef08/Documents/mk2/external/imgui -I/home/natef08/Documents/mk2/external/rlImGui -std=gnu++17 -Wall -I/usr/include -o CMakeFiles/TacticalGame.dir/src/camera.cpp.o -c /home/natef08/Documents/mk2/src/camera.cpp",
+  "file": "/home/natef08/Documents/mk2/src/camera.cpp",
+  "output": "CMakeFiles/TacticalGame.dir/src/camera.cpp.o"
+},
+{
+  "directory": "/home/natef08/Documents/mk2/build",
+  "command": "/usr/bin/c++  -I/home/natef08/Documents/mk2/src -I/home/natef08/Documents/mk2/external/imgui -I/home/natef08/Documents/mk2/external/rlImGui -std=gnu++17 -Wall -I/usr/include -o CMakeFiles/TacticalGame.dir/src/cover.cpp.o -c /home/natef08/Documents/mk2/src/cover.cpp",
+  "file": "/home/natef08/Documents/mk2/src/cover.cpp",
+  "output": "CMakeFiles/TacticalGame.dir/src/cover.cpp.o"
+},
+{
+  "directory": "/home/natef08/Documents/mk2/build",
+  "command": "/usr/bin/c++  -I/home/natef08/Documents/mk2/src -I/home/natef08/Documents/mk2/external/imgui -I/home/natef08/Documents/mk2/external/rlImGui -std=gnu++17 -Wall -I/usr/include -o CMakeFiles/TacticalGame.dir/src/grid.cpp.o -c /home/natef08/Documents/mk2/src/grid.cpp",
+  "file": "/home/natef08/Documents/mk2/src/grid.cpp",
+  "output": "CMakeFiles/TacticalGame.dir/src/grid.cpp.o"
+},
+{
+  "directory": "/home/natef08/Documents/mk2/build",
+  "command": "/usr/bin/c++  -I/home/natef08/Documents/mk2/src -I/home/natef08/Documents/mk2/external/imgui -I/home/natef08/Documents/mk2/external/rlImGui -std=gnu++17 -Wall -I/usr/include -o CMakeFiles/TacticalGame.dir/src/input.cpp.o -c /home/natef08/Documents/mk2/src/input.cpp",
+  "file": "/home/natef08/Documents/mk2/src/input.cpp",
+  "output": "CMakeFiles/TacticalGame.dir/src/input.cpp.o"
+},
+{
+  "directory": "/home/natef08/Documents/mk2/build",
+  "command": "/usr/bin/c++  -I/home/natef08/Documents/mk2/src -I/home/natef08/Documents/mk2/external/imgui -I/home/natef08/Documents/mk2/external/rlImGui -std=gnu++17 -Wall -I/usr/include -o CMakeFiles/TacticalGame.dir/src/main.cpp.o -c /home/natef08/Documents/mk2/src/main.cpp",
+  "file": "/home/natef08/Documents/mk2/src/main.cpp",
+  "output": "CMakeFiles/TacticalGame.dir/src/main.cpp.o"
+},
+{
+  "directory": "/home/natef08/Documents/mk2/build",
+  "command": "/usr/bin/c++  -I/home/natef08/Documents/mk2/src -I/home/natef08/Documents/mk2/external/imgui -I/home/natef08/Documents/mk2/external/rlImGui -std=gnu++17 -Wall -I/usr/include -o CMakeFiles/TacticalGame.dir/src/movement.cpp.o -c /home/natef08/Documents/mk2/src/movement.cpp",
+  "file": "/home/natef08/Documents/mk2/src/movement.cpp",
+  "output": "CMakeFiles/TacticalGame.dir/src/movement.cpp.o"
+},
+{
+  "directory": "/home/natef08/Documents/mk2/build",
+  "command": "/usr/bin/c++  -I/home/natef08/Documents/mk2/src -I/home/natef08/Documents/mk2/external/imgui -I/home/natef08/Documents/mk2/external/rlImGui -std=gnu++17 -Wall -I/usr/include -o CMakeFiles/TacticalGame.dir/src/strategy_unit.cpp.o -c /home/natef08/Documents/mk2/src/strategy_unit.cpp",
+  "file": "/home/natef08/Documents/mk2/src/strategy_unit.cpp",
+  "output": "CMakeFiles/TacticalGame.dir/src/strategy_unit.cpp.o"
+},
+{
+  "directory": "/home/natef08/Documents/mk2/build",
+  "command": "/usr/bin/c++  -I/home/natef08/Documents/mk2/src -I/home/natef08/Documents/mk2/external/imgui -I/home/natef08/Documents/mk2/external/rlImGui -std=gnu++17 -Wall -I/usr/include -o CMakeFiles/TacticalGame.dir/src/tactical_unit.cpp.o -c /home/natef08/Documents/mk2/src/tactical_unit.cpp",
+  "file": "/home/natef08/Documents/mk2/src/tactical_unit.cpp",
+  "output": "CMakeFiles/TacticalGame.dir/src/tactical_unit.cpp.o"
+},
+{
+  "directory": "/home/natef08/Documents/mk2/build",
+  "command": "/usr/bin/c++  -I/home/natef08/Documents/mk2/src -I/home/natef08/Documents/mk2/external/imgui -I/home/natef08/Documents/mk2/external/rlImGui -std=gnu++17 -Wall -I/usr/include -o CMakeFiles/TacticalGame.dir/src/turns.cpp.o -c /home/natef08/Documents/mk2/src/turns.cpp",
+  "file": "/home/natef08/Documents/mk2/src/turns.cpp",
+  "output": "CMakeFiles/TacticalGame.dir/src/turns.cpp.o"
+}
+]

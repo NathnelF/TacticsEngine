@@ -30,8 +30,11 @@ std::ostream& operator<<(std::ostream& os, const CoverData& cd);
 namespace CoverSystem{
   CoverType getCoverValue(Vector2 target, Direction direction);
   bool hasCover(Vector2 target, Direction direction);
+  int getCoverBonus(CoverType cover);
+  int getTargetCoverBonus(Vector2 from, Vector2 target);
   void renderCover(Vector2 target, Color color);
   void renderCoverDirection(Vector3 tileCenter, Direction direction, CoverType coverType, Color color);
+
   
 }
 
