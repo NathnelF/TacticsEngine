@@ -9,7 +9,7 @@ namespace Movement{
 	float movementSpeed = 3.0f;
 	std::vector<MovingUnit> movingUnits;
 
-	void setPath(Unit* unit, std::vector<Vector2> path){
+	void setPath(GridUnit* unit, std::vector<Vector2> path){
 		
 		if (unit->isMoving){
 			std::cout << "Unit already moving!\n";
@@ -51,7 +51,7 @@ namespace Movement{
 				if (movingUnit.currentWaypointIndex >= movingUnit.path.size() - 1) {
 					std::cout << "Reached final destination!\n";
 					//we have reached the final waypoint
-					Unit* unit = nullptr;
+					GridUnit* unit = nullptr;
 					for (auto& u : TacticalGrid::units){
 						if (movingUnit.unitId == u.id) unit = &u;
 					}

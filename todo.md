@@ -7,8 +7,16 @@
         b. Perform action (done) (more to do on specific actions)
         c. end turn (manually right now, needs to be automatic when all units are out of actions);
     2. Enemy turns <- requires enemies!
-
+        a. Need enemy ai to decide on actions.
+            b. For now they will just end their turn most likely.
+        
 # Enemies
+    1. Add a tactical Unit that will represent a player unit.
+        a. Contains a gridUnit struct (composition)
+        b. will pull from a list of strategy units to get abilities, model, texture, etc..
+    2. Add enemy unit that will represent an enmy unit
+        a. contains a gridUnit struct (composition)
+        b. Will pull from a list of predefined enemy units to get abilities, model, texture etc..
 
 
 # Abilties

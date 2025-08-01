@@ -27,7 +27,7 @@ namespace TacticalGrid {
 	int movementGrid[GRID_HEIGHT][GRID_WIDTH];
 	MoveCell pathGrid[GRID_HEIGHT][GRID_WIDTH];
 	CoverData coverGrid[GRID_HEIGHT][GRID_WIDTH];
-	std::vector<Unit> units;
+	std::vector<GridUnit> units;
 	std::vector<MoveCell> waypoints;
 
 	void initGrids(){
@@ -60,9 +60,9 @@ namespace TacticalGrid {
 		terrainGrid[9][6] = TILE_BOX;
 	
 		units.clear();
-		units.push_back({0, {5,5}, 6.0f, 5, 30, 30, RED, false, 2, 1, false});
-		units.push_back({1, {4,6}, 6.0f, 5, 28, 32, GREEN, false, 2, 1, false});
-		units.push_back({2, {5,7}, 7.0f, 3, 33, 25, BLUE, false, 2, 1, false});
+		units.push_back({0, {5,5}, 6.0f, RED, false, 2, 1, false});
+		units.push_back({1, {4,6}, 6.0f, GREEN, false, 2, 1, false});
+		units.push_back({2, {5,7}, 7.0f, BLUE, false, 2, 1, false});
 
 		for (auto& unit : units){
 			unitGrid[(int)unit.gridPosition.y][(int)unit.gridPosition.x] = unit.id;
@@ -168,7 +168,7 @@ namespace TacticalGrid {
 		}
 	}
 	
-	Unit* getUnitById(int unitId){
+GridUnit* getGridUnitById(int unitId){
 		for (auto& unit : units){
 			if (unitId == unit.id){
 				return &unit;
@@ -176,27 +176,27 @@ namespace TacticalGrid {
 		}
 		return nullptr;
 	}
-	Unit* getNextUnit(int currentId){
+	GridUnit* getNextGridUnit(int currentId){
 		int temp;
 		temp = currentId + 1;
 		if (temp > units.size() - 1){
-			return getUnitById(0);
+			return getGridUnitById(0);
 		}
 		else {
-			return getUnitById(temp);
+			return getGridUnitById(temp);
 		}
 	}
 
-	Unit* getUnitAt(int x, int y){
+	GridUnit* getGridUnitAt(int x, int y){
 		if (x < 0 || x >= GRID_WIDTH || y < 0 || y >= GRID_HEIGHT) return nullptr;
 		int unitId = unitGrid[y][x];
 		if (unitId == -1) return nullptr;
 		
-		return getUnitById(unitId);
+		return getGridUnitById(unitId);
 	}
 
-	bool isUnitAt(int x, int y){
-		return getUnitAt(x, y) != nullptr;
+	bool isGridUnitAt(int x, int y){
+		return getGridUnitAt(x, y) != nullptr;
 	}
 
 	
@@ -212,9 +212,9 @@ namespace TacticalGrid {
 		}
 	}
 
-	float getUnitMultiplier(int x, int y){
+	float getGridUnitMultiplier(int x, int y){
 		if (x < 0 || x >= GRID_WIDTH || y < 0 || y >= GRID_HEIGHT) return -1.0f;
-		if (isUnitAt(x,y)){
+		if (isGridUnitAt(x,y)){
 			return -1.0f;
 		} else {
 			return 1.0f;
@@ -254,7 +254,7 @@ namespace TacticalGrid {
 			float terrainMultiplier = getTerrainMultiplier(neighborX, neighborY);
 			if (terrainMultiplier < 0) continue;
 			
-			float unitMultiplier = getUnitMultiplier(neighborX, neighborY); 
+			float unitMultiplier = getGridUnitMultiplier(neighborX, neighborY); 
 			if (unitMultiplier < 0) continue;
 		    
 			float moveCost = costs[i] * terrainMultiplier;
@@ -315,7 +315,7 @@ namespace TacticalGrid {
 		calculateCostsFrom(fromX, fromY);
 		return pathGrid[toY][toX].cost;	
 	}
-	float getMovementCost(const Unit* unit, int toX, int toY){
+	float getMovementCost(const GridUnit* unit, int toX, int toY){
 		calculateCostsFrom(unit->gridPosition.x, unit->gridPosition.y);
 		return pathGrid[toY][toX].cost;
 	}
@@ -323,10 +323,10 @@ namespace TacticalGrid {
 		float cost = getMovementCost(fromX, fromY, toX, toY);
 		return cost >= 0 && cost <= maxMovement;
 	}
-	bool inDashRange(const Unit* unit, int toX, int toY){
+	bool inDashRange(const GridUnit* unit, int toX, int toY){
 		return isReachable(unit->gridPosition.x, unit->gridPosition.y, toX, toY, unit->speed*2);
 	}
-	bool inScootRange(const Unit* unit, int toX, int toY){
+	bool inScootRange(const GridUnit* unit, int toX, int toY){
 		return isReachable(unit->gridPosition.x, unit->gridPosition.y, toX, toY, unit->speed);
 	}
 
@@ -357,12 +357,12 @@ namespace TacticalGrid {
 		return tilesInRange;
 	}
 
-	std::vector<Vector2> getScootTiles(Unit* unit){
+	std::vector<Vector2> getScootTiles(GridUnit* unit){
 		std::vector<Vector2> scootTiles = getTilesInRange(unit->gridPosition.x, unit->gridPosition.y, unit->speed);
 		return scootTiles;
 	}
 
-	std::vector<Vector2> getDashTiles(Unit* unit){
+	std::vector<Vector2> getDashTiles(GridUnit* unit){
 		std::vector<Vector2> dashTiles = getTilesInRange(unit->gridPosition.x, unit->gridPosition.y, unit->speed * 1.5);
 		return dashTiles;
 	}
@@ -371,7 +371,7 @@ namespace TacticalGrid {
 		return movementGrid[y][x];
 	}
 
-	void setMovementDisplayFull(Unit* unit){
+	void setMovementDisplayFull(GridUnit* unit){
 		clearMovementGrid();
 		calculateCostsFrom(unit->gridPosition.x, unit->gridPosition.y, unit->speed*1.5);
 
@@ -408,7 +408,7 @@ namespace TacticalGrid {
 	}
 
 
-	void setMovementDisplayDash(Unit* unit){
+	void setMovementDisplayDash(GridUnit* unit){
 		//used to set display after step movement.
 		clearMovementGrid();
 		calculateCostsFrom(unit->gridPosition.x, unit->gridPosition.y, unit->speed*0.5);
@@ -499,7 +499,7 @@ namespace TacticalGrid {
 		}
 	}
 
-	PathData calculateWaypointPath(const Unit* unit, Vector2 finalDestination) {
+	PathData calculateWaypointPath(const GridUnit* unit, Vector2 finalDestination) {
 		PathData result;
 		result.totalCost = 0.0f;
 		result.isReachable = true;
@@ -561,7 +561,7 @@ namespace TacticalGrid {
 	    }
 
 	
-	void drawUnits(Vector3 worldOrigin){
+	void drawGridUnits(Vector3 worldOrigin){
 		for (auto& unit : units){
 			if (!unit.isMoving){
 				Vector3 unitPos = {worldOrigin.x + unit.gridPosition.x * TILE_SIZE, worldOrigin.y + 1.0f, worldOrigin.z + unit.gridPosition.y * TILE_SIZE};

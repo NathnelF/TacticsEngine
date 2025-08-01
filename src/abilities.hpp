@@ -35,7 +35,7 @@ struct AbilityData{
 
 };
 
-typedef void (*AbilityExecuteFunction)(Unit* unit, Vector2 target);
+typedef void (*AbilityExecuteFunction)(GridUnit* unit, Vector2 target);
 
 struct AbilityDefinition{
 	AbilityData data;

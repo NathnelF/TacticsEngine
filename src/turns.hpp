@@ -19,8 +19,8 @@ namespace TurnSystem {
 	bool isPlayerTurn();
 	bool isEnemyTurn();
 
-	bool canUnitPerformAction(Unit* unit, AbilityID abilityId);
-	void executeAction(Unit* unit, AbilityID abilityId, Vector2 target);
+	bool canUnitPerformAction(GridUnit* unit, AbilityID abilityId);
+	void executeAction(GridUnit* unit, AbilityID abilityId, Vector2 target);
 
 	void endTurn();
 

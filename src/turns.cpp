@@ -25,7 +25,7 @@ namespace TurnSystem {
 		return currentPhase == PHASE_ENEMY;
 	}
 
-	bool canUnitPerformAction(Unit *unit, AbilityID abilityId){
+	bool canUnitPerformAction(GridUnit*unit, AbilityID abilityId){
 		//get the ability
 		AbilityDefinition* ability = AbilityRegistry::getAbility(abilityId);
 		const AbilityData& data = ability->data;
@@ -39,7 +39,7 @@ namespace TurnSystem {
 		return true;
 	} 
 
-	void executeAction(Unit* unit, AbilityID abilityId, Vector2 target){
+	void executeAction(GridUnit* unit, AbilityID abilityId, Vector2 target){
 		//get the ability
 	
 		AbilityDefinition* ability = AbilityRegistry::getAbility(abilityId);

@@ -18,7 +18,7 @@ namespace Movement{
 	extern float moveSpeed;
 	extern std::vector<MovingUnit> movingUnits;
 
-	void setPath(Unit* unit, std::vector<Vector2> path);
+	void setPath(GridUnit* unit, std::vector<Vector2> path);
 	void updateMove(float deltaTime);
 
 	bool IsUnitMoving(int unitId);

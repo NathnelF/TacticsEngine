@@ -8,7 +8,7 @@
 namespace AbilityRegistry{
 	std::unordered_map<AbilityID, AbilityDefinition> abilities;
 
-	void executeStep(Unit* unit, Vector2 target){
+	void executeStep(GridUnit* unit, Vector2 target){
 		if (TacticalGrid::waypoints.empty()){
 			std::vector<Vector2> path = TacticalGrid::reconstructPath(unit->gridPosition.x, unit->gridPosition.y, target.x, target.y);
 			Movement::setPath(unit, path);
@@ -27,7 +27,7 @@ namespace AbilityRegistry{
 
 	}
 
-	void executeDash(Unit* unit, Vector2 target){
+	void executeDash(GridUnit* unit, Vector2 target){
 		if (TacticalGrid::waypoints.empty()){
 			std::vector<Vector2> path = TacticalGrid::reconstructPath(unit->gridPosition.x, unit->gridPosition.y, target.x, target.y);
 			Movement::setPath(unit, path);

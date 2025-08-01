@@ -7,3 +7,13 @@
 //Stats, level, experience, equipment, perks, abilities, class...etc.
 //It will also include name and any customization options if I ever add those. 
 //
+struct StrategyUnit {
+  const char* name;
+  int aimStat;
+  int speedStat;
+  int resolveStat;
+  int maxHealthStat;
+
+  //abilities will go here.
+  
+}

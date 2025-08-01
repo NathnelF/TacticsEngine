@@ -25,7 +25,7 @@ int main() {
   TacticalGrid::calculateCoverGrid();
   TurnSystem::initializeTurn();
 
-  Unit *selectedUnit = TacticalGrid::getUnitAt(5, 5);
+  GridUnit *selectedUnit = TacticalGrid::getGridUnitAt(5, 5);
   TacticalGrid::setMovementDisplayFull(selectedUnit);
 
   bool showHover = false;
@@ -180,10 +180,10 @@ int main() {
                   << TacticalGrid::getMovementCost(selectedUnit, x, y)
                   << " to move to ( " << x << " , " << y << ")\n";
       }
-      std::cout << TacticalGrid::isUnitAt(x, y) << " unit at ( " << x << " , "
+      std::cout << TacticalGrid::isGridUnitAt(x, y) << " unit at ( " << x << " , "
                 << y << ")\n";
-      if (TacticalGrid::getUnitAt(x, y) != nullptr) {
-        selectedUnit = TacticalGrid::getUnitAt(x, y);
+      if (TacticalGrid::getGridUnitAt(x, y) != nullptr) {
+        selectedUnit = TacticalGrid::getGridUnitAt(x, y);
         if (selectedUnit->movePointsRemaining <= 0 ||
             selectedUnit->turnComplete ||
             selectedUnit->actionPointsRemaining <= 0) {
@@ -209,8 +209,8 @@ int main() {
 
     if (IsKeyPressed(KEY_TAB) && selectedUnit) {
       int currentId = selectedUnit->id;
-      if (TacticalGrid::getNextUnit(currentId) != nullptr) {
-        selectedUnit = TacticalGrid::getNextUnit(currentId);
+      if (TacticalGrid::getNextGridUnit(currentId) != nullptr) {
+        selectedUnit = TacticalGrid::getNextGridUnit(currentId);
         if (selectedUnit->movePointsRemaining <= 0 ||
             selectedUnit->turnComplete ||
             selectedUnit->actionPointsRemaining <= 0) {
@@ -281,7 +281,7 @@ int main() {
     BeginMode3D(camera);
     TacticalGrid::drawTerrain(worldOrigin);
     TacticalGrid::setSelectedHighlight(selectedUnit->id);
-    TacticalGrid::drawUnits(worldOrigin);
+    TacticalGrid::drawGridUnits(worldOrigin);
     Movement::drawMovingUnits(worldOrigin);
     if (showRange)
       TacticalGrid::drawMovementOverlay(worldOrigin);

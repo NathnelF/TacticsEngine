@@ -18,7 +18,7 @@ enum TileType {
 	TILE_BOX = 5
 };
 
-struct Unit {
+struct GridUnit {
 
 	//grid stuff
 	int id;
@@ -26,9 +26,6 @@ struct Unit {
 
 	//stats
 	float speed;
-	int health;
-	int aim;
-	int resolve;
 
 	//render stuff
 	Color color;
@@ -70,7 +67,7 @@ namespace TacticalGrid {
 	extern CoverData coverGrid[GRID_HEIGHT][GRID_WIDTH];
 	// extern bool highlightGrid[GRID_HEIGHT][GRID_WIDTH];
 
-	extern std::vector<Unit> units; 
+	extern std::vector<GridUnit> units; 
 	extern std::vector<MoveCell> waypoints;
 
 	void initGrids();
@@ -87,39 +84,39 @@ namespace TacticalGrid {
 
 
 	bool isPassable(int x, int y);
-	Unit* getUnitAt(int x, int y);
-	bool isUnitAt(int x, int y);
-	void moveUnit(int unitId, int newX, int newY);
-	Unit* getUnitById(int unitId);
-	Unit* getNextUnit(int currentId);
+	GridUnit* getGridUnitAt(int x, int y);
+	bool isGridUnitAt(int x, int y);
+	void moveGridUnit(int unitId, int newX, int newY);
+	GridUnit* getGridUnitById(int unitId);
+	GridUnit* getNextGridUnit(int currentId);
 
 	float getTerrainMultiplier(int x, int y);
-	float getUnitMultiplier(int x, int y);
+	float getGridUnitMultiplier(int x, int y);
 
      	void calculateCostsFrom(int startX, int startY, float maxRange = 999.0f);
 	std::vector<Vector2> reconstructPath(int fromX, int fromY, int toX, int toY);
 
 	float getMovementCost(int fromX, int fromY, int toX, int toY);
-	float getMovementCost(const Unit* unit, int toX, int toY);
+	float getMovementCost(const GridUnit* unit, int toX, int toY);
 	bool isReachable(int fromX, int fromY, int toX, int toY, float maxMovement);
-	bool inScootRange(const Unit* unit, int toX, int toY);
-	bool inDashRange(const Unit* unit, int toX, int toY);
+	bool inScootRange(const GridUnit* unit, int toX, int toY);
+	bool inDashRange(const GridUnit* unit, int toX, int toY);
 	PathData getPathInfo(int fromX, int fromY, int toX, int toY, float maxMovement = 999.0f);	
 	std::vector<Vector2> getTilesinRange(int fromX, int fromY, float maxMovement);
-	std::vector<Vector2> getScootTiles(Unit* unit);
-	std::vector<Vector2> getDashTiles(Unit* unit);
+	std::vector<Vector2> getScootTiles(GridUnit* unit);
+	std::vector<Vector2> getDashTiles(GridUnit* unit);
 	int checkMoveDistance(int x, int y);
-	PathData calculateWaypointPath(const Unit* unit, Vector2 finalDestination);
+	PathData calculateWaypointPath(const GridUnit* unit, Vector2 finalDestination);
 	void setSelectedHighlight(int unitId);
 
-	void setMovementDisplayFull(Unit* unit);
+	void setMovementDisplayFull(GridUnit* unit);
 	void setMovementDisplayFull(int fromX, int fromY, float remainingScootRange, float remainingDashRange);
-	void setMovementDisplayDash(Unit* unit);	
+	void setMovementDisplayDash(GridUnit* unit);	
 	void setMovementDisplayDash(int fromX, int fromY, float remainingDashRange);
 
 	void drawHoverHighlight(int x, int y, Vector3 worldOrigin, Color hoverColor);
 	void drawTerrain(Vector3 worldOrigin);
-	void drawUnits(Vector3 worldOrigin);
+	void drawGridUnits(Vector3 worldOrigin);
 	void drawMovementOverlay(Vector3 worldOrigin);
 	void drawPathPreview(std::vector<Vector2> path, Color color);
 }
