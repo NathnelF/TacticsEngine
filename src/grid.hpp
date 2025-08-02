@@ -20,9 +20,11 @@ enum TileType {
 
 struct GridUnit {
 
+	//bool playerControlled?
 	//grid stuff
 	int id;
 	Vector2 gridPosition;
+	bool playerControlled;
 
 	//stats
 	float speed;
@@ -67,7 +69,6 @@ namespace TacticalGrid {
 	extern CoverData coverGrid[GRID_HEIGHT][GRID_WIDTH];
 	// extern bool highlightGrid[GRID_HEIGHT][GRID_WIDTH];
 
-	extern std::vector<GridUnit> units; 
 	extern std::vector<MoveCell> waypoints;
 
 	void initGrids();
@@ -78,22 +79,19 @@ namespace TacticalGrid {
 	void clearCoverGrid();
 	CoverType calculateCoverFromTerrain(TileType terrain);
 	void calculateCoverGrid();
+	void addUnitToGrid(GridUnit unit);
 	// void clearHighlightGrid();
 
 	Vector3 gridToWorldPosition(Vector2 gridPos, float yLevel);
 
 
 	bool isPassable(int x, int y);
-	GridUnit* getGridUnitAt(int x, int y);
 	bool isGridUnitAt(int x, int y);
-	void moveGridUnit(int unitId, int newX, int newY);
-	GridUnit* getGridUnitById(int unitId);
-	GridUnit* getNextGridUnit(int currentId);
 
 	float getTerrainMultiplier(int x, int y);
 	float getGridUnitMultiplier(int x, int y);
 
-     	void calculateCostsFrom(int startX, int startY, float maxRange = 999.0f);
+ 	void calculateCostsFrom(int startX, int startY, float maxRange = 999.0f);
 	std::vector<Vector2> reconstructPath(int fromX, int fromY, int toX, int toY);
 
 	float getMovementCost(int fromX, int fromY, int toX, int toY);
@@ -107,7 +105,6 @@ namespace TacticalGrid {
 	std::vector<Vector2> getDashTiles(GridUnit* unit);
 	int checkMoveDistance(int x, int y);
 	PathData calculateWaypointPath(const GridUnit* unit, Vector2 finalDestination);
-	void setSelectedHighlight(int unitId);
 
 	void setMovementDisplayFull(GridUnit* unit);
 	void setMovementDisplayFull(int fromX, int fromY, float remainingScootRange, float remainingDashRange);
@@ -116,7 +113,6 @@ namespace TacticalGrid {
 
 	void drawHoverHighlight(int x, int y, Vector3 worldOrigin, Color hoverColor);
 	void drawTerrain(Vector3 worldOrigin);
-	void drawGridUnits(Vector3 worldOrigin);
 	void drawMovementOverlay(Vector3 worldOrigin);
 	void drawPathPreview(std::vector<Vector2> path, Color color);
 }

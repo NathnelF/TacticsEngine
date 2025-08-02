@@ -5,12 +5,14 @@
 #include "imgui.h"
 #include "input.hpp"
 #include "movement.hpp"
+#include "player_unit.hpp"
 #include "rlImGui.h"
 #include "turns.hpp"
 #include <iostream>
 #include <raylib.h>
 
 int main() {
+  std::cout << "hello world1 main\n";
   InitWindow(1200, 800, "Camera Test");
   Camera3D camera = {0};
   Vector3 initialCameraPos = {0.0f, 0.0f, 0.0f};
@@ -23,10 +25,12 @@ int main() {
   AbilityRegistry::initializeRegistry();
   TacticalGrid::initGrids();
   TacticalGrid::calculateCoverGrid();
+  PlayerUnits::initializePlayerUnits();
   TurnSystem::initializeTurn();
 
-  GridUnit *selectedUnit = TacticalGrid::getGridUnitAt(5, 5);
-  TacticalGrid::setMovementDisplayFull(selectedUnit);
+  PlayerUnit *selectedUnit =
+      PlayerUnits::getPlayerUnit(TacticalGrid::unitGrid[5][5]);
+  TacticalGrid::setMovementDisplayFull(&selectedUnit->gridUnit);
 
   bool showHover = false;
   Color hoverColor;
@@ -56,7 +60,7 @@ int main() {
       if (moveCost != -1) {
         showHover = true;
         showCover = true;
-        if (selectedUnit->isMoving) {
+        if (selectedUnit->gridUnit.isMoving) {
           showHover = false;
           showHover = false;
         }
@@ -68,27 +72,28 @@ int main() {
         }
         if (TacticalGrid::waypoints.empty()) {
           pathPreview = TacticalGrid::reconstructPath(
-              selectedUnit->gridPosition.x, selectedUnit->gridPosition.y, x, y);
+              selectedUnit->gridUnit.gridPosition.x,
+              selectedUnit->gridUnit.gridPosition.y, x, y);
           showPreview = !pathPreview.empty();
-          if (selectedUnit->isMoving) {
+          if (selectedUnit->gridUnit.isMoving) {
             showPreview = false;
           }
         } else {
           PathData waypointPath = TacticalGrid::calculateWaypointPath(
-              selectedUnit, mouseInput.gridPosition);
+              &selectedUnit->gridUnit, mouseInput.gridPosition);
           pathPreview = waypointPath.path;
         }
         if (IsKeyPressed(KEY_M) && !pathPreview.empty()) {
           // Movement::setPath(selectedUnit, pathPreview);
           if (moveCost == 1) {
             std::cout << "hello from main\n";
-            TurnSystem::executeAction(selectedUnit, ABILITY_STEP,
+            TurnSystem::executeAction(&selectedUnit->gridUnit, ABILITY_STEP,
                                       mouseInput.gridPosition);
             TacticalGrid::waypoints.clear();
           }
           if (moveCost == 2) {
             std::cout << "hello from main\n";
-            TurnSystem::executeAction(selectedUnit, ABILITY_DASH,
+            TurnSystem::executeAction(&selectedUnit->gridUnit, ABILITY_DASH,
                                       mouseInput.gridPosition);
             TacticalGrid::waypoints.clear();
           }
@@ -97,37 +102,40 @@ int main() {
         if (IsKeyPressed(KEY_O)) {
           if (TacticalGrid::waypoints.empty()) {
             // first waypoint
-            if (selectedUnit->movePointsRemaining == 2) {
+            if (selectedUnit->gridUnit.movePointsRemaining == 2) {
               // unit has both move actions
-              float cost = TacticalGrid::getMovementCost(selectedUnit, x, y);
+              float cost =
+                  TacticalGrid::getMovementCost(&selectedUnit->gridUnit, x, y);
               TacticalGrid::waypoints.push_back(
                   {cost, mouseInput.gridPosition});
 
               // Remaining movement = total speed - cost to reach this waypoint
               // check for remaining scoot + dash range
-              float remainingMovement = selectedUnit->speed - cost;
+              float remainingMovement = selectedUnit->gridUnit.speed - cost;
               float scootRange;
               float dashRange;
               if (remainingMovement < 0) {
                 // used up all scoot range
                 scootRange = 0;
-                dashRange = selectedUnit->speed * .5 - cost;
+                dashRange = selectedUnit->gridUnit.speed * .5 - cost;
               } else {
-                scootRange = selectedUnit->speed - cost;
-                dashRange = selectedUnit->speed * 1.5 - cost;
+                scootRange = selectedUnit->gridUnit.speed - cost;
+                dashRange = selectedUnit->gridUnit.speed * 1.5 - cost;
               }
               TacticalGrid::setMovementDisplayFull(x, y, scootRange, dashRange);
             } else {
               // unit only has dash left
-              float cost = TacticalGrid::getMovementCost(selectedUnit, x, y);
+              float cost =
+                  TacticalGrid::getMovementCost(&selectedUnit->gridUnit, x, y);
               TacticalGrid::waypoints.push_back(
                   {cost, mouseInput.gridPosition});
-              float remainingMovement = selectedUnit->speed * 0.5 - cost;
+              float remainingMovement =
+                  selectedUnit->gridUnit.speed * 0.5 - cost;
               TacticalGrid::setMovementDisplayDash(x, y, remainingMovement);
             }
           } else {
             // there are existing waypoints with costs to account for
-            if (selectedUnit->movePointsRemaining == 2) {
+            if (selectedUnit->gridUnit.movePointsRemaining == 2) {
               // unit has both move actions left.
               int wayX = TacticalGrid::waypoints.back().parent.x;
               int wayY = TacticalGrid::waypoints.back().parent.y;
@@ -139,15 +147,16 @@ int main() {
 
               // Remaining movement = total speed - total cost to reach this
               // waypoint
-              float remainingMovement = selectedUnit->speed - totalCost;
+              float remainingMovement =
+                  selectedUnit->gridUnit.speed - totalCost;
               float scootRange;
               float dashRange;
               if (remainingMovement < 0) {
                 scootRange = 0;
-                dashRange = selectedUnit->speed * 1.5 - totalCost;
+                dashRange = selectedUnit->gridUnit.speed * 1.5 - totalCost;
               } else {
-                scootRange = selectedUnit->speed - totalCost;
-                dashRange = selectedUnit->speed * 1.5 - totalCost;
+                scootRange = selectedUnit->gridUnit.speed - totalCost;
+                dashRange = selectedUnit->gridUnit.speed * 1.5 - totalCost;
               }
               TacticalGrid::setMovementDisplayFull(x, y, scootRange, dashRange);
             } else {
@@ -159,7 +168,8 @@ int main() {
               totalCost += cost;
               TacticalGrid::waypoints.push_back(
                   {totalCost, mouseInput.gridPosition});
-              float remainingMovement = selectedUnit->speed * 0.5 - totalCost;
+              float remainingMovement =
+                  selectedUnit->gridUnit.speed * 0.5 - totalCost;
               TacticalGrid::setMovementDisplayDash(x, y, remainingMovement);
             }
           }
@@ -177,51 +187,55 @@ int main() {
       std::cout << cover << std::endl;
       if (selectedUnit) {
         std::cout << "It will cost "
-                  << TacticalGrid::getMovementCost(selectedUnit, x, y)
+                  << TacticalGrid::getMovementCost(&selectedUnit->gridUnit, x,
+                                                   y)
                   << " to move to ( " << x << " , " << y << ")\n";
       }
-      std::cout << TacticalGrid::isGridUnitAt(x, y) << " unit at ( " << x << " , "
-                << y << ")\n";
-      if (TacticalGrid::getGridUnitAt(x, y) != nullptr) {
-        selectedUnit = TacticalGrid::getGridUnitAt(x, y);
-        if (selectedUnit->movePointsRemaining <= 0 ||
-            selectedUnit->turnComplete ||
-            selectedUnit->actionPointsRemaining <= 0) {
+      std::cout << TacticalGrid::isGridUnitAt(x, y) << " unit at ( " << x
+                << " , " << y << ")\n";
+      if (TacticalGrid::unitGrid[y][x] != -1) {
+        std::cout << "test\n";
+        selectedUnit = PlayerUnits::getPlayerUnit(TacticalGrid::unitGrid[y][x]);
+        if (selectedUnit->gridUnit.movePointsRemaining <= 0 ||
+            selectedUnit->gridUnit.turnComplete ||
+            selectedUnit->gridUnit.actionPointsRemaining <= 0) {
           std::cout << "clear movement display\n";
           TacticalGrid::clearMovementGrid();
         } else {
-          if (selectedUnit->movePointsRemaining == 1) {
-            TacticalGrid::setMovementDisplayDash(selectedUnit);
+          if (selectedUnit->gridUnit.movePointsRemaining == 1) {
+            TacticalGrid::setMovementDisplayDash(&selectedUnit->gridUnit);
           } else {
-            TacticalGrid::setMovementDisplayFull(selectedUnit);
+            TacticalGrid::setMovementDisplayFull(&selectedUnit->gridUnit);
           }
         }
       }
     }
     if (IsKeyPressed(KEY_P) && selectedUnit) {
       TacticalGrid::waypoints.clear();
-      if (selectedUnit->actionPointsRemaining == 1) {
-        TacticalGrid::setMovementDisplayDash(selectedUnit);
+      if (selectedUnit->gridUnit.actionPointsRemaining == 1) {
+        TacticalGrid::setMovementDisplayDash(&selectedUnit->gridUnit);
       } else {
-        TacticalGrid::setMovementDisplayFull(selectedUnit);
+        TacticalGrid::setMovementDisplayFull(&selectedUnit->gridUnit);
       }
     }
 
     if (IsKeyPressed(KEY_TAB) && selectedUnit) {
       int currentId = selectedUnit->id;
-      if (TacticalGrid::getNextGridUnit(currentId) != nullptr) {
-        selectedUnit = TacticalGrid::getNextGridUnit(currentId);
-        if (selectedUnit->movePointsRemaining <= 0 ||
-            selectedUnit->turnComplete ||
-            selectedUnit->actionPointsRemaining <= 0) {
-          std::cout << "clear movement display\n";
-          TacticalGrid::clearMovementGrid();
+      std::cout << currentId << std::endl;
+      selectedUnit = PlayerUnits::getNextPlayerUnit(currentId);
+      std::cout << selectedUnit->id;
+      if (selectedUnit->gridUnit.movePointsRemaining <= 0 ||
+          selectedUnit->gridUnit.turnComplete ||
+          selectedUnit->gridUnit.actionPointsRemaining <= 0) {
+        std::cout << "clear movement display\n";
+        TacticalGrid::clearMovementGrid();
+      } else {
+        if (selectedUnit->gridUnit.movePointsRemaining == 1) {
+          std::cout << "Half movement left\n";
+          TacticalGrid::setMovementDisplayDash(&selectedUnit->gridUnit);
         } else {
-          if (selectedUnit->movePointsRemaining == 1) {
-            TacticalGrid::setMovementDisplayDash(selectedUnit);
-          } else {
-            TacticalGrid::setMovementDisplayFull(selectedUnit);
-          }
+          std::cout << "Full movement left\n";
+          TacticalGrid::setMovementDisplayFull(&selectedUnit->gridUnit);
         }
       }
     }
@@ -230,15 +244,15 @@ int main() {
       toggleRange = !toggleRange;
     }
 
-    if (selectedUnit->isMoving) {
+    if (selectedUnit->gridUnit.isMoving) {
       showRange = false;
     } else {
       showRange = toggleRange;
     }
 
     if (IsKeyPressed(KEY_T)) {
-      std::cout << selectedUnit->gridPosition.x << " , "
-                << selectedUnit->gridPosition.y << std::endl;
+      std::cout << selectedUnit->gridUnit.gridPosition.x << " , "
+                << selectedUnit->gridUnit.gridPosition.y << std::endl;
     }
 
     if (IsKeyPressed(KEY_L)) {
@@ -254,34 +268,39 @@ int main() {
     BeginDrawing();
     ClearBackground(RAYWHITE);
     rlImGuiBegin();
-      ImGui::SetNextWindowPos(ImVec2(GetScreenWidth() / 2.0f, GetScreenHeight() - 100.0f), ImGuiCond_Always, ImVec2(0.5f, 0.5f));
-      ImGui::SetNextWindowSize(ImVec2(400,80));
-      ImGui::Begin("Ability Bar", NULL, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoMove);
-        if (ImGui::Button("Shoot")){
-          std::cout << "Shoot!\n";
-        }
-        ImGui::SameLine();
-        if (ImGui::Button("Overwatch")){
-            std::cout << "Overwatch!\n";
-        }
-        ImGui::SameLine();
-        if (ImGui::Button("Reload")){
-            std::cout << "Reload!\n";
-        }
-      ImGui::End();    	
+    ImGui::SetNextWindowPos(
+        ImVec2(GetScreenWidth() / 2.0f, GetScreenHeight() - 100.0f),
+        ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+    ImGui::SetNextWindowSize(ImVec2(400, 80));
+    ImGui::Begin("Ability Bar", NULL,
+                 ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
+                     ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoMove);
+    if (ImGui::Button("Shoot")) {
+      std::cout << "Shoot!\n";
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("Overwatch")) {
+      std::cout << "Overwatch!\n";
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("Reload")) {
+      std::cout << "Reload!\n";
+    }
+    ImGui::End();
     rlImGuiEnd();
 
     TurnSystem::displayTurnInfo();
     DrawText(TextFormat("Unit Id: %d, move points: %d, action points: %d, turn "
                         "Complete: %b",
-                        selectedUnit->id, selectedUnit->movePointsRemaining,
-                        selectedUnit->actionPointsRemaining,
-                        selectedUnit->turnComplete),
+                        selectedUnit->id,
+                        selectedUnit->gridUnit.movePointsRemaining,
+                        selectedUnit->gridUnit.actionPointsRemaining,
+                        selectedUnit->gridUnit.turnComplete),
              300, 725, 25, BLACK);
     BeginMode3D(camera);
     TacticalGrid::drawTerrain(worldOrigin);
-    TacticalGrid::setSelectedHighlight(selectedUnit->id);
-    TacticalGrid::drawGridUnits(worldOrigin);
+    PlayerUnits::setSelectedHighlight(selectedUnit->id);
+    PlayerUnits::drawGridUnits(worldOrigin);
     Movement::drawMovingUnits(worldOrigin);
     if (showRange)
       TacticalGrid::drawMovementOverlay(worldOrigin);
@@ -300,7 +319,7 @@ int main() {
     EndDrawing();
   }
 
-	rlImGuiShutdown();
-	CloseWindow();
+  rlImGuiShutdown();
+  CloseWindow();
   return 0;
 }

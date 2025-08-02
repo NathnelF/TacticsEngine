@@ -1,6 +1,7 @@
 
 #include "turns.hpp"
 #include "abilities.hpp"
+#include "player_unit.hpp"
 
 
 namespace TurnSystem {
@@ -10,10 +11,11 @@ namespace TurnSystem {
 	int turnNumber = 1;
 
 	void initializeTurn(){
-		for (auto& unit : TacticalGrid::units){
-			unit.movePointsRemaining = 2;
-			unit.actionPointsRemaining = 1;
-			unit.turnComplete = false;
+		//TODO: initialize enemy turns as well
+		for (auto& unit : PlayerUnits::playerUnits){
+			unit.gridUnit.movePointsRemaining = 2;
+			unit.gridUnit.actionPointsRemaining = 1;
+			unit.gridUnit.turnComplete = false;
 		}
 	}
 

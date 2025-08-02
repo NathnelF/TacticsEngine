@@ -1,6 +1,7 @@
 
 #include "movement.hpp"
 #include "grid.hpp"
+#include "player_unit.hpp"
 #include <iostream>
 #include <algorithm>
 
@@ -52,8 +53,8 @@ namespace Movement{
 					std::cout << "Reached final destination!\n";
 					//we have reached the final waypoint
 					GridUnit* unit = nullptr;
-					for (auto& u : TacticalGrid::units){
-						if (movingUnit.unitId == u.id) unit = &u;
+					for (auto& u : PlayerUnits::playerUnits){
+						if (movingUnit.unitId == u.id) unit = &u.gridUnit;
 					}
 					if (unit){
 						unit->isMoving = false;
@@ -79,10 +80,10 @@ namespace Movement{
 
 	void drawMovingUnits(Vector3 worldOrigin){
 		for (const auto& movingUnit : movingUnits){
-			for (const auto& unit : TacticalGrid::units){
+			for (const auto& unit : PlayerUnits::playerUnits){
 				if (movingUnit.unitId == unit.id) {
 					// std::cout << "attempting draw for moving unit " << movingUnit.unitId << "!\n";
-					DrawCube(movingUnit.position, 1.5f, 1.0f, 1.5f, unit.color);
+					DrawCube(movingUnit.position, 1.5f, 1.0f, 1.5f, unit.gridUnit.color);
 					break;
 				}
 			}

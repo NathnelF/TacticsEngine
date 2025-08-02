@@ -27,7 +27,6 @@ namespace TacticalGrid {
 	int movementGrid[GRID_HEIGHT][GRID_WIDTH];
 	MoveCell pathGrid[GRID_HEIGHT][GRID_WIDTH];
 	CoverData coverGrid[GRID_HEIGHT][GRID_WIDTH];
-	std::vector<GridUnit> units;
 	std::vector<MoveCell> waypoints;
 
 	void initGrids(){
@@ -59,14 +58,6 @@ namespace TacticalGrid {
 		terrainGrid[17][21] = TILE_ROCK;
 		terrainGrid[9][6] = TILE_BOX;
 	
-		units.clear();
-		units.push_back({0, {5,5}, 6.0f, RED, false, 2, 1, false});
-		units.push_back({1, {4,6}, 6.0f, GREEN, false, 2, 1, false});
-		units.push_back({2, {5,7}, 7.0f, BLUE, false, 2, 1, false});
-
-		for (auto& unit : units){
-			unitGrid[(int)unit.gridPosition.y][(int)unit.gridPosition.x] = unit.id;
-		}
 	}
 
 	void clearTerrainGrid(){
@@ -92,6 +83,10 @@ namespace TacticalGrid {
 				unitGrid[y][x] = -1;
 			}
 		}
+	}
+
+	void addUnitToGrid(GridUnit unit){
+		unitGrid[(int)unit.gridPosition.y][(int)unit.gridPosition.x] = unit.id;
 	}
 
 	void clearPathGrid(){
@@ -168,39 +163,10 @@ namespace TacticalGrid {
 		}
 	}
 	
-GridUnit* getGridUnitById(int unitId){
-		for (auto& unit : units){
-			if (unitId == unit.id){
-				return &unit;
-			}
-		}
-		return nullptr;
-	}
-	GridUnit* getNextGridUnit(int currentId){
-		int temp;
-		temp = currentId + 1;
-		if (temp > units.size() - 1){
-			return getGridUnitById(0);
-		}
-		else {
-			return getGridUnitById(temp);
-		}
-	}
-
-	GridUnit* getGridUnitAt(int x, int y){
-		if (x < 0 || x >= GRID_WIDTH || y < 0 || y >= GRID_HEIGHT) return nullptr;
-		int unitId = unitGrid[y][x];
-		if (unitId == -1) return nullptr;
-		
-		return getGridUnitById(unitId);
-	}
 
 	bool isGridUnitAt(int x, int y){
-		return getGridUnitAt(x, y) != nullptr;
+		return unitGrid[y][x] != -1;
 	}
-
-	
-
 
 	float getTerrainMultiplier(int x, int y){
 		if (x < 0 || x >= GRID_WIDTH || y < 0 || y >= GRID_HEIGHT) return -1.0f;
@@ -450,15 +416,7 @@ GridUnit* getGridUnitById(int unitId){
 	// 	}
 	// }	
 
-	void setSelectedHighlight(int unitId){
-		for (auto& unit : units){
-			if (unitId == unit.id){
-				Vector3 pos = {unit.gridPosition.x * TILE_SIZE, 0.0f, unit.gridPosition.y * TILE_SIZE};
-				DrawCubeWires(pos, TILE_SIZE, 0.1f, TILE_SIZE, SKYBLUE);
-				break;
-			}
-		}
-	}
+	
 
 	void drawHoverHighlight(int x, int y, Vector3 worldOrigin, Color hoverColor){
 		Vector3 pos = {worldOrigin.x + x * TILE_SIZE, worldOrigin.y, worldOrigin.z + y * TILE_SIZE};
@@ -560,18 +518,7 @@ GridUnit* getGridUnitById(int unitId){
 		return result;
 	    }
 
-	
-	void drawGridUnits(Vector3 worldOrigin){
-		for (auto& unit : units){
-			if (!unit.isMoving){
-				Vector3 unitPos = {worldOrigin.x + unit.gridPosition.x * TILE_SIZE, worldOrigin.y + 1.0f, worldOrigin.z + unit.gridPosition.y * TILE_SIZE};
-				DrawCube(unitPos, 1.5f, 1.0f, 1.5f, unit.color);
-			}
-				
-		}
-	}
-
-	void drawMovementOverlay(Vector3 worldOrigin){
+			void drawMovementOverlay(Vector3 worldOrigin){
 		for (int y = 0; y < GRID_HEIGHT; y++){
 			for (int x = 0; x < GRID_WIDTH; x++){
 				int cost = movementGrid[y][x];
