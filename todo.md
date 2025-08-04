@@ -11,6 +11,12 @@
             b. For now they will just end their turn most likely.
         
 # Enemies
+    #Here is the issue. A playerUnit contains a gridUnit, and an enemyUnit contains a gridUnit. But my unitGrid is just a list of GridUnits. Which don't know if they are a player or
+    an enemy. I could either have, a separate grid for each type and then redo all my functions for each. Or match gridUnit id to player / enemy unit ID so I can easily look them
+    up? That way I can look up a unit's id, and then look up if that is a player or enemy unit from there? I could also add a flag to a grid unit that marks if it player or enemy
+    and just update that along with the speed since we have precedent for that already.
+
+    
     1. Add a tactical Unit that will represent a player unit.
         a. Contains a gridUnit struct (composition)
         b. will pull from a list of strategy units to get abilities, model, texture, etc..

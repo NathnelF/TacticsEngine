@@ -14,8 +14,8 @@ const AbilityID ABILITY_DASH = 2;
 
 struct AbilityData{
 	AbilityID id;
-	const char* name;
-	const char* descr;
+	std::string name;
+	std::string descr;
 
 	int movePointCost;
 	int actionPointCost;

@@ -15,7 +15,6 @@ namespace AbilityRegistry{
 			TacticalGrid::setMovementDisplayDash(unit);
 		}	  
 		else {
-			std::cout << "helloooooo\n";
 			PathData pathData = TacticalGrid::calculateWaypointPath(unit, target);
 			std::vector<Vector2> path = pathData.path;	
 			std::cout << "waypoint path : " << path << std::endl;
@@ -54,7 +53,7 @@ namespace AbilityRegistry{
 	}
 
 	AbilityDefinition* getAbility(AbilityID id) {
-        	auto it = abilities.find(id);
+  	auto it = abilities.find(id);
 		if (it != abilities.end()){
 			return &it->second;
 		}

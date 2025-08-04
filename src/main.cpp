@@ -6,13 +6,13 @@
 #include "input.hpp"
 #include "movement.hpp"
 #include "player_unit.hpp"
+#include "enemy_unit.hpp"
 #include "rlImGui.h"
 #include "turns.hpp"
 #include <iostream>
 #include <raylib.h>
 
 int main() {
-  std::cout << "hello world1 main\n";
   InitWindow(1200, 800, "Camera Test");
   Camera3D camera = {0};
   Vector3 initialCameraPos = {0.0f, 0.0f, 0.0f};
@@ -26,6 +26,7 @@ int main() {
   TacticalGrid::initGrids();
   TacticalGrid::calculateCoverGrid();
   PlayerUnits::initializePlayerUnits();
+  EnemyUnits::initializeEnemyUnits();
   TurnSystem::initializeTurn();
 
   PlayerUnit *selectedUnit =
@@ -86,13 +87,11 @@ int main() {
         if (IsKeyPressed(KEY_M) && !pathPreview.empty()) {
           // Movement::setPath(selectedUnit, pathPreview);
           if (moveCost == 1) {
-            std::cout << "hello from main\n";
             TurnSystem::executeAction(&selectedUnit->gridUnit, ABILITY_STEP,
                                       mouseInput.gridPosition);
             TacticalGrid::waypoints.clear();
           }
           if (moveCost == 2) {
-            std::cout << "hello from main\n";
             TurnSystem::executeAction(&selectedUnit->gridUnit, ABILITY_DASH,
                                       mouseInput.gridPosition);
             TacticalGrid::waypoints.clear();
@@ -193,8 +192,7 @@ int main() {
       }
       std::cout << TacticalGrid::isGridUnitAt(x, y) << " unit at ( " << x
                 << " , " << y << ")\n";
-      if (TacticalGrid::unitGrid[y][x] != -1) {
-        std::cout << "test\n";
+      if (TacticalGrid::unitGrid[y][x] != -1 && TacticalGrid::unitGrid[y][x] < 10) {
         selectedUnit = PlayerUnits::getPlayerUnit(TacticalGrid::unitGrid[y][x]);
         if (selectedUnit->gridUnit.movePointsRemaining <= 0 ||
             selectedUnit->gridUnit.turnComplete ||
@@ -209,6 +207,13 @@ int main() {
           }
         }
       }
+      if (TacticalGrid::unitGrid[y][x] != -1 && TacticalGrid::unitGrid[y][x] >= 10){
+        //this should be an enemy
+        int gridId = TacticalGrid::unitGrid[y][x];
+        std::cout << "That's an enemy aAAAaaAAaAAAaaaaaAAAAAaH\n";
+        EnemyUnit* enemy = EnemyUnits::getEnemyUnit(gridId - 10);
+        std::cout << "Their name is " << enemy->name << "\n";
+      }
     }
     if (IsKeyPressed(KEY_P) && selectedUnit) {
       TacticalGrid::waypoints.clear();
@@ -221,9 +226,7 @@ int main() {
 
     if (IsKeyPressed(KEY_TAB) && selectedUnit) {
       int currentId = selectedUnit->id;
-      std::cout << currentId << std::endl;
       selectedUnit = PlayerUnits::getNextPlayerUnit(currentId);
-      std::cout << selectedUnit->id;
       if (selectedUnit->gridUnit.movePointsRemaining <= 0 ||
           selectedUnit->gridUnit.turnComplete ||
           selectedUnit->gridUnit.actionPointsRemaining <= 0) {
@@ -301,6 +304,7 @@ int main() {
     TacticalGrid::drawTerrain(worldOrigin);
     PlayerUnits::setSelectedHighlight(selectedUnit->id);
     PlayerUnits::drawGridUnits(worldOrigin);
+    EnemyUnits::drawEnemyUnits(worldOrigin);
     Movement::drawMovingUnits(worldOrigin);
     if (showRange)
       TacticalGrid::drawMovementOverlay(worldOrigin);

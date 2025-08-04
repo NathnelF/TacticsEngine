@@ -5,7 +5,7 @@
 struct PlayerUnit {
   int id;
   GridUnit gridUnit;
-  const char* name;
+  std::string name;
   int aimStat;
   float speedStat;
   int resolveStat;
