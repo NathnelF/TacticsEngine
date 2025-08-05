@@ -278,9 +278,17 @@ int main() {
     ImGui::Begin("Ability Bar", NULL,
                  ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
                      ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoMove);
+    
+    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(20, 15));
+    ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 5.0f);
     if (ImGui::Button("Shoot")) {
       std::cout << "Shoot!\n";
-    }
+      // ImGui::Begin("Target Bar", NULL, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoMove);
+      //   if (ImGui::Button("Target1")){
+      //     std::cout << "Target1!\n";
+      //   }
+      TurnSystem::executeAction(&selectedUnit->gridUnit, ABILITY_SHOOT_PRIMARY, EnemyUnits::enemyUnits.front().gridUnit.gridPosition);
+      }
     ImGui::SameLine();
     if (ImGui::Button("Overwatch")) {
       std::cout << "Overwatch!\n";
@@ -289,6 +297,9 @@ int main() {
     if (ImGui::Button("Reload")) {
       std::cout << "Reload!\n";
     }
+
+    ImGui::PopStyleVar(2);
+    
     ImGui::End();
     rlImGuiEnd();
 

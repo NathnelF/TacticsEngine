@@ -52,6 +52,8 @@ namespace TacticalGrid {
 		terrainGrid[11][10] = TILE_TREE;
 		terrainGrid[20][5] = TILE_ROCK;
 		terrainGrid[14][26] = TILE_ROCK;
+		terrainGrid[16][4] = TILE_ROCK;
+		terrainGrid[4][16] = TILE_ROCK;
 		terrainGrid[4][2] = TILE_BOX;
 		terrainGrid[4][3] = TILE_BOX;
 		terrainGrid[3][2] = TILE_BOX;

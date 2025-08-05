@@ -24,17 +24,17 @@ void initializePlayerUnits() {
   // gotta make gridUnits first
   playerUnits.clear();
   GridUnit gunit1 = {0, {5, 5}, false, 6.0f, RED, false, 2, 1, false};
-  PlayerUnit unit1 = {0, gunit1, "Reggie", 30, 6.0f, 19, 4};
+  PlayerUnit unit1 = {0, gunit1, "Reggie", 30, 6.0f, 19, 4, 4};
   unit1.updateGridUnit();
   playerUnits.push_back(unit1);
   TacticalGrid::addUnitToGrid(unit1.gridUnit);
   GridUnit gunit2 = {0, {4, 6}, false, 6.0f, GREEN, false, 2, 1, false};
-  PlayerUnit unit2 = {1, gunit2, "Charles", 31, 6.0f, 16, 5};
+  PlayerUnit unit2 = {1, gunit2, "Charles", 31, 6.0f, 16, 5, 5};
   unit2.updateGridUnit();
   playerUnits.push_back(unit2);
   TacticalGrid::addUnitToGrid(unit2.gridUnit);
   GridUnit gunit3 = {0, {5, 7}, false, 6.0f, BLUE, false, 2, 1, false};
-  PlayerUnit unit3 = {2, gunit3, "Sharon", 28, 7.0f, 15, 3};
+  PlayerUnit unit3 = {2, gunit3, "Sharon", 28, 7.0f, 15, 3, 3};
   unit3.updateGridUnit();
   playerUnits.push_back(unit3);
   TacticalGrid::addUnitToGrid(unit3.gridUnit);

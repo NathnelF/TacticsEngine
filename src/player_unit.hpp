@@ -10,6 +10,7 @@ struct PlayerUnit {
   float speedStat;
   int resolveStat;
   int maxHealthStat;
+  int currentHealth;
 
   //TODO abilities
   //TODO perks

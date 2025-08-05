@@ -72,24 +72,32 @@ int getTargetCoverBonus(Vector2 from, Vector2 target){
   // X diff < Y diff -> attack vertical
   if (abs(difference.x) >  abs(difference.y)){
     //horizontal
+    std::cout << "horizontal shot\n";
     if (difference.x > 0){
       //shot from east. Get west cover
-      return getCoverBonus(cover.west);
+      std::cout << "shot from east\n";
+      std::cout << cover.east<< std::endl;
+      return getCoverBonus(cover.east);
     }
     else {
       //shot from west. Get east cover.
-      return getCoverBonus(cover.east);
+      std::cout << "shot from west\n";
+      std::cout << cover.west << std::endl;
+      return getCoverBonus(cover.west);
     }
   }
   else {
     //vertical
+    std::cout << "vertical shot\n";
     if (difference.y > 0){
       //shot from south. Get north cover
-      return getCoverBonus(cover.north);
+      std::cout << "shot from south\n";
+      return getCoverBonus(cover.south);
     }
     else {
       //shot from north, Get south cover
-      return getCoverBonus(cover.south);
+      std::cout << "shot from north\n";
+      return getCoverBonus(cover.north);
     }
   }
     

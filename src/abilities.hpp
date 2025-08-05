@@ -9,6 +9,7 @@ typedef int AbilityID;
 
 const AbilityID ABILITY_STEP = 1;
 const AbilityID ABILITY_DASH = 2;
+const AbilityID ABILITY_SHOOT_PRIMARY = 3;
 //put ids here
 
 
