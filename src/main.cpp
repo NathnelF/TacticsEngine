@@ -21,6 +21,7 @@ int main() {
   rlImGuiSetup(false);
 
   Vector3 worldOrigin = {0.0f, 0.0f, 0.0f};
+  Vector2 currentTarget = {-1, -1};
 
   AbilityRegistry::initializeRegistry();
   TacticalGrid::initGrids();
@@ -272,6 +273,20 @@ int main() {
     ClearBackground(RAYWHITE);
     rlImGuiBegin();
     ImGui::SetNextWindowPos(
+            ImVec2(GetScreenWidth() / 2.0f, GetScreenHeight() - 150.0f),
+            ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+    ImGui::SetNextWindowSize(ImVec2(400, 80));
+    ImGui::Begin("Target Bar", NULL,
+                 ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
+                     ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoMove);
+    for (auto& enemy : EnemyUnits::enemyUnits){
+      if (ImGui::Button(enemy.name.c_str())){
+        currentTarget = enemy.gridUnit.gridPosition;
+      }
+      ImGui::SameLine();
+    }
+    ImGui::End();
+    ImGui::SetNextWindowPos(
         ImVec2(GetScreenWidth() / 2.0f, GetScreenHeight() - 100.0f),
         ImGuiCond_Always, ImVec2(0.5f, 0.5f));
     ImGui::SetNextWindowSize(ImVec2(400, 80));
@@ -283,11 +298,7 @@ int main() {
     ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 5.0f);
     if (ImGui::Button("Shoot")) {
       std::cout << "Shoot!\n";
-      // ImGui::Begin("Target Bar", NULL, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoMove);
-      //   if (ImGui::Button("Target1")){
-      //     std::cout << "Target1!\n";
-      //   }
-      TurnSystem::executeAction(&selectedUnit->gridUnit, ABILITY_SHOOT_PRIMARY, EnemyUnits::enemyUnits.front().gridUnit.gridPosition);
+      TurnSystem::executeAction(&selectedUnit->gridUnit, ABILITY_SHOOT_PRIMARY, currentTarget);
       }
     ImGui::SameLine();
     if (ImGui::Button("Overwatch")) {

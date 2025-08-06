@@ -47,6 +47,10 @@ void executeShootPrimary(GridUnit *unit, Vector2 target) {
   //  Assume line of sight is valid for now.
   //  First need to check if this is a player or enemy unit doing the
   //  shooting.
+  if (target.x == -1 && target.y == -1){
+    std::cout << "Target not found\n";
+    return;
+  }
   if (unit->id < 10) {
     // player Unit
     // Second we need to get enemy at the target square

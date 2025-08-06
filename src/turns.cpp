@@ -43,6 +43,11 @@ namespace TurnSystem {
 
 	void executeAction(GridUnit* unit, AbilityID abilityId, Vector2 target){
 		//get the ability
+		//
+		if (!canUnitPerformAction(unit, abilityId)){
+			std::cout << "can't perform action now\n";
+			return;
+		}
 	
 		AbilityDefinition* ability = AbilityRegistry::getAbility(abilityId);
 		const AbilityData& data =ability->data;
