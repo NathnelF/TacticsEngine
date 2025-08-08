@@ -39,6 +39,7 @@ int main() {
   bool showRange = false;
   bool toggleRange = false;
   bool showCover = false;
+  bool showTarget = false;
 
   std::vector<Vector2> pathPreview;
   bool showPreview = false;
@@ -265,6 +266,9 @@ int main() {
 
     if (IsKeyPressed(KEY_ENTER)) {
       TurnSystem::endTurn();
+      if(selectedUnit){
+        TacticalGrid::setMovementDisplayFull(&selectedUnit->gridUnit);
+      }
     }
 
     Movement::updateMove(deltaTime);
@@ -280,12 +284,17 @@ int main() {
                  ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
                      ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoMove);
     for (auto& enemy : EnemyUnits::enemyUnits){
-      if (ImGui::Button(enemy.name.c_str())){
+      int hitChance = calculateHitChance(selectedUnit->gridUnit, enemy.gridUnit.gridPosition);
+
+      std::string buttonLabel = enemy.name + " " + std::to_string(hitChance) + "%";
+      // std::string buttonLabel = enemy.name;
+      if (ImGui::Button(buttonLabel.c_str())){
         currentTarget = enemy.gridUnit.gridPosition;
       }
       ImGui::SameLine();
     }
-    ImGui::End();
+    ImGui::End(); 
+
     ImGui::SetNextWindowPos(
         ImVec2(GetScreenWidth() / 2.0f, GetScreenHeight() - 100.0f),
         ImGuiCond_Always, ImVec2(0.5f, 0.5f));
@@ -314,6 +323,10 @@ int main() {
     ImGui::End();
     rlImGuiEnd();
 
+    if (currentTarget != (Vector2){-1, -1}){
+      showTarget =true;
+    } else showTarget = false;
+
     TurnSystem::displayTurnInfo();
     DrawText(TextFormat("Unit Id: %d, move points: %d, action points: %d, turn "
                         "Complete: %b",
@@ -337,6 +350,10 @@ int main() {
     for (auto &point : TacticalGrid::waypoints) {
       Vector3 pos = TacticalGrid::gridToWorldPosition(point.parent, 0.1f);
       DrawCube(pos, .25f, .01f, .25f, MAGENTA);
+    }
+    if (showTarget) {
+      Vector3 pos = TacticalGrid::gridToWorldPosition(currentTarget, 0.12f);
+  		DrawCubeWires(pos, TILE_SIZE, 0.15f, TILE_SIZE, RED);
     }
     if (showCover)
       CoverSystem::renderCover(mouseInput.gridPosition, hoverColor);

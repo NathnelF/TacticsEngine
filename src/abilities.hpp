@@ -48,6 +48,8 @@ struct UnitAbilityState{
 	std::unordered_map<AbilityID, int> usesThisMission;
 };
 
+int calculateHitChance(GridUnit unit, Vector2 target);
+
 namespace AbilityRegistry{
 	void initializeRegistry();
 	AbilityDefinition* getAbility(AbilityID id);

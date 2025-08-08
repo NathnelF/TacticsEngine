@@ -10,6 +10,19 @@
 #include <cstdlib>
 #include <ctime>
 
+int calculateHitChance(GridUnit unit, Vector2 target){
+  int coverBonus = CoverSystem::getTargetCoverBonus(unit.gridPosition, target);
+  PlayerUnit* player = PlayerUnits::getPlayerUnit(unit.id);
+  if (player == nullptr){
+    return -1;
+  }
+  int hitChance = 50 + player->aimStat - coverBonus; //TODO: use enemy defense?
+  if (hitChance < 0){
+    hitChance = 0;
+  }
+  return hitChance;
+}
+
 namespace AbilityRegistry {
 std::unordered_map<AbilityID, AbilityDefinition> abilities;
 

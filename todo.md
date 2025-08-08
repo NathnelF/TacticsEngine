@@ -1,28 +1,15 @@
 
 # Grid movement <- complete for now!
+    1. Updates meshes / shader effects for position previews.
 
 # Turns
     1. Player turns
-        a. Check if can perform action (done)
-        b. Perform action (done) (more to do on specific actions)
         c. end turn (manually right now, needs to be automatic when all units are out of actions);
     2. Enemy turns <- requires enemies!
         a. Need enemy ai to decide on actions.
             b. For now they will just end their turn most likely.
         
 # Enemies
-    #Here is the issue. A playerUnit contains a gridUnit, and an enemyUnit contains a gridUnit. But my unitGrid is just a list of GridUnits. Which don't know if they are a player or
-    an enemy. I could either have, a separate grid for each type and then redo all my functions for each. Or match gridUnit id to player / enemy unit ID so I can easily look them
-    up? That way I can look up a unit's id, and then look up if that is a player or enemy unit from there? I could also add a flag to a grid unit that marks if it player or enemy
-    and just update that along with the speed since we have precedent for that already.
-
-    
-    1. Add a tactical Unit that will represent a player unit.
-        a. Contains a gridUnit struct (composition)
-        b. will pull from a list of strategy units to get abilities, model, texture, etc..
-    2. Add enemy unit that will represent an enmy unit
-        a. contains a gridUnit struct (composition)
-        b. Will pull from a list of predefined enemy units to get abilities, model, texture etc..
 
 
 # Abilties
@@ -38,9 +25,11 @@
         e. target environment abilities.
 
 # Line of sight
+    1. Calculate a straight path to the unit.
 
 # Cover
     1. Directional cover based on terrain. (done)
+    2. Update meshes / add shader effects for cover
 
             
 
