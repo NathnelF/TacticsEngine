@@ -152,7 +152,7 @@ void initializeRegistry() {
       {ABILITY_STEP, "Step", "Move and retain actions", 1, 0, false, -1},
       executeStep};
   abilities[ABILITY_DASH] = {
-      {ABILITY_DASH, "Dash", "Dash full movement", 2, 1, false, -1},
+      {ABILITY_DASH, "Dash", "Dash full movement", 1, 1, false, -1},
       executeDash};
   abilities[ABILITY_SHOOT_PRIMARY] = {
   		{ABILITY_SHOOT_PRIMARY, "Shoot (Primary)", "Take a shot with your primary weapon", 0, 1, false, -1},

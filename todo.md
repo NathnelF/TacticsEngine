@@ -25,7 +25,11 @@
         e. target environment abilities.
 
 # Line of sight
-    1. Calculate a straight path to the unit.
+    1. Calculate three paths.
+        a. One straight on from shooter
+        b. One straight on from tile to shooter's right
+        c. One straight on from tile to shooter's left
+    2. If any of the three paths don't have full cover blocking to target's tile, target tile to right, or target's tile to left. Then the unit has line of sight.
 
 # Cover
     1. Directional cover based on terrain. (done)

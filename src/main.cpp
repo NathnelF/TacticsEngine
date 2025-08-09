@@ -1,4 +1,5 @@
 
+#include "los.hpp"
 #include "abilities.hpp"
 #include "camera.hpp"
 #include "grid.hpp"
@@ -31,7 +32,7 @@ int main() {
   TurnSystem::initializeTurn();
 
   PlayerUnit *selectedUnit =
-      PlayerUnits::getPlayerUnit(TacticalGrid::unitGrid[5][5]);
+  PlayerUnits::getPlayerUnit(TacticalGrid::unitGrid[5][5]);
   TacticalGrid::setMovementDisplayFull(&selectedUnit->gridUnit);
 
   bool showHover = false;
@@ -40,6 +41,7 @@ int main() {
   bool toggleRange = false;
   bool showCover = false;
   bool showTarget = false;
+  bool showDebugLOS = false;
 
   std::vector<Vector2> pathPreview;
   bool showPreview = false;
@@ -323,9 +325,13 @@ int main() {
     ImGui::End();
     rlImGuiEnd();
 
-    if (currentTarget != (Vector2){-1, -1}){
-      showTarget =true;
-    } else showTarget = false;
+    if (currentTarget != (Vector2){-1, -1}) {
+      showTarget = true;
+      showDebugLOS = true;
+    } else {
+      showTarget = false;
+      showDebugLOS = false;
+    }
 
     TurnSystem::displayTurnInfo();
     DrawText(TextFormat("Unit Id: %d, move points: %d, action points: %d, turn "
@@ -357,6 +363,9 @@ int main() {
     }
     if (showCover)
       CoverSystem::renderCover(mouseInput.gridPosition, hoverColor);
+    if (showDebugLOS){
+      LineOfSight::debugLOS(selectedUnit->gridUnit.gridPosition, currentTarget);
+    }
     pathPreview.clear();
     EndMode3D();
     EndDrawing();
