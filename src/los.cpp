@@ -6,8 +6,9 @@ namespace LineOfSight {
 std::vector<Vector2> getPeekPositions(Vector2 center) {
   std::vector<Vector2> positions = {center};
 
-  Vector2 adjacentPositions[] = {{0, 1}, {0, -1}, {1, 0},  {-1, 0},
-                                 {1, 1}, {1, -1}, {-1, 1}, {-1, -1}};
+  // Vector2 adjacentPositions[] = {{0, 1}, {0, -1}, {1, 0},  {-1, 0},
+  // {1, 1}, {1, -1}, {-1, 1}, {-1, -1}};
+  Vector2 adjacentPositions[] = {{0, 1}, {1, 0}, {0, -1}, {-1, 0}};
   for (auto pos : adjacentPositions) {
     Vector2 peekPos = Vector2Add(center, pos);
     if (!TacticalGrid::isGridUnitAt(peekPos.x, peekPos.y) &&

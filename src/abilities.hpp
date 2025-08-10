@@ -21,17 +21,17 @@ struct AbilityData{
 	int movePointCost;
 	int actionPointCost;
 
-	//int ammoCost
+	//int ammoCost;
 	
 	bool endsTurn;
-	//bool requiresTarget
-	//bool requiresAmmo
-	//bool requiresConsumable (grenade)
-	//bool requiresLineOfSight
+	//bool requiresTarget;
+	//bool requiresAmmo;
+	//bool requiresConsumable (grenade);
+	bool requiresLineOfSight;
 	
 	int maxUsesPerMission;
 
-	//bool requiesWeapon (weapon type?)
+	//bool requiesWeapon (weapon type?);
 	//
 
 };

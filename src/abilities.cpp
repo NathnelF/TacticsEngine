@@ -149,13 +149,13 @@ void executeShootPrimary(GridUnit *unit, Vector2 target) {
 void initializeRegistry() {
   // add abiltiies to registry here.
   abilities[ABILITY_STEP] = {
-      {ABILITY_STEP, "Step", "Move and retain actions", 1, 0, false, -1},
+      {ABILITY_STEP, "Step", "Move and retain actions", 1, 0, false, false, -1},
       executeStep};
   abilities[ABILITY_DASH] = {
-      {ABILITY_DASH, "Dash", "Dash full movement", 1, 1, false, -1},
+      {ABILITY_DASH, "Dash", "Dash full movement", 1, 1, false, false, -1},
       executeDash};
   abilities[ABILITY_SHOOT_PRIMARY] = {
-  		{ABILITY_SHOOT_PRIMARY, "Shoot (Primary)", "Take a shot with your primary weapon", 0, 1, false, -1},
+  		{ABILITY_SHOOT_PRIMARY, "Shoot (Primary)", "Take a shot with your primary weapon", 0, 1, false, true, -1},
   		executeShootPrimary};
   
 }

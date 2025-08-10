@@ -2,6 +2,7 @@
 #include "turns.hpp"
 #include "abilities.hpp"
 #include "player_unit.hpp"
+#include "los.hpp"
 
 
 namespace TurnSystem {
@@ -35,6 +36,7 @@ namespace TurnSystem {
 		if (data.movePointCost > unit->movePointsRemaining) return false;
 		if (data.actionPointCost > unit->actionPointsRemaining) return false;
 
+
 		//check usage limits as well
 		// usage per turn
 		// usage per mission
@@ -51,6 +53,16 @@ namespace TurnSystem {
 	
 		AbilityDefinition* ability = AbilityRegistry::getAbility(abilityId);
 		const AbilityData& data =ability->data;
+		//check for line of sight
+		if (data.requiresLineOfSight){
+			//check LOS to target
+			bool hasLOS = LineOfSight::calculateLOS(unit->gridPosition, target);
+			std::cout << "has los " << hasLOS << std::endl;
+			if (!hasLOS){
+				std::cout << "unit does not have LOS to target!\n";
+				return;
+			}
+		}
 		//apply ability costs to unit
 		unit->movePointsRemaining -= data.movePointCost;
 		unit->actionPointsRemaining -= data.actionPointCost;
