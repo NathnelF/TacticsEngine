@@ -39,10 +39,15 @@
 # Fog of war
 
 # Elevation
+    1. Add elevation grid
+    2. Add elevation transfer grid (marks ladders...etc)
+    3. Touch up visual clarity (blurring higher elevations unless the camera is set to focus on it)
 
 # AI
 
 # Maps / Map Generation
+    1. Each map will have a setting (Forest, Small Town, City, ...etc)
+    2. Each map be split into zones 
 
 # Game layers (Tactical / strategy)
 

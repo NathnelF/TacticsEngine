@@ -8,6 +8,7 @@
 std::ostream& operator<<(std::ostream& os, const Vector3& v) {
     os << "(" << v.x << ", " << v.y << ", " << v.z << ")";
     return os;
+
 }
 
 std::ostream& operator<<(std::ostream& os, const Vector2& v) {
@@ -20,7 +21,9 @@ std::ostream& operator<<(std::ostream& os, const std::vector<Vector2>& v) {
 		os << "(" << coord.x << ", " << coord.y << ")\n";
 	}
 	return os;
+
 }
+
 namespace TacticalGrid {
 	TileType terrainGrid[GRID_HEIGHT][GRID_WIDTH];
 	int unitGrid[GRID_HEIGHT][GRID_WIDTH];

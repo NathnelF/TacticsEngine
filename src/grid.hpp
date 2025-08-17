@@ -5,8 +5,8 @@
 #include <iostream>
 #include "cover.hpp"
 
-const int GRID_WIDTH = 30;
-const int GRID_HEIGHT = 30;
+const int GRID_WIDTH = 50;
+const int GRID_HEIGHT = 50;
 
 const int TILE_SIZE = 4.0f;
 
