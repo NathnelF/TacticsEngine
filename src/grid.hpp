@@ -4,6 +4,7 @@
 #include <vector>
 #include <iostream>
 #include "cover.hpp"
+#include "elevation.hpp"
 
 const int GRID_WIDTH = 50;
 const int GRID_HEIGHT = 50;
@@ -18,12 +19,21 @@ enum TileType {
 	TILE_BOX = 5
 };
 
+struct GridLocation {
+ int x, y, z;
+
+ bool operator==(const GridLocation& other) const {
+ 	return x == other.x && y == other.y && z == other.z;
+ }	
+};
+
+
 struct GridUnit {
 
 	//bool playerControlled?
 	//grid stuff
 	int id;
-	Vector2 gridPosition;
+	GridLocation gridPosition;
 	bool playerControlled;
 
 	//stats
@@ -47,11 +57,11 @@ struct GridUnit {
 struct MoveCell {
 	//should only be 12 bytes of storage.
 	float cost;
-	Vector2 parent;
+	GridLocation parent;
 };
 
 struct PathData {
-	std::vector<Vector2> path;
+	std::vector<GridLocation> path;
 	float totalCost;
 	bool isReachable;
 }; 
@@ -62,12 +72,14 @@ std::ostream& operator<<(std::ostream& os, const Vector2& v);
 std::ostream& operator<<(std::ostream& os, const std::vector<Vector2>& v);
 
 namespace TacticalGrid {
-	extern TileType terrainGrid[GRID_HEIGHT][GRID_WIDTH];
-	extern int unitGrid[GRID_HEIGHT][GRID_WIDTH];
-	extern int movementGrid[GRID_HEIGHT][GRID_WIDTH];
-	extern MoveCell pathGrid[GRID_HEIGHT][GRID_WIDTH];
-	extern CoverData coverGrid[GRID_HEIGHT][GRID_WIDTH];
+	extern TileType terrainGrid[3][GRID_HEIGHT][GRID_WIDTH];
+	extern int unitGria[3][GRID_HEIGHT][GRID_WIDTH];
+	extern int movementGrid[3][GRID_HEIGHT][GRID_WIDTH];
+	extern MoveCell pathGrid[3][GRID_HEIGHT][GRID_WIDTH];
+	extern CoverData coverGrid[3][GRID_HEIGHT][GRID_WIDTH];
 	// extern bool highlightGrid[GRID_HEIGHT][GRID_WIDTH];
+	//
+	extern int currentLayer;
 
 	extern std::vector<MoveCell> waypoints;
 
@@ -88,28 +100,23 @@ namespace TacticalGrid {
 	bool isPassable(int x, int y);
 	bool isGridUnitAt(int x, int y);
 
-	float getTerrainMultiplier(int x, int y);
-	float getGridUnitMultiplier(int x, int y);
+	float getTerrainMultiplier(int x, int y, int layer);
+	float getGridUnitMultiplier(int x, int y, int layer);
 
- 	void calculateCostsFrom(int startX, int startY, float maxRange = 999.0f);
-	std::vector<Vector2> reconstructPath(int fromX, int fromY, int toX, int toY);
+ 	void calculateCostsFrom(int startX, int startY, int startZ, float maxRange = 999.0f);
+	std::vector<GridLocation> reconstructPath(int fromX, int fromY, int fromZ, int toX, int toY, int toZ);
 
-	float getMovementCost(int fromX, int fromY, int toX, int toY);
-	float getMovementCost(const GridUnit* unit, int toX, int toY);
-	bool isReachable(int fromX, int fromY, int toX, int toY, float maxMovement);
-	bool inScootRange(const GridUnit* unit, int toX, int toY);
-	bool inDashRange(const GridUnit* unit, int toX, int toY);
-	PathData getPathInfo(int fromX, int fromY, int toX, int toY, float maxMovement = 999.0f);	
-	std::vector<Vector2> getTilesinRange(int fromX, int fromY, float maxMovement);
-	std::vector<Vector2> getScootTiles(GridUnit* unit);
-	std::vector<Vector2> getDashTiles(GridUnit* unit);
-	int checkMoveDistance(int x, int y);
+	float getMovementCost(int fromX, int fromY, int fromZ, int toX, int toY, int toZ);
+	float getMovementCost(const GridUnit* unit, int toX, int toY, int toZ);
+	bool isReachable(int fromX, int fromY, int fromZ, int toX, int toY, int toZ, float maxMovement);
+	PathData getPathInfo(int fromX, int fromY, int fromZ, int toX, int toY, int toZ, float maxMovement = 999.0f);	
+	int checkMoveDistance(int x, int y, int layer);
 	PathData calculateWaypointPath(const GridUnit* unit, Vector2 finalDestination);
 
 	void setMovementDisplayFull(GridUnit* unit);
-	void setMovementDisplayFull(int fromX, int fromY, float remainingScootRange, float remainingDashRange);
+	void setMovementDisplayFull(int fromX, int fromY, int fromZ, float remainingScootRange, float remainingDashRange);
 	void setMovementDisplayDash(GridUnit* unit);	
-	void setMovementDisplayDash(int fromX, int fromY, float remainingDashRange);
+	void setMovementDisplayDash(int fromX, int fromY, int fromZ, float remainingDashRange);
 
 	void drawHoverHighlight(int x, int y, Vector3 worldOrigin, Color hoverColor);
 	void drawTerrain(Vector3 worldOrigin);

@@ -1,575 +1,600 @@
 
 #include "grid.hpp"
-#include <queue>
-#include <iostream>
 #include <algorithm>
+#include <chrono>
+#include <iostream>
+#include <queue>
 #include <raymath.h>
 
-std::ostream& operator<<(std::ostream& os, const Vector3& v) {
-    os << "(" << v.x << ", " << v.y << ", " << v.z << ")";
-    return os;
-
+std::ostream &operator<<(std::ostream &os, const Vector3 &v) {
+  os << "(" << v.x << ", " << v.y << ", " << v.z << ")";
+  return os;
 }
 
-std::ostream& operator<<(std::ostream& os, const Vector2& v) {
-    os << "(" << v.x << ", " << v.y << ")";
-    return os;
-
+std::ostream &operator<<(std::ostream &os, const Vector2 &v) {
+  os << "(" << v.x << ", " << v.y << ")";
+  return os;
 }
-std::ostream& operator<<(std::ostream& os, const std::vector<Vector2>& v) {
-	for (auto& coord : v ){
-		os << "(" << coord.x << ", " << coord.y << ")\n";
-	}
-	return os;
-
+std::ostream &operator<<(std::ostream &os, const std::vector<Vector2> &v) {
+  for (auto &coord : v) {
+    os << "(" << coord.x << ", " << coord.y << ")\n";
+  }
+  return os;
 }
 
 namespace TacticalGrid {
-	TileType terrainGrid[GRID_HEIGHT][GRID_WIDTH];
-	int unitGrid[GRID_HEIGHT][GRID_WIDTH];
-	int movementGrid[GRID_HEIGHT][GRID_WIDTH];
-	MoveCell pathGrid[GRID_HEIGHT][GRID_WIDTH];
-	CoverData coverGrid[GRID_HEIGHT][GRID_WIDTH];
-	std::vector<MoveCell> waypoints;
+TileType terrainGrid[3][GRID_HEIGHT][GRID_WIDTH];
+int unitGrid[3][GRID_HEIGHT][GRID_WIDTH];
+int movementGrid[3][GRID_HEIGHT][GRID_WIDTH];
+MoveCell pathGrid[3][GRID_HEIGHT][GRID_WIDTH];
+CoverData coverGrid[3][GRID_HEIGHT][GRID_WIDTH];
+std::vector<MoveCell> waypoints;
 
-	void initGrids(){
-		for (int y = 0; y < GRID_HEIGHT; y++){
-			for (int x = 0; x < GRID_WIDTH; x++){
-				terrainGrid[y][x] = TILE_EMPTY;
-				unitGrid[y][x] = -1;
-				movementGrid[y][x] = -1;
-				pathGrid[y][x] = {-1.0f, {-1, -1}};
-				coverGrid[y][x] = {COVER_NONE, COVER_NONE, COVER_NONE, COVER_NONE,};
-			}
-		}
-		
-		//Add some more interesting terrain
-		terrainGrid[1][2] = TILE_WALL;
-		terrainGrid[1][3] = TILE_WALL;
-		terrainGrid[1][4] = TILE_WALL;
-		terrainGrid[1][5] = TILE_WALL;
-		terrainGrid[1][6] = TILE_WALL;
-		terrainGrid[10][10] = TILE_TREE;
-		terrainGrid[9][10] = TILE_TREE;
-		terrainGrid[8][10] = TILE_TREE;
-		terrainGrid[6][15] = TILE_WALL;
-		terrainGrid[7][16] = TILE_WALL;
-		terrainGrid[11][11] = TILE_TREE;
-		terrainGrid[10][11] = TILE_TREE;
-		terrainGrid[11][10] = TILE_TREE;
-		terrainGrid[20][5] = TILE_ROCK;
-		terrainGrid[14][26] = TILE_ROCK;
-		terrainGrid[16][4] = TILE_ROCK;
-		terrainGrid[4][16] = TILE_ROCK;
-		terrainGrid[4][2] = TILE_BOX;
-		terrainGrid[4][3] = TILE_BOX;
-		terrainGrid[3][2] = TILE_BOX;
-		terrainGrid[17][21] = TILE_ROCK;
-		terrainGrid[9][6] = TILE_BOX;
-	
-	}
+void initGrids() {
+  for (int z = 0; z < 3; z++){
+  for (int y = 0; y < GRID_HEIGHT; y++) {
+    for (int x = 0; x < GRID_WIDTH; x++) {
+      terrainGrid[z][y][x] = TILE_EMPTY;
+      unitGrid[z][y][x] = -1;
+      movementGrid[z][y][x] = -1;
+      pathGrid[z][y][x] = {-1.0f, {-1, -1}};
+      coverGrid[z][y][x] = {
+          COVER_NONE,
+          COVER_NONE,
+          COVER_NONE,
+          COVER_NONE,
+      };
+    }
+  }
+  }
 
-	void clearTerrainGrid(){
-		for (int y = 0; y < GRID_HEIGHT; y++){
-			for (int x = 0; x < GRID_WIDTH; x++){
-				terrainGrid[y][x] = TILE_EMPTY;
-			}
-		}
-
-	}
-
-	void clearMovementGrid(){
-		for (int y = 0; y < GRID_HEIGHT; y++){
-			for (int x = 0; x < GRID_WIDTH; x++){
-				movementGrid[y][x] = -1;
-			}
-		}
-	}
-
-	void clearUnitGrid(){
-		for (int y = 0; y < GRID_HEIGHT; y++){
-			for (int x = 0; x < GRID_WIDTH; x++){
-				unitGrid[y][x] = -1;
-			}
-		}
-	}
-
-	void addUnitToGrid(GridUnit unit){
-		unitGrid[(int)unit.gridPosition.y][(int)unit.gridPosition.x] = unit.id;
-	}
-
-	void clearPathGrid(){
-		for (int y = 0; y < GRID_HEIGHT; y++){
-			for (int x = 0; x < GRID_WIDTH; x++){
-				pathGrid[y][x] = {-1.0f, {-1, -1}};
-			}
-		}
-	}
-
-	void clearCoverGrid(){
-		for (int y = 0; y < GRID_HEIGHT; y++){
-			for (int x = 0; x < GRID_WIDTH; x++){
-				coverGrid[y][x] = {COVER_NONE, COVER_NONE, COVER_NONE, COVER_NONE};
-			}
-		}
-	}
-
-	CoverType calculateCoverFromTerrain(TileType terrain){
-		switch (terrain){
-			case TILE_WALL: return COVER_FULL;
-			case TILE_TREE: return COVER_FULL;
-			case TILE_EMPTY: return COVER_NONE;
-			case TILE_ROCK: return COVER_HALF;
-			case TILE_BOX: return COVER_HALF;
-		}
-	}
-	void calculateCoverGrid(){
-		for (int y = 0; y < GRID_HEIGHT; y++){
-			for (int x = 0; x < GRID_WIDTH; x++){
-				//check each direction (only if in bounds)
-				//north
-				if (y > 0){
-					TileType northTerrain = terrainGrid[y-1][x];	
-					CoverType coverVal = calculateCoverFromTerrain(northTerrain);
-					coverGrid[y][x].north = coverVal;
-				}
-				//south
-				if (y < GRID_HEIGHT-1){
-					TileType southTerrain = terrainGrid[y+1][x];	
-					CoverType coverVal = calculateCoverFromTerrain(southTerrain);
-					coverGrid[y][x].south = coverVal;
-				}
-				//east
-				if (x < GRID_WIDTH - 1){
-					TileType eastTerrain = terrainGrid[y][x+1];	
-					CoverType coverVal = calculateCoverFromTerrain(eastTerrain);
-					coverGrid[y][x].east = coverVal;
-				}
-				//west
-				if (x > 0){
-					TileType westTerrain = terrainGrid[y][x-1];	
-					CoverType coverVal = calculateCoverFromTerrain(westTerrain);
-					coverGrid[y][x].west = coverVal;
-				}
-			}
-		}
-	}
-
-
-	Vector3 gridToWorldPosition(Vector2 gridPos, float yLevel){
-		Vector3 worldPos = {gridPos.x * TILE_SIZE, yLevel, gridPos.y * TILE_SIZE};
-		return worldPos;
-	}
-
-	bool isPassable(int x, int y){
-		if (x < 0 || x >= GRID_WIDTH || y < 0 || y >= GRID_HEIGHT){
-			return false;
-		}
-		if (terrainGrid[y][x] == TILE_EMPTY){
-			return true;
-		} else {
-			return false;
-		}
-	}
-	
-
-	bool isGridUnitAt(int x, int y){
-		return unitGrid[y][x] != -1;
-	}
-
-	float getTerrainMultiplier(int x, int y){
-		if (x < 0 || x >= GRID_WIDTH || y < 0 || y >= GRID_HEIGHT) return -1.0f;
-		TileType terrainType = terrainGrid[y][x];
-		if (terrainType == TILE_EMPTY) {
-			return 1.0f;
-		} else {
-			return -1.0f;
-		}
-	}
-
-	float getGridUnitMultiplier(int x, int y){
-		if (x < 0 || x >= GRID_WIDTH || y < 0 || y >= GRID_HEIGHT) return -1.0f;
-		if (isGridUnitAt(x,y)){
-			return -1.0f;
-		} else {
-			return 1.0f;
-		}
-	}
-
-     	void calculateCostsFrom(int startX, int startY, float maxRange)  {
-		clearPathGrid();
-		
-		std::priority_queue<std::pair<float, std::pair<int, int>>, 
-				   std::vector<std::pair<float, std::pair<int,int>>>, 
-				   std::greater<>> pq;
-
-		pathGrid[startY][startX].cost = 0.0f;
-		pathGrid[startY][startX].parent = {(float)startX, (float)startY};
-		pq.push({0.0f, {startX, startY}});
-
-		int dx[] = {-1, -1, -1,  0,  0,  1,  1,  1};
-		int dy[] = {-1,  0,  1, -1,  1, -1,  0,  1};
-		float costs[] = {1.414f, 1.0f, 1.414f, 1.0f, 1.0f, 1.414f, 1.0f, 1.414f};
-
-		while (!pq.empty()) {
-		    float currentCost = pq.top().first;
-		    int currentX = pq.top().second.first;
-		    int currentY = pq.top().second.second;
-		    pq.pop();
-
-		    if (currentCost > pathGrid[currentY][currentX].cost) continue;
-
-		    for (int i = 0; i < 8; i++) {
-			int neighborX = currentX + dx[i];
-			int neighborY = currentY + dy[i];
-			
-			if (neighborX < 0 || neighborX >= GRID_WIDTH || 
-			    neighborY < 0 || neighborY >= GRID_HEIGHT) continue;
-
-			float terrainMultiplier = getTerrainMultiplier(neighborX, neighborY);
-			if (terrainMultiplier < 0) continue;
-			
-			float unitMultiplier = getGridUnitMultiplier(neighborX, neighborY); 
-			if (unitMultiplier < 0) continue;
-		    
-			float moveCost = costs[i] * terrainMultiplier;
-			float newCost = currentCost + moveCost;
-			
-			if (newCost > maxRange) continue;
-
-			if (pathGrid[neighborY][neighborX].cost < 0 || 
-			    newCost < pathGrid[neighborY][neighborX].cost) {
-			    
-			    pathGrid[neighborY][neighborX].cost = newCost;
-			    pathGrid[neighborY][neighborX].parent = {(float)currentX, (float)currentY};
-			    pq.push({newCost, {neighborX, neighborY}});
-			}
-		    }
-		}
-    	}
-
-	std::vector<Vector2> reconstructPath(int fromX, int fromY, int toX, int toY) {
-		std::vector<Vector2> path;
-
-		if (pathGrid[toY][toX].cost < 0){
-			return path;
-		}
-		int currentX = toX;
-		int currentY = toY;
-
-		// Build path backwards from destination to start
-		while (true) {
-			path.push_back({(float)currentX, (float)currentY});
-
-			Vector2 parent = pathGrid[currentY][currentX].parent;
-			int parentX = (int)parent.x;
-			int parentY = (int)parent.y;
-
-			// Check if we reached the start (parent points to itself)
-			if (parentX == currentX && parentY == currentY) {
-				break;
-			}
-
-			// Safety check to prevent infinite loops
-			if (parentX < 0 || parentX >= GRID_WIDTH || parentY < 0 || parentY >= GRID_HEIGHT) {
-				break;
-			}
-
-			currentX = parentX;
-			currentY = parentY;
-		}
-
-		// Reverse the path so it goes from start to destination
-		std::reverse(path.begin(), path.end());
-  
-		return path;
-	}
-
-
-	float getMovementCost(int fromX, int fromY, int toX, int toY){
-		calculateCostsFrom(fromX, fromY);
-		return pathGrid[toY][toX].cost;	
-	}
-	float getMovementCost(const GridUnit* unit, int toX, int toY){
-		calculateCostsFrom(unit->gridPosition.x, unit->gridPosition.y);
-		return pathGrid[toY][toX].cost;
-	}
-	bool isReachable(int fromX, int fromY, int toX, int toY, float maxMovement){
-		float cost = getMovementCost(fromX, fromY, toX, toY);
-		return cost >= 0 && cost <= maxMovement;
-	}
-	bool inDashRange(const GridUnit* unit, int toX, int toY){
-		return isReachable(unit->gridPosition.x, unit->gridPosition.y, toX, toY, unit->speed*2);
-	}
-	bool inScootRange(const GridUnit* unit, int toX, int toY){
-		return isReachable(unit->gridPosition.x, unit->gridPosition.y, toX, toY, unit->speed);
-	}
-
-	PathData getPathInfo(int fromX, int fromY, int toX, int toY, float maxMovement){
-		calculateCostsFrom(fromX, fromY, maxMovement);
-		
-		PathData result;
-		result.totalCost = pathGrid[toY][toX].cost;
-		result.isReachable = isReachable(fromX, fromY, toX, toY, maxMovement);
-
-		if (result.isReachable){
-			result.path = reconstructPath(fromX, fromY, toX, toY);
-		}
-		
-		return result;
-	}	
-	std::vector<Vector2> getTilesInRange(int fromX, int fromY, float maxMovement){
-		calculateCostsFrom(fromX, fromY, maxMovement);
-
-		std::vector<Vector2> tilesInRange;
-		for (int y = 0; y < GRID_HEIGHT; y++){
-			for (int x = 0; x < GRID_WIDTH; x++){
-				if (pathGrid[y][x].cost >= 0 && pathGrid[y][x].cost <= maxMovement){
-					tilesInRange.push_back({(float)x, (float)y});
-				}
-			}
-		}
-		return tilesInRange;
-	}
-
-	std::vector<Vector2> getScootTiles(GridUnit* unit){
-		std::vector<Vector2> scootTiles = getTilesInRange(unit->gridPosition.x, unit->gridPosition.y, unit->speed);
-		return scootTiles;
-	}
-
-	std::vector<Vector2> getDashTiles(GridUnit* unit){
-		std::vector<Vector2> dashTiles = getTilesInRange(unit->gridPosition.x, unit->gridPosition.y, unit->speed * 1.5);
-		return dashTiles;
-	}
-
-	int checkMoveDistance(int x, int y){
-		return movementGrid[y][x];
-	}
-
-	void setMovementDisplayFull(GridUnit* unit){
-		clearMovementGrid();
-		calculateCostsFrom(unit->gridPosition.x, unit->gridPosition.y, unit->speed*1.5);
-
-		for (int y = 0; y < GRID_HEIGHT; y++){
-			for (int x = 0; x < GRID_WIDTH; x++){
-				float cost = pathGrid[y][x].cost;
-				if (cost > 0 && cost <= unit->speed){
-					movementGrid[y][x] = 1;
-				}
-				if (cost > unit->speed && cost <= unit->speed*1.5){
-					movementGrid[y][x] = 2;
-				}
-			}
-		}
-
-	
-	}
-
-	void setMovementDisplayFull(int fromX, int fromY, float remainingScootRange, float remainingDashRange){
-		clearMovementGrid();
-
-		calculateCostsFrom(fromX, fromY, remainingDashRange);
-		for (int y = 0; y < GRID_HEIGHT; y++){
-			for (int x = 0; x < GRID_WIDTH; x++){
-				float cost = pathGrid[y][x].cost;
-				if (cost > 0 && cost <= remainingScootRange){
-					movementGrid[y][x] = 1;
-				}
-				if (cost > remainingScootRange && cost <= remainingDashRange){
-					movementGrid[y][x] = 2;
-				}
-			}
-		}
-	}
-
-
-	void setMovementDisplayDash(GridUnit* unit){
-		//used to set display after step movement.
-		clearMovementGrid();
-		calculateCostsFrom(unit->gridPosition.x, unit->gridPosition.y, unit->speed*0.5);
-		for (int y = 0; y < GRID_HEIGHT; y++){
-			for (int x = 0; x < GRID_WIDTH; x++){
-				float cost = pathGrid[y][x].cost;
-				if (cost > 0 && cost <= unit->speed*0.5){
-					movementGrid[y][x] = 2;
-				}
-			}
-		}
-	}
-	void setMovementDisplayDash(int fromX, int fromY, float remainingDashRange){
-		//used to set display after step movement.
-		clearMovementGrid();
-		calculateCostsFrom(fromX, fromY, remainingDashRange);
-		for (int y = 0; y < GRID_HEIGHT; y++){
-			for (int x = 0; x < GRID_WIDTH; x++){
-				float cost = pathGrid[y][x].cost;
-				if (cost > 0 && cost <= remainingDashRange){
-					movementGrid[y][x] = 2;
-				}
-			}
-		}
-	}		
-
-
-	// void setMovementDisplayDash(int fromX, int fromY, float remain){
-	// 	//used to set display after step movement.
-	// 	clearMovementGrid();
-	// 	calculateCostsFrom(unit->gridPosition.x, unit->gridPosition.y, unit->speed*0.5);
-	// 	for (int y = 0; y < GRID_HEIGHT; y++){
-	// 		for (int x = 0; x < GRID_WIDTH; x++){
-	// 			float cost = pathGrid[y][x].cost;
-	// 			if (cost > 0 && cost <= unit->speed*0.5){
-	// 				movementGrid[y][x] = 2;
-	// 			}
-	// 		}
-	// 	}
-	// }	
-
-	
-
-	void drawHoverHighlight(int x, int y, Vector3 worldOrigin, Color hoverColor){
-		Vector3 pos = {worldOrigin.x + x * TILE_SIZE, worldOrigin.y, worldOrigin.z + y * TILE_SIZE};
-		DrawCubeWires(pos, TILE_SIZE, 0.15f, TILE_SIZE, hoverColor);
-	}
-
-
-	void drawTerrain(Vector3 worldOrigin){
-		for (int y = 0; y < GRID_HEIGHT; y++){
-			for (int x = 0; x < GRID_WIDTH; x++){
-				Vector3 terrainPos = {worldOrigin.x + x * TILE_SIZE, worldOrigin.y + 1.0f, worldOrigin.z + y * TILE_SIZE};
-				Vector3 wirePos = {worldOrigin.x + x * TILE_SIZE, worldOrigin.y, worldOrigin.z + y * TILE_SIZE};
-
-				if (terrainGrid[y][x] == TILE_EMPTY){
-					DrawCubeWires(wirePos, TILE_SIZE, 0.1f, TILE_SIZE, BLACK);
-					continue;
-				}  
-
-				Color color;	
-				switch (terrainGrid[y][x]) {
-					case TILE_WALL: color = DARKBROWN; break;
-					case TILE_BOX: color = ORANGE; break;
-					case TILE_TREE: color = DARKGREEN; break;
-					case TILE_ROCK: color = DARKGRAY; break;
-				}
-				float height;
-				switch (terrainGrid[y][x]) {
-					case TILE_WALL: height = 4.0f; break;
-					case TILE_BOX: height = 2.0f; break;
-					case TILE_TREE: height = 4.0f; break;
-					case TILE_ROCK: height = 2.0f; break;
-				}
-				DrawCube(terrainPos, 2.0f, height, 2.0f, color);
-				
-				// DrawCubeWires(wirePos, TILE_SIZE, 0.1f, TILE_SIZE, BLACK);
-			}
-		
-		}
-	}
-
-	PathData calculateWaypointPath(const GridUnit* unit, Vector2 finalDestination) {
-		PathData result;
-		result.totalCost = 0.0f;
-		result.isReachable = true;
-		
-		Vector2 currentPos = unit->gridPosition;
-		float remainingMovement = unit->speed*1.5;
-		
-		// Path to first waypoint
-		if (!waypoints.empty()) {
-		    PathData segmentResult = getPathInfo((int)currentPos.x, (int)currentPos.y, 
-							 (int)waypoints[0].parent.x, (int)waypoints[0].parent.y, remainingMovement);
-		    if (!segmentResult.isReachable) {
-			result.isReachable = false;
-			return result;
-		    }
-		    
-		    result.path = segmentResult.path;
-		    result.totalCost += segmentResult.totalCost;
-		    remainingMovement -= segmentResult.totalCost;
-		    currentPos = waypoints[0].parent;
-		}
-		
-		// Path through waypoints
-		for (size_t i = 1; i < waypoints.size(); i++) {
-		    PathData segmentResult = getPathInfo((int)currentPos.x, (int)currentPos.y, 
-							 (int)waypoints[i].parent.x, (int)waypoints[i].parent.y, remainingMovement);
-		    if (!segmentResult.isReachable) {
-			result.isReachable = false;
-			return result;
-		    }
-		    
-		    // Remove first element to avoid duplicates
-		    if (!segmentResult.path.empty()) {
-			segmentResult.path.erase(segmentResult.path.begin());
-			result.path.insert(result.path.end(), segmentResult.path.begin(), segmentResult.path.end());
-		    }
-		    
-		    result.totalCost += segmentResult.totalCost;
-		    remainingMovement -= segmentResult.totalCost;
-		    currentPos = waypoints[i].parent;
-		}
-		
-		// Path to final destination
-		PathData finalSegment = getPathInfo((int)currentPos.x, (int)currentPos.y, 
-						    (int)finalDestination.x, (int)finalDestination.y, remainingMovement);
-		if (!finalSegment.isReachable) {
-		    result.isReachable = false;
-		    return result;
-		}
-		
-		if (!finalSegment.path.empty()) {
-		    finalSegment.path.erase(finalSegment.path.begin());
-		    result.path.insert(result.path.end(), finalSegment.path.begin(), finalSegment.path.end());
-		}
-		
-		result.totalCost += finalSegment.totalCost;
-		
-		return result;
-	    }
-
-			void drawMovementOverlay(Vector3 worldOrigin){
-		for (int y = 0; y < GRID_HEIGHT; y++){
-			for (int x = 0; x < GRID_WIDTH; x++){
-				int cost = movementGrid[y][x];
-				if (cost == 1){
-					Vector3 pos = {worldOrigin.x + x * TILE_SIZE, worldOrigin.y , worldOrigin.z + y * TILE_SIZE};
-					DrawCube(pos, 0.5f, 0.05f, 0.5f, SKYBLUE);
-
-				}
-				if (cost == 2){
-					Vector3 pos = {worldOrigin.x + x * TILE_SIZE, worldOrigin.y , worldOrigin.z + y * TILE_SIZE};
-					DrawCube(pos, 0.5f, 0.05f, 0.5f, GOLD);
-
-				}
-			}
-		}
-	}
-
-	void drawPathPreview(std::vector<Vector2> path, Color color){
-		if (path.size() < 3){
-			return;
-		}
-
-		auto from = path.begin();
-		auto to = from;
-		to++;
-
-		while (to != path.end()){
-			Vector3 start = gridToWorldPosition(*from, 0.0f);
-			Vector3 end = gridToWorldPosition(*to, 0.0f);
-
-			auto temp = to;
-			temp++;
-			if (temp == path.end()){
-				Vector3 direction = Vector3Normalize(Vector3Subtract(end, start));
-				end = Vector3Subtract(end, Vector3Scale(direction, TILE_SIZE / 2.0f));
-			}
-			DrawLine3D(start, end, color);
-			from++;
-			to++;
-		}
-		
-	}
-
+  // Add some more interesting terrain
+  terrainGrid[0][1][2] = TILE_WALL;
+  terrainGrid[0][1][3] = TILE_WALL;
+  terrainGrid[0][1][4] = TILE_WALL;
+  terrainGrid[0][1][5] = TILE_WALL;
+  terrainGrid[0][1][6] = TILE_WALL;
+  terrainGrid[0][10][10] = TILE_TREE;
+  terrainGrid[0][9][10] = TILE_TREE;
+  terrainGrid[0][8][10] = TILE_TREE;
+  terrainGrid[0][6][15] = TILE_WALL;
+  terrainGrid[0][7][16] = TILE_WALL;
+  terrainGrid[0][11][11] = TILE_TREE;
+  terrainGrid[0][10][11] = TILE_TREE;
+  terrainGrid[0][11][10] = TILE_TREE;
+  terrainGrid[0][20][5] = TILE_ROCK;
+  terrainGrid[0][14][26] = TILE_ROCK;
+  terrainGrid[0][16][4] = TILE_ROCK;
+  terrainGrid[0][4][16] = TILE_ROCK;
+  terrainGrid[0][4][2] = TILE_BOX;
+  terrainGrid[0][4][3] = TILE_BOX;
+  terrainGrid[0][3][2] = TILE_BOX;
+  terrainGrid[0][17][21] = TILE_ROCK;
+  terrainGrid[0][9][6] = TILE_BOX;
 }
 
+void clearTerrainGrid() {
+  for (int z = 0; z < 3; z++) {
+    for (int y = 0; y < GRID_HEIGHT; y++) {
+      for (int x = 0; x < GRID_WIDTH; x++) {
+        terrainGrid[z][y][x] = TILE_EMPTY;
+      }
+    }
+  }
+}
+
+void clearMovementGrid() {
+  for (int z = 0; z < 3; z++) {
+    for (int y = 0; y < GRID_HEIGHT; y++) {
+      for (int x = 0; x < GRID_WIDTH; x++) {
+        movementGrid[z][y][x] = -1;
+      }
+    }
+  }
+}
+
+void clearUnitGrid() {
+  for (int z = 0; z < 3; z++) {
+    for (int y = 0; y < GRID_HEIGHT; y++) {
+      for (int x = 0; x < GRID_WIDTH; x++) {
+        unitGrid[z][y][x] = -1;
+      }
+    }
+  }
+}
+
+void addUnitToGrid(GridUnit unit) {
+  unitGrid[unit.gridPosition.z][unit.gridPosition.y][unit.gridPosition.x] = unit.id;
+}
+
+void clearPathGrid() {
+  for (int z = 0; z < 3; z++) {
+    for (int y = 0; y < GRID_HEIGHT; y++) {
+      for (int x = 0; x < GRID_WIDTH; x++) {
+        pathGrid[z][y][x] = {-1.0f, {-1, -1}};;
+      }
+    }
+  }
+}
+
+void clearCoverGrid() {
+  for (int z = 0; z < 3; z++) {
+    for (int y = 0; y < GRID_HEIGHT; y++) {
+      for (int x = 0; x < GRID_WIDTH; x++) {
+       coverGrid[z][y][x] = {
+          COVER_NONE,
+          COVER_NONE,
+          COVER_NONE,
+          COVER_NONE,
+      };
+
+      }
+    }
+  }
+}
+
+CoverType calculateCoverFromTerrain(TileType terrain) {
+  switch (terrain) {
+  case TILE_WALL:
+    return COVER_FULL;
+  case TILE_TREE:
+    return COVER_FULL;
+  case TILE_EMPTY:
+    return COVER_NONE;
+  case TILE_ROCK:
+    return COVER_HALF;
+  case TILE_BOX:
+    return COVER_HALF;
+  }
+}
+void calculateCoverGrid() {
+  for (int z = 0; z < 3; z++){
+  for (int y = 0; y < GRID_HEIGHT; y++) {
+    for (int x = 0; x < GRID_WIDTH; x++) {
+      // check each direction (only if in bounds)
+      // north
+      if (y > 0) {
+        TileType northTerrain = terrainGrid[z][y - 1][x];
+        CoverType coverVal = calculateCoverFromTerrain(northTerrain);
+        coverGrid[z][y][x].north = coverVal;
+      }
+      // south
+      if (y < GRID_HEIGHT - 1) {
+        TileType southTerrain = terrainGrid[z][y + 1][x];
+        CoverType coverVal = calculateCoverFromTerrain(southTerrain);
+        coverGrid[z][y][x].south = coverVal;
+      }
+      // east
+      if (x < GRID_WIDTH - 1) {
+        TileType eastTerrain = terrainGrid[z][y][x + 1];
+        CoverType coverVal = calculateCoverFromTerrain(eastTerrain);
+        coverGrid[z][y][x].east = coverVal;
+      }
+      // west
+      if (x > 0) {
+        TileType westTerrain = terrainGrid[z][y][x - 1];
+        CoverType coverVal = calculateCoverFromTerrain(westTerrain);
+        coverGrid[z][y][x].west = coverVal;
+      }
+    }
+  }
+}
+}
+
+Vector3 gridToWorldPosition(GridLocation position){
+  float yScale = 10.0f;
+  Vector3 worldPos = {(float)position.x * TILE_SIZE, position.z * yScale, (float)position.y * TILE_SIZE};
+  return worldPos;
+}
+
+bool isPassable(int x, int y, int layer) {
+  if (layer > 2 || layer < 0){
+    return false;
+  }
+  if (x < 0 || x >= GRID_WIDTH || y < 0 || y >= GRID_HEIGHT) {
+    return false;
+  }
+  if (terrainGrid[layer][y][x] == TILE_EMPTY) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+bool isGridUnitAt(int x, int y, int layer) { return unitGrid[layer][y][x] != -1; }
+
+float getTerrainMultiplier(int x, int y, int layer) {
+  if (layer < 0 || layer > 2){
+    return -1.0f;
+  }
+  if (x < 0 || x >= GRID_WIDTH || y < 0 || y >= GRID_HEIGHT)
+    return -1.0f;
+  TileType terrainType = terrainGrid[layer][y][x];
+  if (terrainType == TILE_EMPTY) {
+    return 1.0f;
+  } else {
+    return -1.0f;
+  }
+}
+
+float getGridUnitMultiplier(int x, int y, int layer) {
+  if (layer < 0 || layer > 2){
+    return -1.0f;
+  }
+  if (x < 0 || x >= GRID_WIDTH || y < 0 || y >= GRID_HEIGHT)
+    return -1.0f;
+  if (isGridUnitAt(x, y)) {
+    return -1.0f;
+  } else {
+    return 1.0f;
+  }
+}
+
+void calculateCostsFrom(int startX, int startY, int startZ, float maxRange) {
+  auto startTime = std::chrono::high_resolution_clock::now();
+  clearPathGrid();
+
+  std::priority_queue<std::tuple<float, int, int, int>, std::vector<std::tuple<float, int, int, int>>, std::greater<>> pq;
+  
+  pathGrid[startZ][startY][startX].cost = 0.0f;
+  pathGrid[startZ][startY][startX].parent = {startX, startY, startZ};
+  pq.push({0.0f, startX, startY, startZ});
+
+  int dx[] = {-1, -1, -1, 0, 0, 1, 1, 1};
+  int dy[] = {-1, 0, 1, -1, 1, -1, 0, 1};
+  float costs[] = {1.414f, 1.0f, 1.414f, 1.0f, 1.0f, 1.414f, 1.0f, 1.414f};
+
+  while (!pq.empty()) {
+    auto [currentCost, currentX, currentY, currentZ] = pq.top();
+     pq.pop();
+
+    if (currentCost > pathGrid[currentZ][currentY][currentX].cost)
+      continue;
+
+    for (int i = 0; i < 8; i++) {
+      int neighborX = currentX + dx[i];
+      int neighborY = currentY + dy[i];
+
+      if (neighborX < 0 || neighborX >= GRID_WIDTH || neighborY < 0 ||
+          neighborY >= GRID_HEIGHT)
+        continue;
+
+      float terrainMultiplier = getTerrainMultiplier(neighborX, neighborY, currentZ);
+      if (terrainMultiplier < 0)
+        continue;
+
+      float unitMultiplier = getGridUnitMultiplier(neighborX, neighborY, currentZ);
+      if (unitMultiplier < 0)
+        continue;
+
+      float moveCost = costs[i] * terrainMultiplier;
+      float newCost = currentCost + moveCost;
+
+      if (newCost > maxRange)
+        continue;
+
+      if (pathGrid[currentZ][neighborY][neighborX].cost < 0 ||
+          newCost < pathGrid[currentZ][neighborY][neighborX].cost) {
+
+        pathGrid[currentZ][neighborY][neighborX].cost = newCost;
+        pathGrid[currentZ][neighborY][neighborX].parent = {currentX, currentY, currentZ};
+        pq.push({newCost, neighborX, neighborY, currentZ});
+      }
+    }
+
+    //check for layer connections
+    auto connections = Elevation::getAllConnectionsAt(currentX, currentY, currentZ);
+    for (const auto& conn : connections){
+      float newCost = currentCost + conn.movementCost;
+      if (newCost > maxRange) continue;
+
+      int newZ = conn.toLayer;
+      if (pathGrid[newZ][currentX][currentY].cost < 0 || newCost < pathGrid[newZ][currentX][currentY].cost){
+        pathGrid[newZ][currentX][currentY].cost = newCost;
+        pathGrid[newZ][currentX][currentY].parent = {currentX, currentY, currentZ};
+        pq.push({newCost, currentX, currentY, newZ});
+      }
+    }
+  }
+  auto endTime = std::chrono::high_resolution_clock::now();
+  auto duration = std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime);
+  std::cout << "Path calculation took " << duration.count() << " microseconds!\n";
+}
+
+std::vector<GridLocation> reconstructPath(int fromX, int fromY,  int fromZ, int toX, int toY, int toZ) {
+  std::vector<GridLocation> path;
+
+  if (pathGrid[toZ][toY][toX].cost < 0) {
+    return path;
+  }
+
+  GridLocation current = {fromX, fromY, fromZ};
+  // Build path backwards from destination to start
+  while (true) {
+    path.push_back(current);
+
+    GridLocation parent = pathGrid[current.z][current.y][current.x].parent;
+
+    // Check if we reached the start (parent points to itself)
+    if (parent.x == current.x && parent.y == current.y && parent.z == current.z) {
+      break;
+    }
+
+    current = parent;
+  }
+
+  // Reverse the path so it goes from start to destination
+  std::reverse(path.begin(), path.end());
+
+  return path;
+}
+
+float getMovementCost(int fromX, int fromY, int fromZ, int toX, int toY, int toZ) {
+  calculateCostsFrom(fromX, fromY, fromZ);
+  return pathGrid[toZ][toY][toX].cost;
+}
+float getMovementCost(const GridUnit *unit, int toX, int toY, int toZ) {
+  calculateCostsFrom(unit->gridPosition.x, unit->gridPosition.y, unit->gridPosition.z);
+  return pathGrid[toZ][toY][toX].cost;
+}
+bool isReachable(int fromX, int fromY, int fromZ, int toX, int toY, int toZ, float maxMovement) {
+  float cost = getMovementCost(fromX, fromY, fromZ, toX, toY, toZ);
+  return cost >= 0 && cost <= maxMovement;
+}
+
+PathData getPathInfo(int fromX, int fromY, int fromZ, int toX, int toY, int toZ,
+                     float maxMovement) {
+  calculateCostsFrom(fromX, fromY, fromZ, maxMovement);
+
+  PathData result;
+  result.totalCost = pathGrid[toZ][toY][toX].cost;
+  result.isReachable = isReachable(fromX, fromY, fromZ, toX, toY, toZ, maxMovement);
+
+  if (result.isReachable) {
+    result.path = reconstructPath(fromX, fromY, fromZ, toX, toY, toZ);
+  }
+
+  return result;
+}
+
+int checkMoveDistance(int x, int y, int layer) { return movementGrid[layer][y][x]; }
+
+void setMovementDisplayFull(GridUnit *unit) {
+  clearMovementGrid();
+  calculateCostsFrom(unit->gridPosition.x, unit->gridPosition.y, unit-> gridPosition.z, 
+                     unit->speed * 1.5);
+
+  for (int z = 0; z < 3; z++) {
+    for (int y = 0; y < GRID_HEIGHT; y++) {
+      for (int x = 0; x < GRID_WIDTH; x++) {
+        float cost = pathGrid[z][y][x].cost;
+        if (cost > 0 && cost <= unit->speed) {
+          movementGrid[z][y][x] = 1;
+        }
+        if (cost > unit->speed && cost <= unit->speed * 1.5) {
+          movementGrid[z][y][x] = 2;
+        }
+      }
+    }
+  }
+}
+
+void setMovementDisplayFull(int fromX, int fromY, int fromZ, float remainingScootRange,
+                            float remainingDashRange) {
+  clearMovementGrid();
+
+  calculateCostsFrom(fromX, fromY, remainingDashRange);
+  for (int z = 0; z < 3; z++) {
+    for (int y = 0; y < GRID_HEIGHT; y++) {
+      for (int x = 0; x < GRID_WIDTH; x++) {
+        float cost = pathGrid[z][y][x].cost;
+        if (cost > 0 && cost <= remainingScootRange) {
+          movementGrid[z][y][x] = 1;
+        }
+        if (cost > remainingScootRange && cost <= remainingDashRange) {
+          movementGrid[z][y][x] = 2;
+        }
+      }
+    }
+  }
+}
+
+void setMovementDisplayDash(GridUnit *unit) {
+  // used to set display after step movement.
+  clearMovementGrid();
+  calculateCostsFrom(unit->gridPosition.x, unit->gridPosition.y,
+                     unit->speed * 0.5);
+  for (int z = 0; z < 3; z++) {
+    for (int y = 0; y < GRID_HEIGHT; y++) {
+      for (int x = 0; x < GRID_WIDTH; x++) {
+        float cost = pathGrid[z][y][x].cost;
+        if (cost > 0 && cost <= unit->speed * 0.5) {
+          movementGrid[z][y][x] = 2;
+        }
+      }
+    }
+  }
+}
+void setMovementDisplayDash(int fromX, int fromY, int fromZ,
+                            float remainingDashRange) {
+  // used to set display after step movement.
+  clearMovementGrid();
+  calculateCostsFrom(fromX, fromY, remainingDashRange);
+  for (int z = 0; z < 3; z++) {
+    for (int y = 0; y < GRID_HEIGHT; y++) {
+      for (int x = 0; x < GRID_WIDTH; x++) {
+        float cost = pathGrid[z][y][x].cost;
+        if (cost > 0 && cost <= remainingDashRange) {
+          movementGrid[z][y][x] = 2;
+        }
+      }
+    }
+  }
+}
+
+void drawHoverHighlight(int x, int y, Vector3 worldOrigin, Color hoverColor) {
+  Vector3 pos = {worldOrigin.x + x * TILE_SIZE, worldOrigin.y,
+                 worldOrigin.z + y * TILE_SIZE};
+  DrawCubeWires(pos, TILE_SIZE, 0.15f, TILE_SIZE, hoverColor);
+}
+
+void drawTerrain(Vector3 worldOrigin) {
+  for (int y = 0; y < GRID_HEIGHT; y++) {
+    for (int x = 0; x < GRID_WIDTH; x++) {
+      Vector3 terrainPos = {worldOrigin.x + x * TILE_SIZE, worldOrigin.y + 1.0f,
+                            worldOrigin.z + y * TILE_SIZE};
+      Vector3 wirePos = {worldOrigin.x + x * TILE_SIZE, worldOrigin.y,
+                         worldOrigin.z + y * TILE_SIZE};
+
+      if (terrainGrid[y][x] == TILE_EMPTY) {
+        DrawCubeWires(wirePos, TILE_SIZE, 0.1f, TILE_SIZE, BLACK);
+        continue;
+      }
+
+      Color color;
+      switch (terrainGrid[y][x]) {
+      case TILE_WALL:
+        color = DARKBROWN;
+        break;
+      case TILE_BOX:
+        color = ORANGE;
+        break;
+      case TILE_TREE:
+        color = DARKGREEN;
+        break;
+      case TILE_ROCK:
+        color = DARKGRAY;
+        break;
+      }
+      float height;
+      switch (terrainGrid[y][x]) {
+      case TILE_WALL:
+        height = 4.0f;
+        break;
+      case TILE_BOX:
+        height = 2.0f;
+        break;
+      case TILE_TREE:
+        height = 4.0f;
+        break;
+      case TILE_ROCK:
+        height = 2.0f;
+        break;
+      }
+      DrawCube(terrainPos, 2.0f, height, 2.0f, color);
+
+      // DrawCubeWires(wirePos, TILE_SIZE, 0.1f, TILE_SIZE, BLACK);
+    }
+  }
+}
+
+PathData calculateWaypointPath(const GridUnit *unit, Vector2 finalDestination) {
+  PathData result;
+  result.totalCost = 0.0f;
+  result.isReachable = true;
+
+  Vector2 currentPos = unit->gridPosition;
+  float remainingMovement = unit->speed * 1.5;
+
+  // Path to first waypoint
+  if (!waypoints.empty()) {
+    PathData segmentResult = getPathInfo(
+        (int)currentPos.x, (int)currentPos.y, (int)waypoints[0].parent.x,
+        (int)waypoints[0].parent.y, remainingMovement);
+    if (!segmentResult.isReachable) {
+      result.isReachable = false;
+      return result;
+    }
+
+    result.path = segmentResult.path;
+    result.totalCost += segmentResult.totalCost;
+    remainingMovement -= segmentResult.totalCost;
+    currentPos = waypoints[0].parent;
+  }
+
+  // Path through waypoints
+  for (size_t i = 1; i < waypoints.size(); i++) {
+    PathData segmentResult = getPathInfo(
+        (int)currentPos.x, (int)currentPos.y, (int)waypoints[i].parent.x,
+        (int)waypoints[i].parent.y, remainingMovement);
+    if (!segmentResult.isReachable) {
+      result.isReachable = false;
+      return result;
+    }
+
+    // Remove first element to avoid duplicates
+    if (!segmentResult.path.empty()) {
+      segmentResult.path.erase(segmentResult.path.begin());
+      result.path.insert(result.path.end(), segmentResult.path.begin(),
+                         segmentResult.path.end());
+    }
+
+    result.totalCost += segmentResult.totalCost;
+    remainingMovement -= segmentResult.totalCost;
+    currentPos = waypoints[i].parent;
+  }
+
+  // Path to final destination
+  PathData finalSegment =
+      getPathInfo((int)currentPos.x, (int)currentPos.y, (int)finalDestination.x,
+                  (int)finalDestination.y, remainingMovement);
+  if (!finalSegment.isReachable) {
+    result.isReachable = false;
+    return result;
+  }
+
+  if (!finalSegment.path.empty()) {
+    finalSegment.path.erase(finalSegment.path.begin());
+    result.path.insert(result.path.end(), finalSegment.path.begin(),
+                       finalSegment.path.end());
+  }
+
+  result.totalCost += finalSegment.totalCost;
+
+  return result;
+}
+
+void drawMovementOverlay(Vector3 worldOrigin) {
+  for (int y = 0; y < GRID_HEIGHT; y++) {
+    for (int x = 0; x < GRID_WIDTH; x++) {
+      int cost = movementGrid[y][x];
+      if (cost == 1) {
+        Vector3 pos = {worldOrigin.x + x * TILE_SIZE, worldOrigin.y,
+                       worldOrigin.z + y * TILE_SIZE};
+        DrawCube(pos, 0.5f, 0.05f, 0.5f, SKYBLUE);
+      }
+      if (cost == 2) {
+        Vector3 pos = {worldOrigin.x + x * TILE_SIZE, worldOrigin.y,
+                       worldOrigin.z + y * TILE_SIZE};
+        DrawCube(pos, 0.5f, 0.05f, 0.5f, GOLD);
+      }
+    }
+  }
+}
+
+void drawPathPreview(std::vector<Vector2> path, Color color) {
+  if (path.size() < 3) {
+    return;
+  }
+
+  auto from = path.begin();
+  auto to = from;
+  to++;
+
+  while (to != path.end()) {
+    Vector3 start = gridToWorldPosition(*from, 0.0f);
+    Vector3 end = gridToWorldPosition(*to, 0.0f);
+
+    auto temp = to;
+    temp++;
+    if (temp == path.end()) {
+      Vector3 direction = Vector3Normalize(Vector3Subtract(end, start));
+      end = Vector3Subtract(end, Vector3Scale(direction, TILE_SIZE / 2.0f));
+    }
+    DrawLine3D(start, end, color);
+    from++;
+    to++;
+  }
+}
+
+} // namespace TacticalGrid
