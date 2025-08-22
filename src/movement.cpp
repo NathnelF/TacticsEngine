@@ -10,7 +10,7 @@ namespace Movement{
 	float movementSpeed = 3.0f;
 	std::vector<MovingUnit> movingUnits;
 
-	void setPath(GridUnit* unit, std::vector<Vector2> path){
+	void setPath(GridUnit* unit, std::vector<GridLocation> path){
 		
 		if (unit->isMoving){
 			std::cout << "Unit already moving!\n";
@@ -25,10 +25,10 @@ namespace Movement{
 		unit->isMoving = true;
 		Vector3 pos = TacticalGrid::gridToWorldPosition(path[0], 1.0f);
 		movingUnits.push_back({unit->id, pos, path,  0, 0.0f});
-		Vector2 oldPos = unit->gridPosition;
-		Vector2 newPos = path.back();
-		TacticalGrid::unitGrid[(int)oldPos.y][(int)oldPos.x] = -1;
-		TacticalGrid::unitGrid[(int)newPos.y][(int)newPos.x] = unit->id;
+		GridLocation oldPos = unit->gridPosition;
+		GridLocation newPos = path.back();
+		TacticalGrid::unitGrid[oldPos.z][oldPos.y][oldPos.x] = -1;
+		TacticalGrid::unitGrid[newPos.z][newPos.y][newPos.x] = unit->id;
 		unit->gridPosition = newPos;
 	}
 

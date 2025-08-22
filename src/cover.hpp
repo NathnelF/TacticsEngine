@@ -2,6 +2,7 @@
 #pragma once
 #include <raylib.h>
 #include <iostream>
+#include "types.hpp"
 
 enum CoverType{
   COVER_NONE = 0,
@@ -28,11 +29,11 @@ std::ostream& operator<<(std::ostream& os, const CoverData& cd);
 
 
 namespace CoverSystem{
-  CoverType getCoverValue(Vector2 target, Direction direction);
-  bool hasCover(Vector2 target, Direction direction);
+  CoverType getCoverValue(GridLocation target, Direction direction);
+  bool hasCover(GridLocation target, Direction direction);
   int getCoverBonus(CoverType cover);
-  int getTargetCoverBonus(Vector2 from, Vector2 target);
-  void renderCover(Vector2 target, Color color);
+  int getTargetCoverBonus(GridLocation from, GridLocation target);
+  void renderCover(GridLocation target, Color color);
   void renderCoverDirection(Vector3 tileCenter, Direction direction, CoverType coverType, Color color);
 
   

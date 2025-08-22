@@ -2,6 +2,7 @@
 #pragma once
 
 #include "grid.hpp"
+#include "types.hpp"
 #include <unordered_map>
 #include <vector>
 
@@ -36,7 +37,7 @@ struct AbilityData{
 
 };
 
-typedef void (*AbilityExecuteFunction)(GridUnit* unit, Vector2 target);
+typedef void (*AbilityExecuteFunction)(GridUnit* unit, GridLocation target);
 
 struct AbilityDefinition{
 	AbilityData data;
@@ -48,7 +49,7 @@ struct UnitAbilityState{
 	std::unordered_map<AbilityID, int> usesThisMission;
 };
 
-int calculateHitChance(GridUnit unit, Vector2 target);
+int calculateHitChance(GridUnit unit, GridLocation target);
 
 namespace AbilityRegistry{
 	void initializeRegistry();

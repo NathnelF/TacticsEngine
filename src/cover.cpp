@@ -28,8 +28,8 @@ std::ostream &operator<<(std::ostream &os, const CoverData &cd){
 
 namespace CoverSystem {
 
-CoverType getCoverValue(Vector2 target, Direction direction) {
-  CoverData tileCover = TacticalGrid::coverGrid[(int)target.y][(int)target.x];
+CoverType getCoverValue(GridLocation target, Direction direction) {
+  CoverData tileCover = TacticalGrid::coverGrid[target.z][target.y][target.x];
   switch (direction) {
   case NORTH:
     return tileCover.north;
@@ -42,7 +42,7 @@ CoverType getCoverValue(Vector2 target, Direction direction) {
   }
 }
 
-bool hasCover(Vector2 target, Direction direction) {
+bool hasCover(GridLocation target, Direction direction) {
   CoverType coverVal = getCoverValue(target, direction);
   switch (coverVal) {
   case COVER_FULL:
@@ -63,9 +63,9 @@ int getCoverBonus(CoverType cover){
   }
 }
 
-int getTargetCoverBonus(Vector2 from, Vector2 target){
-  CoverData& cover = TacticalGrid::coverGrid[(int)target.y][(int)target.x];
-  Vector2 difference = {from.x - target.x, from.y - target.y};
+int getTargetCoverBonus(GridLocation from, GridLocation target){
+  CoverData& cover = TacticalGrid::coverGrid[target.z][target.y][target.x];
+  Vector2 difference = {(float)from.x - target.x, (float)from.y - target.y};
   //check the differences to see attack direction
   // Diff same -> attack is diagonal (we will default to vertical cover for diagonal attacks)
   // X diff > Y diff -> attack horizontal
@@ -168,7 +168,7 @@ void renderCoverDirection(Vector3 tileCenter, Direction direction,
 }
 
 // Render cover for a single tile
-void renderCover(Vector2 target, Color color) {
+void renderCover(GridLocation target, Color color) {
   // Bounds check
   if (target.x < 0 || target.x >= GRID_WIDTH || target.y < 0 ||
       target.y >= GRID_HEIGHT) {

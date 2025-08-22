@@ -43,7 +43,7 @@ namespace TurnSystem {
 		return true;
 	} 
 
-	void executeAction(GridUnit* unit, AbilityID abilityId, Vector2 target){
+	void executeAction(GridUnit* unit, AbilityID abilityId, GridLocation target){
 		//get the ability
 		//
 		if (!canUnitPerformAction(unit, abilityId)){
@@ -54,15 +54,15 @@ namespace TurnSystem {
 		AbilityDefinition* ability = AbilityRegistry::getAbility(abilityId);
 		const AbilityData& data =ability->data;
 		//check for line of sight
-		if (data.requiresLineOfSight){
-			//check LOS to target
-			bool hasLOS = LineOfSight::calculateLOS(unit->gridPosition, target);
-			std::cout << "has los " << hasLOS << std::endl;
-			if (!hasLOS){
-				std::cout << "unit does not have LOS to target!\n";
-				return;
-			}
-		}
+		// if (data.requiresLineOfSight){
+		// 	//check LOS to target
+		// 	bool hasLOS = LineOfSight::calculateLOS(unit->gridPosition, target);
+		// 	std::cout << "has los " << hasLOS << std::endl;
+		// 	if (!hasLOS){
+		// 		std::cout << "unit does not have LOS to target!\n";
+		// 		return;
+		// 	}
+		// }
 		//apply ability costs to unit
 		unit->movePointsRemaining -= data.movePointCost;
 		unit->actionPointsRemaining -= data.actionPointCost;

@@ -182,7 +182,7 @@ void calculateCoverGrid() {
 }
 
 Vector3 gridToWorldPosition(GridLocation position){
-  float yScale = 10.0f;
+  float yScale = 5.0f;
   Vector3 worldPos = {(float)position.x * TILE_SIZE, position.z * yScale, (float)position.y * TILE_SIZE};
   return worldPos;
 }
@@ -342,8 +342,7 @@ bool isReachable(int fromX, int fromY, int fromZ, int toX, int toY, int toZ, flo
   return cost >= 0 && cost <= maxMovement;
 }
 
-PathData getPathInfo(int fromX, int fromY, int fromZ, int toX, int toY, int toZ,
-                     float maxMovement) {
+PathData getPathInfo(int fromX, int fromY, int fromZ, int toX, int toY, int toZ, float maxMovement) {
   calculateCostsFrom(fromX, fromY, fromZ, maxMovement);
 
   PathData result;
@@ -439,68 +438,70 @@ void drawHoverHighlight(int x, int y, Vector3 worldOrigin, Color hoverColor) {
 }
 
 void drawTerrain(Vector3 worldOrigin) {
-  for (int y = 0; y < GRID_HEIGHT; y++) {
-    for (int x = 0; x < GRID_WIDTH; x++) {
-      Vector3 terrainPos = {worldOrigin.x + x * TILE_SIZE, worldOrigin.y + 1.0f,
-                            worldOrigin.z + y * TILE_SIZE};
-      Vector3 wirePos = {worldOrigin.x + x * TILE_SIZE, worldOrigin.y,
-                         worldOrigin.z + y * TILE_SIZE};
+  for (int z = 0; z < 3; z++) {
+    for (int y = 0; y < GRID_HEIGHT; y++) {
+      for (int x = 0; x < GRID_WIDTH; x++) {
+        Vector3 terrainPos = {worldOrigin.x + x * TILE_SIZE,
+                              (worldOrigin.y * 5 * z) + 1.0f,
+                              worldOrigin.z + y * TILE_SIZE};
+        Vector3 wirePos = {worldOrigin.x + x * TILE_SIZE, (worldOrigin.y * 5 * z),
+                           worldOrigin.z + y * TILE_SIZE};
 
-      if (terrainGrid[y][x] == TILE_EMPTY) {
-        DrawCubeWires(wirePos, TILE_SIZE, 0.1f, TILE_SIZE, BLACK);
-        continue;
-      }
+        if (terrainGrid[z][y][x] == TILE_EMPTY) {
+          DrawCubeWires(wirePos, TILE_SIZE, 0.1f, TILE_SIZE, BLACK);
+          continue;
+        }
 
-      Color color;
-      switch (terrainGrid[y][x]) {
-      case TILE_WALL:
-        color = DARKBROWN;
-        break;
-      case TILE_BOX:
-        color = ORANGE;
-        break;
-      case TILE_TREE:
-        color = DARKGREEN;
-        break;
-      case TILE_ROCK:
-        color = DARKGRAY;
-        break;
-      }
-      float height;
-      switch (terrainGrid[y][x]) {
-      case TILE_WALL:
-        height = 4.0f;
-        break;
-      case TILE_BOX:
-        height = 2.0f;
-        break;
-      case TILE_TREE:
-        height = 4.0f;
-        break;
-      case TILE_ROCK:
-        height = 2.0f;
-        break;
-      }
-      DrawCube(terrainPos, 2.0f, height, 2.0f, color);
+        Color color;
+        switch (terrainGrid[z][y][x]) {
+        case TILE_WALL:
+          color = DARKBROWN;
+          break;
+        case TILE_BOX:
+          color = ORANGE;
+          break;
+        case TILE_TREE:
+          color = DARKGREEN;
+          break;
+        case TILE_ROCK:
+          color = DARKGRAY;
+          break;
+        }
+        float height;
+        switch (terrainGrid[z][y][x]) {
+        case TILE_WALL:
+          height = 4.0f;
+          break;
+        case TILE_BOX:
+          height = 2.0f;
+          break;
+        case TILE_TREE:
+          height = 4.0f;
+          break;
+        case TILE_ROCK:
+          height = 2.0f;
+          break;
+        }
+        DrawCube(terrainPos, 2.0f, height, 2.0f, color);
 
-      // DrawCubeWires(wirePos, TILE_SIZE, 0.1f, TILE_SIZE, BLACK);
+        // DrawCubeWires(wirePos, TILE_SIZE, 0.1f, TILE_SIZE, BLACK);
+      }
     }
   }
 }
 
-PathData calculateWaypointPath(const GridUnit *unit, Vector2 finalDestination) {
+PathData calculateWaypointPath(const GridUnit *unit, GridLocation finalDestination) {
   PathData result;
   result.totalCost = 0.0f;
   result.isReachable = true;
 
-  Vector2 currentPos = unit->gridPosition;
+  GridLocation currentPos = unit->gridPosition;
   float remainingMovement = unit->speed * 1.5;
 
   // Path to first waypoint
   if (!waypoints.empty()) {
     PathData segmentResult = getPathInfo(
-        (int)currentPos.x, (int)currentPos.y, (int)waypoints[0].parent.x,
-        (int)waypoints[0].parent.y, remainingMovement);
+        currentPos.x, currentPos.y, currentPos.z, waypoints[0].parent.x, waypoints[0].parent.y, waypoints[0].parent.z, remainingMovement);
     if (!segmentResult.isReachable) {
       result.isReachable = false;
       return result;
@@ -515,8 +516,7 @@ PathData calculateWaypointPath(const GridUnit *unit, Vector2 finalDestination) {
   // Path through waypoints
   for (size_t i = 1; i < waypoints.size(); i++) {
     PathData segmentResult = getPathInfo(
-        (int)currentPos.x, (int)currentPos.y, (int)waypoints[i].parent.x,
-        (int)waypoints[i].parent.y, remainingMovement);
+        currentPos.x, currentPos.y, currentPos.z, waypoints[i].parent.x, waypoints[i].parent.y, waypoints[i].parent.z, remainingMovement);
     if (!segmentResult.isReachable) {
       result.isReachable = false;
       return result;
@@ -536,8 +536,7 @@ PathData calculateWaypointPath(const GridUnit *unit, Vector2 finalDestination) {
 
   // Path to final destination
   PathData finalSegment =
-      getPathInfo((int)currentPos.x, (int)currentPos.y, (int)finalDestination.x,
-                  (int)finalDestination.y, remainingMovement);
+      getPathInfo(currentPos.x, currentPos.y, currentPos.z, finalDestination.x, finalDestination.y, finalDestination.z, remainingMovement);
   if (!finalSegment.isReachable) {
     result.isReachable = false;
     return result;
@@ -555,24 +554,26 @@ PathData calculateWaypointPath(const GridUnit *unit, Vector2 finalDestination) {
 }
 
 void drawMovementOverlay(Vector3 worldOrigin) {
-  for (int y = 0; y < GRID_HEIGHT; y++) {
-    for (int x = 0; x < GRID_WIDTH; x++) {
-      int cost = movementGrid[y][x];
-      if (cost == 1) {
-        Vector3 pos = {worldOrigin.x + x * TILE_SIZE, worldOrigin.y,
-                       worldOrigin.z + y * TILE_SIZE};
-        DrawCube(pos, 0.5f, 0.05f, 0.5f, SKYBLUE);
-      }
-      if (cost == 2) {
-        Vector3 pos = {worldOrigin.x + x * TILE_SIZE, worldOrigin.y,
-                       worldOrigin.z + y * TILE_SIZE};
-        DrawCube(pos, 0.5f, 0.05f, 0.5f, GOLD);
+  for (int z = 0; z < 3; z++) {
+    for (int y = 0; y < GRID_HEIGHT; y++) {
+      for (int x = 0; x < GRID_WIDTH; x++) {
+        int cost = movementGrid[z][y][x];
+        if (cost == 1) {
+          Vector3 pos = {worldOrigin.x + x * TILE_SIZE, worldOrigin.y * 5 * z,
+                         worldOrigin.z + y * TILE_SIZE};
+          DrawCube(pos, 0.5f, 0.05f, 0.5f, SKYBLUE);
+        }
+        if (cost == 2) {
+          Vector3 pos = {worldOrigin.x + x * TILE_SIZE, worldOrigin.y * 5 * z,
+                         worldOrigin.z + y * TILE_SIZE};
+          DrawCube(pos, 0.5f, 0.05f, 0.5f, GOLD);
+        }
       }
     }
   }
 }
 
-void drawPathPreview(std::vector<Vector2> path, Color color) {
+void drawPathPreview(std::vector<GridLocation> path, Color color) {
   if (path.size() < 3) {
     return;
   }

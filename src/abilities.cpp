@@ -10,7 +10,7 @@
 #include <cstdlib>
 #include <ctime>
 
-int calculateHitChance(GridUnit unit, Vector2 target){
+int calculateHitChance(GridUnit unit, GridLocation target){
   int coverBonus = CoverSystem::getTargetCoverBonus(unit.gridPosition, target);
   PlayerUnit* player = PlayerUnits::getPlayerUnit(unit.id);
   if (player == nullptr){
@@ -26,36 +26,49 @@ int calculateHitChance(GridUnit unit, Vector2 target){
 namespace AbilityRegistry {
 std::unordered_map<AbilityID, AbilityDefinition> abilities;
 
-void executeStep(GridUnit *unit, Vector2 target) {
+void executeStep(GridUnit *unit, GridLocation target) {
+  //Check if waypoints exist.
   if (TacticalGrid::waypoints.empty()) {
-    std::vector<Vector2> path = TacticalGrid::reconstructPath(
-        unit->gridPosition.x, unit->gridPosition.y, target.x, target.y);
+    //if no waypoints
+    //Just reconstruct path to destination and intialize movement on that path
+    std::vector<GridLocation> path = TacticalGrid::reconstructPath(
+        unit->gridPosition.x, unit->gridPosition.y, unit->gridPosition.z, target.x, target.y, target.z);
     Movement::setPath(unit, path);
+    //Set movement display to show one remaining move
     TacticalGrid::setMovementDisplayDash(unit);
   } else {
+    //if there are waypoints
+    // we get the path along all the waypoints ad initialize movement on that path
     PathData pathData = TacticalGrid::calculateWaypointPath(unit, target);
-    std::vector<Vector2> path = pathData.path;
-    std::cout << "waypoint path : " << path << std::endl;
+    std::vector<GridLocation> path = pathData.path;
     Movement::setPath(unit, path);
+    //set movement display to show one remaining move
     TacticalGrid::setMovementDisplayDash(unit);
   }
 }
 
-void executeDash(GridUnit *unit, Vector2 target) {
+void executeDash(GridUnit *unit, GridLocation target) {
+  //check if waypoints exist
   if (TacticalGrid::waypoints.empty()) {
-    std::vector<Vector2> path = TacticalGrid::reconstructPath(
-        unit->gridPosition.x, unit->gridPosition.y, target.x, target.y);
+    //if no waypoints
+    //Just reconstruct path to destination and intialize movement on that path
+    std::vector<GridLocation> path = TacticalGrid::reconstructPath(
+        unit->gridPosition.x, unit->gridPosition.y, unit->gridPosition.z, target.x, target.y, target.z);
     Movement::setPath(unit, path);
+    //Set movement display to show no valid moves left
     TacticalGrid::clearMovementGrid();
   } else {
+    //if waypoints
+    // get the path along the waypoints and initialize movement on that path
     PathData pathData = TacticalGrid::calculateWaypointPath(unit, target);
-    std::vector<Vector2> path = pathData.path;
+    std::vector<GridLocation> path = pathData.path;
     Movement::setPath(unit, path);
+    //set movement display to show no valid moves left
     TacticalGrid::clearMovementGrid();
   }
 }
 
-void executeShootPrimary(GridUnit *unit, Vector2 target) {
+void executeShootPrimary(GridUnit *unit, GridLocation target) {
   // do we check line of sight here or somewhere else?
   //  Assume line of sight is valid for now.
   //  First need to check if this is a player or enemy unit doing the
@@ -67,7 +80,7 @@ void executeShootPrimary(GridUnit *unit, Vector2 target) {
   if (unit->id < 10) {
     // player Unit
     // Second we need to get enemy at the target square
-    int unitId = TacticalGrid::unitGrid[(int)target.y][(int)target.x];
+    int unitId = TacticalGrid::unitGrid[target.z][target.y][target.x];
     if (unitId == -1 || unitId < 10) {
       // not a valid shot
       //  unitId of -1 means there is no unit on that square
@@ -101,7 +114,7 @@ void executeShootPrimary(GridUnit *unit, Vector2 target) {
     		std::cout << enemyUnit->name << " died! You monster.\n";
     		//TODO: remove unit from vector.
     		enemyUnit->gridUnit.color = PINK;
-    		TacticalGrid::unitGrid[(int)target.y][(int)target.x] = -1;
+    		TacticalGrid::unitGrid[target.z][target.y][target.x] = -1;
     	}
     }
     else {
@@ -113,7 +126,7 @@ void executeShootPrimary(GridUnit *unit, Vector2 target) {
   else {
   	//enemy Unit
   	// We need to get the player at the target square
-  	int unitId = TacticalGrid::unitGrid[(int)target.y][(int)target.x];
+  	int unitId = TacticalGrid::unitGrid[target.z][target.y][target.x] ;
   	if (unitId == -1 || unitId >= 10){
   		//square is empty or is fellow enemy
   		return;

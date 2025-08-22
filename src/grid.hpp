@@ -5,6 +5,7 @@
 #include <iostream>
 #include "cover.hpp"
 #include "elevation.hpp"
+#include "types.hpp"
 
 const int GRID_WIDTH = 50;
 const int GRID_HEIGHT = 50;
@@ -17,14 +18,6 @@ enum TileType {
 	TILE_ROCK = 2,
 	TILE_TREE = 4,
 	TILE_BOX = 5
-};
-
-struct GridLocation {
- int x, y, z;
-
- bool operator==(const GridLocation& other) const {
- 	return x == other.x && y == other.y && z == other.z;
- }	
 };
 
 
@@ -73,7 +66,7 @@ std::ostream& operator<<(std::ostream& os, const std::vector<Vector2>& v);
 
 namespace TacticalGrid {
 	extern TileType terrainGrid[3][GRID_HEIGHT][GRID_WIDTH];
-	extern int unitGria[3][GRID_HEIGHT][GRID_WIDTH];
+	extern int unitGrid[3][GRID_HEIGHT][GRID_WIDTH];
 	extern int movementGrid[3][GRID_HEIGHT][GRID_WIDTH];
 	extern MoveCell pathGrid[3][GRID_HEIGHT][GRID_WIDTH];
 	extern CoverData coverGrid[3][GRID_HEIGHT][GRID_WIDTH];
@@ -94,7 +87,7 @@ namespace TacticalGrid {
 	void addUnitToGrid(GridUnit unit);
 	// void clearHighlightGrid();
 
-	Vector3 gridToWorldPosition(Vector2 gridPos, float yLevel);
+	Vector3 gridToWorldPosition(GridLocation gridPos, float yLevel);
 
 
 	bool isPassable(int x, int y);
@@ -111,7 +104,7 @@ namespace TacticalGrid {
 	bool isReachable(int fromX, int fromY, int fromZ, int toX, int toY, int toZ, float maxMovement);
 	PathData getPathInfo(int fromX, int fromY, int fromZ, int toX, int toY, int toZ, float maxMovement = 999.0f);	
 	int checkMoveDistance(int x, int y, int layer);
-	PathData calculateWaypointPath(const GridUnit* unit, Vector2 finalDestination);
+	PathData calculateWaypointPath(const GridUnit* unit, GridLocation finalDestination);
 
 	void setMovementDisplayFull(GridUnit* unit);
 	void setMovementDisplayFull(int fromX, int fromY, int fromZ, float remainingScootRange, float remainingDashRange);

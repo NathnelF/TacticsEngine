@@ -53,8 +53,8 @@ void drawGridUnits(Vector3 worldOrigin) {
 void setSelectedHighlight(int unitId) {
   for (auto &unit : playerUnits) {
     if (unitId == unit.id) {
-      Vector3 pos = {unit.gridUnit.gridPosition.x * TILE_SIZE, 0.0f,
-                     unit.gridUnit.gridPosition.y * TILE_SIZE};
+      Vector3 pos = {(float)unit.gridUnit.gridPosition.x * TILE_SIZE, 0.0f,
+                     (float)unit.gridUnit.gridPosition.y * TILE_SIZE};
       DrawCubeWires(pos, TILE_SIZE, 0.1f, TILE_SIZE, SKYBLUE);
       break;
     }
