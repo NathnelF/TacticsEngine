@@ -64,6 +64,7 @@ int main() {
 
     if (mouseInput.hasValidGridPos && selectedUnit) {
       int moveCost = TacticalGrid::checkMoveDistance(x, y, activeLayer);
+      // std::cout << "move cost to ( " << activeLayer << ", " << x << ", " << y << ") is: " << moveCost << std::endl;
       if (moveCost != -1) {
         showHover = true;
         showCover = true;
@@ -78,9 +79,11 @@ int main() {
           hoverColor = GOLD;
         }
         if (TacticalGrid::waypoints.empty()) {
+          // std::cout << "selected unit is at : " <<  selectedUnit->gridUnit.gridPosition << std::endl;
           pathPreview = TacticalGrid::reconstructPath(
               selectedUnit->gridUnit.gridPosition.x,
               selectedUnit->gridUnit.gridPosition.y, selectedUnit->gridUnit.gridPosition.z,  x, y, activeLayer);
+          // std::cout << "currenet path preview : " << pathPreview << std::endl;
           showPreview = !pathPreview.empty();
           if (selectedUnit->gridUnit.isMoving) {
             showPreview = false;
@@ -241,7 +244,7 @@ int main() {
       if (selectedUnit->gridUnit.movePointsRemaining <= 0 ||
           selectedUnit->gridUnit.turnComplete ||
           selectedUnit->gridUnit.actionPointsRemaining <= 0) {
-        std::cout << "clear movement display\n";
+        std::cout << "No movement left\n";
         TacticalGrid::clearMovementGrid();
       } else {
         if (selectedUnit->gridUnit.movePointsRemaining == 1) {

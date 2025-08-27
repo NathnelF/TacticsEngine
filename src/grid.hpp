@@ -62,7 +62,8 @@ struct PathData {
 
 std::ostream& operator<<(std::ostream& os, const Vector3& v);
 std::ostream& operator<<(std::ostream& os, const Vector2& v);
-std::ostream& operator<<(std::ostream& os, const std::vector<Vector2>& v);
+std::ostream& operator<<(std::ostream& os, const GridLocation& v);
+std::ostream& operator<<(std::ostream& os, const std::vector<GridLocation>& v);
 
 namespace TacticalGrid {
 	extern TileType terrainGrid[3][GRID_HEIGHT][GRID_WIDTH];

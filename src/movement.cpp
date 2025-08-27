@@ -17,6 +17,9 @@ namespace Movement{
 			return;
 		}
 
+		std::cout << "checking path...\n";
+		std::cout << path << std::endl;
+
 		if (path.size() < 2) {
 			std::cout << "Path too short for unit " << unit->id << std::endl;
 			return; // Need at least start and destination

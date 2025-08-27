@@ -1,6 +1,7 @@
 
 #include "grid.hpp"
 #include "elevation.hpp"
+#include "types.hpp"
 #include <algorithm>
 #include <chrono>
 #include <iostream>
@@ -16,9 +17,13 @@ std::ostream &operator<<(std::ostream &os, const Vector2 &v) {
   os << "(" << v.x << ", " << v.y << ")";
   return os;
 }
-std::ostream &operator<<(std::ostream &os, const std::vector<Vector2> &v) {
+std::ostream &operator<<(std::ostream &os, const GridLocation&v) {
+  os << "(" <<  v.z << ", " << v.x << ", " << v.y << ")";
+  return os;
+}
+std::ostream &operator<<(std::ostream &os, const std::vector<GridLocation> &v) {
   for (auto &coord : v) {
-    os << "(" << coord.x << ", " << coord.y << ")\n";
+    os << "(" << coord.z << ", " << coord.x << ", " << coord.y << ")\n";
   }
   return os;
 }
@@ -299,33 +304,44 @@ void calculateCostsFrom(int startX, int startY, int startZ, float maxRange) {
   }
   auto endTime = std::chrono::high_resolution_clock::now();
   auto duration = std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime);
-  std::cout << "Path calculation took " << duration.count() << " microseconds!\n";
+  // std::cout << "Path calculation took " << duration.count() << " microseconds!\n";
 }
 
 std::vector<GridLocation> reconstructPath(int fromX, int fromY,  int fromZ, int toX, int toY, int toZ) {
   std::vector<GridLocation> path;
 
+  // std::cout << "DEBUGGING reconstructPath method...\n";
+  // std::cout << "target destination is: ( " << toZ << ", " << toX << ", " << toY << " )\n";
   if (pathGrid[toZ][toY][toX].cost < 0) {
     return path;
+    // std::cout << "returning because the destination is unreachable (cost of < 0)\n";
   }
 
-  GridLocation current = {fromX, fromY, fromZ};
+  GridLocation current= {toX, toY, toZ};
+  // std::cout << "current gridLocation: " << current << std::endl;
   // Build path backwards from destination to start
   while (true) {
     path.push_back(current);
-
     GridLocation parent = pathGrid[current.z][current.y][current.x].parent;
 
+    // std::cout << "parent gridLocation : " << parent << std::endl;
+
     // Check if we reached the start (parent points to itself)
-    if (parent.x == current.x && parent.y == current.y && parent.z == current.z) {
+    if (parent.x == fromX && parent.y == fromY && parent.z == fromZ) {
+      // std::cout << "reached start!\n";
       break;
     }
 
     current = parent;
   }
+  path.push_back({fromX, fromY, fromZ});
 
+  // std::cout << "reversing path!\n";
   // Reverse the path so it goes from start to destination
   std::reverse(path.begin(), path.end());
+
+  // std::cout << "path reversed!\n";
+  // std::cout << "final path : " << path << std::endl;
 
   return path;
 }
@@ -383,7 +399,7 @@ void setMovementDisplayFull(int fromX, int fromY, int fromZ, float remainingScoo
                             float remainingDashRange) {
   clearMovementGrid();
 
-  calculateCostsFrom(fromX, fromY, remainingDashRange);
+  calculateCostsFrom(fromX, fromY, fromZ, remainingDashRange);
   for (int z = 0; z < 3; z++) {
     for (int y = 0; y < GRID_HEIGHT; y++) {
       for (int x = 0; x < GRID_WIDTH; x++) {
@@ -402,7 +418,7 @@ void setMovementDisplayFull(int fromX, int fromY, int fromZ, float remainingScoo
 void setMovementDisplayDash(GridUnit *unit) {
   // used to set display after step movement.
   clearMovementGrid();
-  calculateCostsFrom(unit->gridPosition.x, unit->gridPosition.y,
+  calculateCostsFrom(unit->gridPosition.x, unit->gridPosition.y, unit->gridPosition.z,
                      unit->speed * 0.5);
   for (int z = 0; z < 3; z++) {
     for (int y = 0; y < GRID_HEIGHT; y++) {
@@ -419,7 +435,7 @@ void setMovementDisplayDash(int fromX, int fromY, int fromZ,
                             float remainingDashRange) {
   // used to set display after step movement.
   clearMovementGrid();
-  calculateCostsFrom(fromX, fromY, remainingDashRange);
+  calculateCostsFrom(fromX, fromY, fromZ, remainingDashRange);
   for (int z = 0; z < 3; z++) {
     for (int y = 0; y < GRID_HEIGHT; y++) {
       for (int x = 0; x < GRID_WIDTH; x++) {
