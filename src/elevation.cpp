@@ -4,16 +4,16 @@
 namespace Elevation {
 std::vector<LayerConnection> allLayerConnections;
 
-float getConnectionCost(ConnectionType type){
-  switch(type) {
-    case CONNECTION_JUMP_DOWN:
-      return 1.0f;
-    case CONNECTION_LADDER:
-      return 2.0f;
-    case CONNECTION_GRAPPLE:
-      return 3.0f;
-    default:
-      return 2.0f;
+float getConnectionCost(ConnectionType type) {
+  switch (type) {
+  case CONNECTION_JUMP_DOWN:
+    return 1.0f;
+  case CONNECTION_LADDER:
+    return 2.0f;
+  case CONNECTION_GRAPPLE:
+    return 3.0f;
+  default:
+    return 2.0f;
   }
 }
 
@@ -31,7 +31,8 @@ void addConnection(int x, int y, int fromLayer, int toLayer,
 
   allLayerConnections.push_back(connection);
 
-  //biDirectional conncetions need an opposite, reverse connection to go along side it(so you can climb down a ladder as well as up one)
+  // biDirectional conncetions need an opposite, reverse connection to go along
+  // side it(so you can climb down a ladder as well as up one)
   if (connection.biDirectional) {
     LayerConnection reverse = connection;
     reverse.fromLayer = toLayer;
@@ -42,14 +43,16 @@ void addConnection(int x, int y, int fromLayer, int toLayer,
 
 void clearConnections() { allLayerConnections.clear(); }
 
-bool canTraverseConnection(const LayerConnection &connection, int currentLayer) {
-  //check if a unit's currentLayer is = to the fromLayer of the connection
+bool canTraverseConnection(const LayerConnection &connection,
+                           int currentLayer) {
+  // check if a unit's currentLayer is = to the fromLayer of the connection
   return (connection.fromLayer == currentLayer);
 }
-std::vector<LayerConnection> getAllConnectionsAt(int x, int y, int currentLayer){
+std::vector<LayerConnection> getAllConnectionsAt(int x, int y,
+                                                 int currentLayer) {
   std::vector<LayerConnection> connectionsAt;
-  for (const auto& conn : allLayerConnections ){
-    if (conn.x == x && conn.y == y && conn.fromLayer == currentLayer){
+  for (const auto &conn : allLayerConnections) {
+    if (conn.x == x && conn.y == y && conn.fromLayer == currentLayer) {
       connectionsAt.push_back(conn);
     }
   }

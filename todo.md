@@ -39,9 +39,10 @@
 # Fog of war
 
 # Elevation
-    1. Add elevation grid
-    2. Add elevation transfer grid (marks ladders...etc)
-    3. Touch up visual clarity (blurring higher elevations unless the camera is set to focus on it)
+    1. Add active elevation layer 0, 1, 2 and key switch between them
+    2. Switching between them should also move the camera to a reasonable position for that layer.
+    3. 
+
 
 # AI
 

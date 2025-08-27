@@ -91,7 +91,7 @@ namespace TacticalGrid {
 
 
 	bool isPassable(int x, int y);
-	bool isGridUnitAt(int x, int y);
+	bool isGridUnitAt(int x, int y, int layer);
 
 	float getTerrainMultiplier(int x, int y, int layer);
 	float getGridUnitMultiplier(int x, int y, int layer);

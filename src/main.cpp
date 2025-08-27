@@ -201,7 +201,7 @@ int main() {
                                                    y, activeLayer)
                   << " to move to ( " << x << " , " << y << ")\n";
       }
-      std::cout << TacticalGrid::isGridUnitAt(x, y) << " unit at ( " << x
+      std::cout << TacticalGrid::isGridUnitAt(x, y, activeLayer) << " unit at ( " << x
                 << " , " << y << ")\n";
       if (TacticalGrid::unitGrid[activeLayer][y][x] != -1 && TacticalGrid::unitGrid[activeLayer][y][x] < 10) {
         selectedUnit = PlayerUnits::getPlayerUnit(TacticalGrid::unitGrid[activeLayer][y][x]);
@@ -358,8 +358,8 @@ int main() {
       TacticalGrid::drawMovementOverlay(worldOrigin);
     if (showHover)
       TacticalGrid::drawHoverHighlight(x, y, worldOrigin, hoverColor);
-    if (showPreview)
-      TacticalGrid::drawPathPreview(pathPreview, hoverColor);
+    // if (showPreview)
+    //   TacticalGrid::drawPathPreview(pathPreview, hoverColor);
     for (auto &point : TacticalGrid::waypoints) {
       Vector3 pos = TacticalGrid::gridToWorldPosition(point.parent, 0.1f);
       DrawCube(pos, .25f, .01f, .25f, MAGENTA);
@@ -368,11 +368,11 @@ int main() {
       Vector3 pos = TacticalGrid::gridToWorldPosition(currentTarget, 0.12f);
   		DrawCubeWires(pos, TILE_SIZE, 0.15f, TILE_SIZE, RED);
     }
-    if (showCover)
-      CoverSystem::renderCover(mouseInput.gridPosition, hoverColor);
-    if (showDebugLOS){
-      LineOfSight::debugLOS(selectedUnit->gridUnit.gridPosition, currentTarget);
-    }
+    // if (showCover)
+    //   CoverSystem::renderCover(mouseInput.gridPosition, hoverColor);
+    // if (showDebugLOS){
+    //   LineOfSight::debugLOS(selectedUnit->gridUnit.gridPosition, currentTarget);
+    // }
     pathPreview.clear();
     EndMode3D();
     EndDrawing();

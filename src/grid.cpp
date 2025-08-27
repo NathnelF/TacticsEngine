@@ -1,5 +1,6 @@
 
 #include "grid.hpp"
+#include "elevation.hpp"
 #include <algorithm>
 #include <chrono>
 #include <iostream>
@@ -181,9 +182,9 @@ void calculateCoverGrid() {
 }
 }
 
-Vector3 gridToWorldPosition(GridLocation position){
+Vector3 gridToWorldPosition(GridLocation position, float yLevel){
   float yScale = 5.0f;
-  Vector3 worldPos = {(float)position.x * TILE_SIZE, position.z * yScale, (float)position.y * TILE_SIZE};
+  Vector3 worldPos = {(float)position.x * TILE_SIZE, (position.z * yScale) + yLevel, (float)position.y * TILE_SIZE};
   return worldPos;
 }
 
@@ -223,7 +224,7 @@ float getGridUnitMultiplier(int x, int y, int layer) {
   }
   if (x < 0 || x >= GRID_WIDTH || y < 0 || y >= GRID_HEIGHT)
     return -1.0f;
-  if (isGridUnitAt(x, y)) {
+  if (isGridUnitAt(x, y, layer)) {
     return -1.0f;
   } else {
     return 1.0f;
@@ -283,7 +284,7 @@ void calculateCostsFrom(int startX, int startY, int startZ, float maxRange) {
     }
 
     //check for layer connections
-    auto connections = Elevation::getAllConnectionsAt(currentX, currentY, currentZ);
+    std::vector<LayerConnection> connections = Elevation::getAllConnectionsAt(currentX, currentY, currentZ);
     for (const auto& conn : connections){
       float newCost = currentCost + conn.movementCost;
       if (newCost > maxRange) continue;
